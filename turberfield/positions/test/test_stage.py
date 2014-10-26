@@ -54,13 +54,18 @@ class Stage(MutableMapping):
         self.placement = Graph()
 
     def __len__(self):
-        return len(self.placement)
+        return self.placement.number_of_nodes()
 
     def __iter__(self):
         return self.placement.__iter__()
 
     def __delitem__(self, key):
-        return self.placement.__delitem__(key)
+        node, direction, in_, out_ = self.placement.describe_node(key)
+        for edge in in_ + out_:
+            contact = self.placement.edge_data(edge)
+            del contact
+        del direction
+        self.placement.hide_node(node)
 
     def __getitem__(self, key):
         if key not in self.placement:
@@ -77,7 +82,7 @@ class APIPrototyping(unittest.TestCase):
         rv = s[Actor(uuid.uuid4().hex, "Alice")]
         self.assertIsInstance(rv, Stage.Directions)
 
-    def test_movement(self):
+    def test_add_stage_direction(self):
         alice = Actor(uuid.uuid4().hex, "Alice")
         bob = Actor(uuid.uuid4().hex, "Bob")
         stage = Stage()
@@ -90,3 +95,22 @@ class APIPrototyping(unittest.TestCase):
 
         self.assertIs(alice, stage[alice].obj)
         self.assertIs(bob, stage[bob].obj)
+
+    def test_add_and_remove_stage_direction(self):
+        alice = Actor(uuid.uuid4().hex, "Alice")
+        bob = Actor(uuid.uuid4().hex, "Bob")
+        stage = Stage()
+        stage[alice].reaches(
+            bob,
+            fact=True, mutual=True)
+
+        self.assertIn(alice, stage)
+        self.assertIn(bob, stage)
+        self.assertIn(alice, stage.placement)
+        self.assertIn(bob, stage.placement)
+
+        self.assertEqual(2, len(stage))
+        self.assertEqual(2, len(list(stage.placement)))
+        del stage[bob]
+        self.assertEqual(1, len(stage))
+        self.assertEqual(1, len(list(stage.placement)))
