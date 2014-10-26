@@ -26,6 +26,7 @@ from altgraph.Graph import Graph
  
 from turberfield.common.schema import Actor
 
+
 class Stage(MutableMapping):
 
     Contact = namedtuple("Contact", ["view", "throw", "hear", "reach"])
@@ -36,7 +37,13 @@ class Stage(MutableMapping):
             self.stage = stage
             self.obj = obj
 
-        def reaches(self, *args, fact=True, mutual=False):
+        @property
+        def reaches(self):
+            graph = self.stage.placement
+            return [graph.tail(e) for e in graph.out_edges(self.obj)
+                    if graph.edge_data(e).reach]
+
+        def can_reach(self, *args, fact=True, mutual=False):
             for i in args:
                 other = self.stage[i]
                 self.stage.placement.add_edge(self.obj, other.obj)
@@ -69,11 +76,12 @@ class Stage(MutableMapping):
 
     def __getitem__(self, key):
         if key not in self.placement:
-            self.placement.add_node(key, Stage.Directions(self, key))
+            self[key] = Stage.Directions(self, key)
         return self.placement.describe_node(key)[1]
 
     def __setitem__(self, key, val):
-        return self.placement.__setitem__(key, val)
+        if isinstance(val, Stage.Directions):
+            self.placement.add_node(key, val)
 
 class APIPrototyping(unittest.TestCase):
 
@@ -86,7 +94,24 @@ class APIPrototyping(unittest.TestCase):
         alice = Actor(uuid.uuid4().hex, "Alice")
         bob = Actor(uuid.uuid4().hex, "Bob")
         stage = Stage()
-        stage[alice].reaches(
+        stage[alice].can_reach(
+            bob,
+            fact=True, mutual=False)
+
+        self.assertIn(alice, stage)
+        self.assertIn(bob, stage)
+
+        self.assertIs(alice, stage[alice].obj)
+        self.assertIs(bob, stage[bob].obj)
+
+        self.assertIn(bob, stage[alice].reaches)
+        self.assertNotIn(alice, stage[bob].reaches)
+
+    def test_add_stage_direction_mutual(self):
+        alice = Actor(uuid.uuid4().hex, "Alice")
+        bob = Actor(uuid.uuid4().hex, "Bob")
+        stage = Stage()
+        stage[alice].can_reach(
             bob,
             fact=True, mutual=True)
 
@@ -96,11 +121,14 @@ class APIPrototyping(unittest.TestCase):
         self.assertIs(alice, stage[alice].obj)
         self.assertIs(bob, stage[bob].obj)
 
+        self.assertIn(bob, stage[alice].reaches)
+        self.assertIn(alice, stage[bob].reaches)
+
     def test_add_and_remove_stage_direction(self):
         alice = Actor(uuid.uuid4().hex, "Alice")
         bob = Actor(uuid.uuid4().hex, "Bob")
         stage = Stage()
-        stage[alice].reaches(
+        stage[alice].can_reach(
             bob,
             fact=True, mutual=True)
 
@@ -108,9 +136,11 @@ class APIPrototyping(unittest.TestCase):
         self.assertIn(bob, stage)
         self.assertIn(alice, stage.placement)
         self.assertIn(bob, stage.placement)
-
         self.assertEqual(2, len(stage))
         self.assertEqual(2, len(list(stage.placement)))
+
         del stage[bob]
+        self.assertNotIn(bob, stage)
+        self.assertNotIn(bob, stage.placement)
         self.assertEqual(1, len(stage))
         self.assertEqual(1, len(list(stage.placement)))
