@@ -44,8 +44,8 @@ class APIPrototyping(unittest.TestCase):
         self.assertIs(alice, stage[alice].obj)
         self.assertIs(bob, stage[bob].obj)
 
-        self.assertIn(bob, stage[alice].reaches)
-        self.assertNotIn(alice, stage[bob].reaches)
+        self.assertIn(bob, stage[alice].reach)
+        self.assertNotIn(alice, stage[bob].reach)
 
     def test_add_stage_direction_mutual(self):
         alice = Actor(uuid.uuid4().hex, "Alice")
@@ -61,8 +61,32 @@ class APIPrototyping(unittest.TestCase):
         self.assertIs(alice, stage[alice].obj)
         self.assertIs(bob, stage[bob].obj)
 
-        self.assertIn(bob, stage[alice].reaches)
-        self.assertIn(alice, stage[bob].reaches)
+        self.assertIn(bob, stage[alice].reach)
+        self.assertIn(alice, stage[bob].reach)
+
+    def test_add_stage_direction_untrue(self):
+        alice = Actor(uuid.uuid4().hex, "Alice")
+        bob = Actor(uuid.uuid4().hex, "Bob")
+        stage = Stage()
+        stage[alice].can_reach(
+            bob,
+            fact=True, mutual=True)
+
+        self.assertIn(alice, stage)
+        self.assertIn(bob, stage)
+
+        self.assertIs(alice, stage[alice].obj)
+        self.assertIs(bob, stage[bob].obj)
+
+        self.assertIn(bob, stage[alice].reach)
+        self.assertIn(alice, stage[bob].reach)
+
+        stage[alice].can_reach(
+            bob,
+            fact=False, mutual=False)
+
+        self.assertNotIn(bob, stage[alice].reach)
+        self.assertIn(alice, stage[bob].reach)
 
     def test_add_and_remove_stage_direction(self):
         alice = Actor(uuid.uuid4().hex, "Alice")
@@ -84,3 +108,43 @@ class APIPrototyping(unittest.TestCase):
         self.assertNotIn(bob, stage.placement)
         self.assertEqual(1, len(stage))
         self.assertEqual(1, len(list(stage.placement)))
+
+class TestHearing(unittest.TestCase):
+
+    def test_add_hearing(self):
+        alice = Actor(uuid.uuid4().hex, "Alice")
+        bob = Actor(uuid.uuid4().hex, "Bob")
+        stage = Stage()
+        stage[alice].can_hear(
+            bob,
+            fact=True, mutual=False)
+
+        self.assertIn(bob, stage[alice].hearing)
+        self.assertNotIn(alice, stage[bob].hearing)
+
+    def test_block_hearing(self):
+        alice = Actor(uuid.uuid4().hex, "Alice")
+        bob = Actor(uuid.uuid4().hex, "Bob")
+        stage = Stage()
+        stage[alice].can_hear(
+            bob,
+            fact=True, mutual=False)
+
+        self.assertIn(bob, stage[alice].hearing)
+        self.assertNotIn(bob, stage[alice].throw)
+        self.assertNotIn(alice, stage[bob].hearing)
+
+
+        stage[alice].can_throw(
+            bob,
+            fact=True, mutual=False)
+
+        self.assertIn(bob, stage[alice].hearing)
+        self.assertIn(bob, stage[alice].throw)
+
+        stage[alice].can_hear(
+            bob,
+            fact=False, mutual=False)
+        self.assertNotIn(bob, stage[alice].hearing)
+        self.assertNotIn(bob, stage[alice].throw)
+

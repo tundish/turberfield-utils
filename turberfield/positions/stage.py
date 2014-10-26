@@ -53,24 +53,44 @@ class Stage(MutableMapping):
 
                 for a, b in jobs:
                     edge = graph.edge_by_node(a, b)
-                    if edge is None:
+                    if fact and edge is None:
                         graph.add_edge(a, b, new)
                     else:
                         data = graph.edge_data(edge)
-                        graph.update_edge_data(
-                            edge,
-                            data._replace(**replace)
+                        update = data._replace(
+                            **{k: fact for k in replace}
                         )
+                        graph.update_edge_data(edge, update)
 
         @property
-        def reaches(self):
+        def hearing(self):
+            return self.contact("hear")
+
+        @property
+        def throw(self):
+            return self.contact("throw")
+
+        @property
+        def reach(self):
             return self.contact("reach")
+
+        def can_hear(self, *args, fact=True, mutual=False):
+            return self.can_contact(
+                *args, fact=fact, mutual=mutual,
+                new=Stage.Contact(False, False, True, False),
+                replace=["throw", "hear"])
+
+        def can_throw(self, *args, fact=True, mutual=False):
+            return self.can_contact(
+                *args, fact=fact, mutual=mutual,
+                new=Stage.Contact(True, True, False, False),
+                replace=["throw"])
 
         def can_reach(self, *args, fact=True, mutual=False):
             return self.can_contact(
                 *args, fact=fact, mutual=mutual,
-                new=Stage.Contact(False, False, False, True),
-                replace={"reach": True})
+                new=Stage.Contact(True, True, True, True),
+                replace=["reach"])
 
     def __init__(self):
         self.placement = Graph()
