@@ -87,3 +87,6 @@ class APIPrototyping(unittest.TestCase):
 
         self.assertIn(alice, stage)
         self.assertIn(bob, stage)
+
+        self.assertIs(alice, stage[alice].obj)
+        self.assertIs(bob, stage[bob].obj)
