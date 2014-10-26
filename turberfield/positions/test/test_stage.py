@@ -148,3 +148,29 @@ class TestHearing(unittest.TestCase):
         self.assertNotIn(bob, stage[alice].hearing)
         self.assertNotIn(bob, stage[alice].throw)
 
+class TestThrowing(unittest.TestCase):
+
+    def test_add_throwing(self):
+        alice = Actor(uuid.uuid4().hex, "Alice")
+        bob = Actor(uuid.uuid4().hex, "Bob")
+        stage = Stage()
+        stage[alice].can_throw(
+            bob,
+            fact=True, mutual=False)
+
+        self.assertIn(bob, stage[alice].throw)
+        self.assertNotIn(alice, stage[bob].throw)
+
+class TestVista(unittest.TestCase):
+
+    def test_add_vision(self):
+        alice = Actor(uuid.uuid4().hex, "Alice")
+        bob = Actor(uuid.uuid4().hex, "Bob")
+        stage = Stage()
+        stage[alice].can_see(
+            bob,
+            fact=True, mutual=False)
+
+        self.assertIn(bob, stage[alice].view)
+        self.assertNotIn(alice, stage[bob].view)
+

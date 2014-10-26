@@ -74,23 +74,33 @@ class Stage(MutableMapping):
         def reach(self):
             return self.contact("reach")
 
+        @property
+        def view(self):
+            return self.contact("view")
+
         def can_hear(self, *args, fact=True, mutual=False):
             return self.can_contact(
                 *args, fact=fact, mutual=mutual,
                 new=Stage.Contact(False, False, True, False),
                 replace=["throw", "hear"])
 
-        def can_throw(self, *args, fact=True, mutual=False):
-            return self.can_contact(
-                *args, fact=fact, mutual=mutual,
-                new=Stage.Contact(True, True, False, False),
-                replace=["throw"])
-
         def can_reach(self, *args, fact=True, mutual=False):
             return self.can_contact(
                 *args, fact=fact, mutual=mutual,
                 new=Stage.Contact(True, True, True, True),
                 replace=["reach"])
+
+        def can_see(self, *args, fact=True, mutual=False):
+            return self.can_contact(
+                *args, fact=fact, mutual=mutual,
+                new=Stage.Contact(True, False, False, False),
+                replace=["see"])
+
+        def can_throw(self, *args, fact=True, mutual=False):
+            return self.can_contact(
+                *args, fact=fact, mutual=mutual,
+                new=Stage.Contact(True, True, False, False),
+                replace=["throw"])
 
     def __init__(self):
         self.placement = Graph()
