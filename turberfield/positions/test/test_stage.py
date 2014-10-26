@@ -40,13 +40,14 @@ class Stage(MutableMapping):
         def contact(self, field):
             graph = self.stage.placement
             return [graph.tail(e) for e in graph.out_edges(self.obj)
-                    if getattr(graph.edge_data(e), "reach", None)]
+                    if getattr(graph.edge_data(e), field, None)]
 
-        @property
-        def reaches(self):
-            return self.contact("reach")
-
-        def can_reach(self, *args, fact=True, mutual=False):
+        def can_contact(
+            self,
+            *args,
+            fact=True, mutual=False,
+            new=None, replace=None
+        ):
             graph = self.stage.placement
             for i in args:
                 other = self.stage[i]
@@ -57,21 +58,23 @@ class Stage(MutableMapping):
                 for a, b in jobs:
                     edge = graph.edge_by_node(a, b)
                     if edge is None:
-                        graph.add_edge(
-                            a, b,
-                            Stage.Contact(False, False, False, True)
-                        )
-                        edge = graph.edge_by_node(a, b)
+                        graph.add_edge(a, b, new)
                     else:
                         data = graph.edge_data(edge)
                         graph.update_edge_data(
                             edge,
-                            data._replace(reach=True)
+                            data._replace(**replace)
                         )
 
-    @staticmethod
-    def item():
-        return
+        @property
+        def reaches(self):
+            return self.contact("reach")
+
+        def can_reach(self, *args, fact=True, mutual=False):
+            return self.can_contact(
+                *args, fact=fact, mutual=mutual,
+                new=Stage.Contact(False, False, False, True),
+                replace={"reach": True})
 
     def __init__(self):
         self.placement = Graph()
