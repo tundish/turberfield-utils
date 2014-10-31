@@ -25,6 +25,8 @@ import uuid
 from turberfield.common.schema import NPC
 from turberfield.common.schema import Player
 
+from turberfield.positions.stage import Stage
+
 @enum.unique
 class Commodity(enum.Enum):
     COIN = "coin"
@@ -40,6 +42,8 @@ Role = namedtuple("Role", ["name", "description"])
 
 Applause = namedtuple("Applause", ["todo"])
 Dialogue = namedtuple("Dialogue", ["todo"])
+
+Location = namedtuple("Location", ["lat", "long"])
 
 class Scene(metaclass=abc.ABCMeta):
 
@@ -84,7 +88,7 @@ class PayingOff(Scene):
         # Unlock actors
         return False
 
-actors = {
+characters = {
     NPC(uuid.uuid4().hex, "worker #01", 0, 0, 0, 0.1): {
         Commodity.COIN: [TradePosition.buying],
         Commodity.SCRP: [TradePosition.selling],
@@ -106,11 +110,31 @@ actors = {
 class PrototypeCasting(unittest.TestCase):
 
     def test_role_discovery(self):
-        self.assertIsInstance(PayingOff().casting, dict)
+        scene = PayingOff()
+        self.assertIsInstance(scene.casting, dict)
+        for actor, dramas in characters.items():
+            for counterparty, relationships in dramas.items():
+                print(relationships)
+
+        for dramas, role in scene.casting.items():
+            for counterparty, relationships in dramas:
+                for rel in relationships:
+                    print(rel)
+
+    def test_scene_discovery(self):
+        stage = Stage(
+            boundary=(
+                Location(53.0, -3.5),
+                Location(52.0, -3.0),
+                Location(51.0, -3.5),
+                Location(52.0, -4.0)),
+            scenes=[PayingOff])
 
     def test_playing_the_scene(self):
         scene = PayingOff
         with scene() as performance:
-            for n, msg in enumerate(performance(sellout=None, broker=None)):
+            for n, msg in enumerate(performance(
+                sellout=None, broker=None)
+            ):
                 self.assertTrue(msg)
             self.assertTrue(n)
