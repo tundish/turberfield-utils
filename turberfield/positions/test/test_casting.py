@@ -17,6 +17,7 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 import abc
+from collections import defaultdict
 from collections import namedtuple
 import enum
 import unittest
@@ -69,10 +70,14 @@ class PayingOff(Scene):
         return {
             frozenset([
             (Commodity.COIN, frozenset([TradePosition.buying])),
-            (Commodity.SCRP, frozenset([TradePosition.selling]))]): PayingOff.sellout,
+            (Commodity.SCRP, frozenset([TradePosition.selling]))]): [
+                PayingOff.sellout
+            ],
             frozenset([
             (Commodity.COIN, frozenset([TradePosition.selling])),
-            (Commodity.SCRP, frozenset([TradePosition.buying]))]): PayingOff.broker,
+            (Commodity.SCRP, frozenset([TradePosition.buying]))]): [
+                PayingOff.broker
+            ],
         }
 
     def __call__(self, sellout, broker):
@@ -112,9 +117,13 @@ class PrototypeCasting(unittest.TestCase):
     def test_role_discovery(self):
         scene = PayingOff()
         self.assertIsInstance(scene.casting, dict)
+        attitude = defaultdict(set)
         for actor, dramas in characters.items():
             for counterparty, relationships in dramas.items():
-                print(relationships)
+                attitude[actor].add(
+                    (counterparty, frozenset(relationships))
+                )
+        print({frozenset(v): k for k, v in attitude.items()})
 
         for dramas, role in scene.casting.items():
             for counterparty, relationships in dramas:
