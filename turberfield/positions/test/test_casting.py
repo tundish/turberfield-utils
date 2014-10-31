@@ -38,6 +38,9 @@ class TradePosition(enum.Enum):
 
 Role = namedtuple("Role", ["name", "description"])
 
+Applause = namedtuple("Applause", ["todo"])
+Dialogue = namedtuple("Dialogue", ["todo"])
+
 class Scene(metaclass=abc.ABCMeta):
 
     def __init__(self):
@@ -69,12 +72,16 @@ class PayingOff(Scene):
         }
 
     def __call__(self, sellout, broker):
-        return None
+        yield Dialogue(None)
+        yield Applause(None)
 
     def __enter__(self):
+        # Lock actors
+        # Set up stage
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        # Unlock actors
         return False
 
 actors = {
@@ -102,7 +109,8 @@ class PrototypeCasting(unittest.TestCase):
         self.assertIsInstance(PayingOff().casting, dict)
 
     def test_playing_the_scene(self):
-        scene = PayingOff()
-        with scene(sellout=None, broker=None) as performance:
-            dialogue = list(performance)
-            self.assertTrue(performance)
+        scene = PayingOff
+        with scene() as performance:
+            for n, msg in enumerate(performance(sellout=None, broker=None)):
+                self.assertTrue(msg)
+            self.assertTrue(n)
