@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+import abc
+from collections import namedtuple
 import enum
 import unittest
 import uuid
@@ -33,6 +35,47 @@ class TradePosition(enum.Enum):
 
     buying = "buying"
     selling = "selling"
+
+Role = namedtuple("Role", ["name", "description"])
+
+class Scene(metaclass=abc.ABCMeta):
+
+    def __init__(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def casting(self):
+        pass
+
+class PayingOff(Scene):
+    """
+    This scene can be played every time a worker in a scrip system wants
+    to cash in his tokens for coin.
+    """
+
+    sellout = Role("sellout", None)
+    broker = Role("broker", None)
+
+    @property
+    def casting(self):
+        return {
+            frozenset([
+            (Commodity.COIN, frozenset([TradePosition.buying])),
+            (Commodity.SCRP, frozenset([TradePosition.selling]))]): PayingOff.sellout,
+            frozenset([
+            (Commodity.COIN, frozenset([TradePosition.selling])),
+            (Commodity.SCRP, frozenset([TradePosition.buying]))]): PayingOff.broker,
+        }
+
+    def __call__(self, sellout, broker):
+        return None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
 
 actors = {
     NPC(uuid.uuid4().hex, "worker #01", 0, 0, 0, 0.1): {
@@ -55,5 +98,11 @@ actors = {
 
 class PrototypeCasting(unittest.TestCase):
 
-    def test_payoff_scenario(self):
-        self.fail(actors)
+    def test_role_discovery(self):
+        self.assertIsInstance(PayingOff().casting, dict)
+
+    def test_playing_the_scene(self):
+        scene = PayingOff()
+        with scene(sellout=None, broker=None) as performance:
+            dialogue = list(performance)
+            self.assertTrue(performance)
