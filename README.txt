@@ -1,17 +1,70 @@
+..  Titling
+    ##++::==~~--''``
 
-Location -> Stage -> Position
+Turberfield is a *S* ur *PRISE*.
 
-Location
---------
+a **Semantic**
+    Turberfield can be understood by machines or human beings.
 
-4-D geometry (Euclidean + time) = Minkowski space
+**Persistent**
+    Turberfield can be stopped and saved for later.
 
-Stage
------
+**Reusable**
+    Turberfield can be turned into something else.
 
-Four digraphs define positions:
+**Interactive**
+    Turberfield listens to what you say.
 
-* Vista
-* Chamber
-* Pitch
-* Spot
+**Simulation**
+    Turberfield knows what it's talking about.
+
+for **Economics**
+    ...or Education, or Entertainment. Turberfield is deadly serious.
+    And only a game.
+
+What's missing? *UR*!
+
+* If you've spotted a bug in Turberfield, please let me know so I can fix it.
+* If you think Turberfield lacks a feature, you can help drive development by describing
+  your Use Case.
+
+In either event, please leave a message on the project's `message board`_.
+
+Roadmap
+:::::::
+
+Turberfield's mission is to provide a validated Pythonic framework for discrete
+event simulations and turn-based games.
+
+It is developed by a private individual but released to the public under the
+`GNU Affero General Public License`_.
+
+The API may change significantly as the project proceeds. At this early stage,
+you should only use the latest release, which may not be compatible with
+previous versions.
+
+Requirements
+::::::::::::
+
+Turberfield requires Python 3.4. It uses setuptools_ for installation.
+
+
+Installation
+::::::::::::
+
+Download and unpack the source distribution::
+
+    $ tar -xzvf turberfield-positions-00.001.tar.gz
+    $ cd turberfield-positions-00.001
+
+Run the tests::
+
+    $ python3.4 -m unittest discover turberfield
+
+
+:Author: D Haynes
+:Copyright: 2014 Thuswise Ltd
+
+.. _setuptools: https://pypi.python.org/pypi/setuptools
+.. _GNU Affero General Public License: http://www.gnu.org/licenses/agpl-3.0.html
+.. _message board: https://www.assembla.com/spaces/turberfield/messages
