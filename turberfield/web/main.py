@@ -55,7 +55,7 @@ def simulation_get():
             "debug": bottle.debug,
             "interval": 200,
             "time": "{:.1f}".format(time.time()),
-            "title": "Turberfield {}".format(__version__),
+            "title": "Turberfield positions {}".format(__version__),
             "version": __version__
         },
     #    "items": OrderedDict([(str(id(i)), i) for i in steps]),
@@ -88,47 +88,6 @@ def server_static(filename):
 def server_static(filename):
     locn = os.path.join(os.path.dirname(__file__), "static", "js")
     return bottle.static_file(filename, root=locn)
-
-@app.route("/simulation", method="POST")
-def simulation_post():
-    log = logging.getLogger("turberfield.web.simulation")
-    target = bottle.request.forms.get("target")
-    data = pkg_resources.resource_string(
-        "turberfield.web", "static/rson/project.rson"
-    )
-    steps = list(turberfield.project.load(data))
-    blank = turberfield.project.Invocation(
-        at=datetime.datetime.now(), target=target,
-        args=[])
-    default, steps = turberfield.project.replace(blank, steps)
-    req = [(i, bottle.request.forms.get(i.name))
-            for i in default.args]
-    new = turberfield.project.Invocation(
-        at=datetime.datetime.now(), target=target,
-        args=[i._replace(value=v) for i, v in req if v != ""])
-    blank, steps = turberfield.project.replace(new, steps)
-
-    fD, fN = tempfile.mkstemp(
-        suffix=".rson", dir=app.config["args"]["output"]
-    )
-    with open(fN, 'w') as project:
-        try:
-            project.write("\n".join(turberfield.project.dumps(steps)))
-        except OSError as e:
-            log.error(e)
-    os.close(fD)
-    log.info("Saved to project file {}".format(fN))
-    bottle.redirect("/simulation")
-
-@app.route("/css/<filepath:path>")
-def serve_css(filepath):
-    log = logging.getLogger("turberfield.web.serve_css")
-    log.debug(filepath)
-    locn = pkg_resources.resource_filename(
-        "turberfield.web", "static/css"
-    )
-    return bottle.static_file(filepath, root=locn)
-
 
 def main(args):
     log = logging.getLogger("turberfield.web")
