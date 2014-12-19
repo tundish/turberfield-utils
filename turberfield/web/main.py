@@ -77,7 +77,18 @@ def positions():
         Item((x, 80), "Alice"),
         Item((x, 120), "Bobby"),
     ]
-    return json.dumps([i._asdict() for i in items])
+    return {
+        "info": {
+            "args": app.config.get("args"),
+            "debug": bottle.debug(),
+            "interval": 200,
+            "time": "{:.1f}".format(time.time()),
+            "title": "Turberfield positions {}".format(__version__),
+            "version": __version__
+        },
+        "items": [i._asdict() for i in items],
+        
+    }
 
 @app.route("/css/<filename>")
 def server_static(filename):

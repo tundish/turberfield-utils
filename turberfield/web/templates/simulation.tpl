@@ -24,14 +24,11 @@ var viewModel = {
 
 var checkStatus = function() {
 
-    $.getJSON('/client', function(data) {
+    $.getJSON('/positions', function(data) {
         viewModel.debug(data.debug);
         viewModel.interval(data.interval);
         viewModel.time(data.time);
-    });
-
-    $.getJSON('/positions', function(items) {
-        viewModel.items(items);
+        viewModel.items(data.items);
     });
 
     setTimeout(checkStatus, viewModel.interval());
