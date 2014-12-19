@@ -138,6 +138,9 @@
          id="textPath3961"><tspan
    id="tspan3956"
    style="fill:#000000;stroke:#a9a9a9;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">Gainsborough Square</tspan></textPath></text>
+  <g data-bind="foreach: items">
+       <use xlink:href="#object_actor"
+        data-bind="attr: {transform: 'translate('+pos[0]+', '+pos[1]+')'}"/>
   </g>
   <g id="layer08_positions">
     <path

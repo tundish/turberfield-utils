@@ -62,14 +62,32 @@ def simulation_get():
         
     }
 
+@app.route("/client")
+def client():
+    return {
+        "interval": 200,
+        "debug": True,
+        "time": "{:.1f}".format(time.time()),
+    }
+
 @app.route("/positions")
-def vista():
+def positions():
     x = int(50 + 4 * time.time() % 200)
     items = [
         Item((x, 80), "Alice"),
         Item((x, 120), "Bobby"),
     ]
     return json.dumps([i._asdict() for i in items])
+
+@app.route("/css/<filename>")
+def server_static(filename):
+    locn = os.path.join(os.path.dirname(__file__), "static", "css")
+    return bottle.static_file(filename, root=locn)
+
+@app.route("/js/<filename>")
+def server_static(filename):
+    locn = os.path.join(os.path.dirname(__file__), "static", "js")
+    return bottle.static_file(filename, root=locn)
 
 @app.route("/simulation", method="POST")
 def simulation_post():
