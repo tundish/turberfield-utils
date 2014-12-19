@@ -62,14 +62,6 @@ def simulation_get():
         
     }
 
-@app.route("/client")
-def client():
-    return {
-        "interval": 200,
-        "debug": True,
-        "time": "{:.1f}".format(time.time()),
-    }
-
 @app.route("/positions")
 def positions():
     x = int(50 + 4 * time.time() % 200)
