@@ -1,6 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
@@ -9,8 +6,15 @@
    width="640"
    height="480"
    id="svg2985">
-  <g
-     id="layer01_background"
+<defs>
+    <circle id="object_platform"
+        cx="0" cy="0" r="20"
+        stroke="#a40000" stroke-width="1" fill="#ffd700" />
+    <circle id="object_actor"
+        cx="0" cy="0" r="5"
+        stroke="#eeeeec" stroke-width="1.5" fill="#729fcf" />
+</defs>
+  <g id="layer01_background"
      style="display:inline">
     <rect
        width="640"
@@ -20,15 +24,13 @@
        id="rect2995"
        style="fill:#d3d3d3;fill-opacity:1;stroke:none" />
   </g>
-  <g
-     id="layer02_terrain">
+  <g id="layer02_terrain">
     <path
        d="m 220,130 210,0 c 16.62,0 30,13.38 30,30 l 0,170 c 0,16.62 -13.38,30 -30,30 l -210,0 c -16.62,0 -30,-13.38 -30,-30 l 0,-170 c 0,-16.62 13.38,-30 30,-30 z"
        id="rect3768"
        style="fill:#94fd83;fill-opacity:1;stroke:#666666;stroke-width:4.07619715;stroke-miterlimit:4;stroke-opacity:1" />
   </g>
-  <g
-     id="layer03_road">
+  <g id="layer03_road">
     <path
        d="m 211.25,120 227.5,0 c 17.3125,0 31.25,13.9375 31.25,31.25 l 0,187.5 C 470,356.0625 456.0625,370 438.75,370 l -227.5,0 C 193.9375,370 180,356.0625 180,338.75 l 0,-187.5 C 180,133.9375 193.9375,120 211.25,120 z"
        id="rect3809"
@@ -42,8 +44,7 @@
        id="path3863"
        style="opacity:0.51028807;fill:#fdffe3;fill-opacity:1;stroke:#666666;stroke-width:2.16008949;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
   </g>
-  <g
-     id="layer04_furniture">
+  <g id="layer04_furniture">
     <rect
        width="30"
        height="20"
@@ -74,8 +75,7 @@
        id="location_c"
        style="fill:#fdffe3;fill-opacity:1;stroke:#696969;stroke-width:0.77459669;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
   </g>
-  <g
-     id="layer05_labels">
+  <g id="layer05_labels">
     <text
        x="278"
        y="66"
@@ -139,21 +139,7 @@
    id="tspan3956"
    style="fill:#000000;stroke:#a9a9a9;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">Gainsborough Square</tspan></textPath></text>
   </g>
-  <g
-     id="layer07_objects">
-    <path
-       d="m 190,250 a 20,20 0 1 1 -0.004,-0.41892"
-       transform="translate(-10,0)"
-       id="object_platform"
-       style="fill:#ffd700;fill-opacity:1;stroke:#a40000;stroke-width:3;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
-    <path
-       d="m 120,275 a 5,5 0 1 1 -0.001,-0.10473"
-       transform="translate(5,-5)"
-       id="object_actor"
-       style="fill:#729fcf;fill-opacity:1;stroke:#eeeeec;stroke-width:1.5;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
-  </g>
-  <g
-     id="layer08_positions">
+  <g id="layer08_positions">
     <path
        d="m 175,110 a 5,5 0 1 1 -0.001,-0.10473"
        transform="translate(-10,-10)"

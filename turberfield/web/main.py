@@ -3,6 +3,7 @@
 #
 
 import argparse
+from collections import namedtuple
 from collections import OrderedDict
 import datetime
 import glob
@@ -20,7 +21,7 @@ from bottle import Bottle
 import pkg_resources
 
 from turberfield.positions import __version__
-import turberfield.project
+#import turberfield.project
 
 
 DFLT_LOCN = os.path.expanduser(os.path.join("~", ".turberfield"))
@@ -28,6 +29,8 @@ DFLT_LOCN = os.path.expanduser(os.path.join("~", ".turberfield"))
 __doc__ = """
 Serves a graphical web interface for Turberfield positions.
 """
+
+Item = namedtuple("Item", ["pos", "name"])
 
 bottle.TEMPLATE_PATH.append(
     pkg_resources.resource_filename("turberfield.web", "templates")
@@ -38,35 +41,35 @@ app = Bottle()
 @app.route("/", "GET")
 @bottle.view("simulation")
 def simulation_get():
-    log = logging.getLogger("turberfield.web.simulation")
+    log = logging.getLogger("turberfield.web.home")
 
-    pttrn = os.path.join(app.config["args"]["output"], "*.rson")
-    stats = [(os.path.getmtime(fP), fP) for fP in glob.glob(pttrn)]
-    stats.sort(key=operator.itemgetter(0), reverse=True)
-    project = next((i[1] for i in stats), None)
-    if project is None:
-        data = pkg_resources.resource_string(
-            "turberfield.web", "static/rson/project.rson"
-        )
-        log.info("Loading default project")
-    else:
-        log.info("Loading project {}".format(project))
-        with open(project, 'r') as saved:
-            data = saved.read()
+    data = pkg_resources.resource_string(
+        "turberfield.web", "static/rson/demo.rson"
+    )
+    log.info("Loading demo data")
 
-    steps = list(turberfield.project.load(data))
+    #steps = list(turberfield.project.load(data))
     return {
         "info": {
             "args": app.config.get("args"),
             "debug": bottle.debug,
             "interval": 200,
             "time": "{:.1f}".format(time.time()),
-            "title": "Linkbudget {}".format(__version__),
+            "title": "Turberfield {}".format(__version__),
             "version": __version__
         },
-        "items": OrderedDict([(str(id(i)), i) for i in steps]),
+    #    "items": OrderedDict([(str(id(i)), i) for i in steps]),
         
     }
+
+@app.route("/positions")
+def vista():
+    x = int(50 + 4 * time.time() % 200)
+    items = [
+        Item((x, 80), "Alice"),
+        Item((x, 120), "Bobby"),
+    ]
+    return json.dumps([i._asdict() for i in items])
 
 @app.route("/simulation", method="POST")
 def simulation_post():
