@@ -30,7 +30,7 @@ __doc__ = """
 Serves a graphical web interface for Turberfield positions.
 """
 
-Item = namedtuple("Item", ["pos", "name"])
+Item = namedtuple("Item", ["pos", "class_"])
 
 bottle.TEMPLATE_PATH.append(
     pkg_resources.resource_filename("turberfield.web", "templates")
@@ -66,8 +66,8 @@ def simulation_get():
 def positions():
     x = int(50 + 4 * time.time() % 200)
     items = [
-        Item((x, 80), "Alice"),
-        Item((x, 120), "Bobby"),
+        Item((x, 80), "platform"),
+        Item((x, 120), "actor"),
     ]
     return {
         "info": {
