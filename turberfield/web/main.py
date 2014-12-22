@@ -18,12 +18,8 @@
 
 
 import argparse
-from collections import namedtuple
-from collections import OrderedDict
 import datetime
-from decimal import Decimal as Dl
 import glob
-import itertools
 import json
 import logging
 import operator
@@ -38,8 +34,7 @@ from bottle import Bottle
 import pkg_resources
 
 from turberfield.positions import __version__
-from turberfield.positions.homogeneous import point
-from turberfield.positions.homogeneous import vector
+import turberfield.positions.demo
 #import turberfield.project
 
 
@@ -48,8 +43,6 @@ DFLT_LOCN = os.path.expanduser(os.path.join("~", ".turberfield"))
 __doc__ = """
 Serves a graphical web interface for Turberfield positions.
 """
-
-Item = namedtuple("Item", ["pos", "class_"])
 
 bottle.TEMPLATE_PATH.append(
     pkg_resources.resource_filename("turberfield.web", "templates")
@@ -91,40 +84,6 @@ def server_static(filename):
     locn = os.path.join(os.path.dirname(__file__), "static", "js")
     return bottle.static_file(filename, root=locn)
 
-class Simulation:
-
-    posns = OrderedDict([
-        ("nw", point(160, 100, 0)),
-        ("ne", point(484, 106, 0)),
-        ("se", point(478, 386, 0)),
-        ("sw", point(160, 386, 0)),
-    ])
-
-    def __init__(self):
-        self.items = [
-            Item((pos[0], pos[1]), "actor")
-            for pos in Simulation.posns.values()]
-
-    def positions(self):
-        accns = itertools.repeat(Dl("-9.806"))
-        x = int(50 + 4 * time.time() % 200)
-        items = self.items + [
-            Item((x, 80), "platform"),
-            Item((x, 120), "actor"),
-        ]
-        return {
-            "info": {
-                "args": app.config.get("args"),
-                "debug": bottle.debug(),
-                "interval": 200,
-                "time": "{:.1f}".format(time.time()),
-                "title": "Turberfield positions {}".format(__version__),
-                "version": __version__
-            },
-            "items": [i._asdict() for i in items],
-            
-        }
-
 def main(args):
     log = logging.getLogger("turberfield.web")
     log.setLevel(args.log_level)
@@ -151,7 +110,7 @@ def main(args):
     app.config.update({
         "args": vars(args)
     })
-    sim = Simulation()
+    sim = turberfield.positions.demo.Simulation(args, debug=True)
     app.route("/positions", callback=sim.positions)
     bottle.run(app, host="localhost", port=8080)
 
