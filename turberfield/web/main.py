@@ -1,12 +1,29 @@
 #!/usr/bin/env python
 #   -*- encoding: UTF-8 -*-
+
+# This file is part of turberfield.
 #
+# Turberfield is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Turberfield is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
+
 
 import argparse
 from collections import namedtuple
 from collections import OrderedDict
 import datetime
+from decimal import Decimal as Dl
 import glob
+import itertools
 import json
 import logging
 import operator
@@ -21,6 +38,8 @@ from bottle import Bottle
 import pkg_resources
 
 from turberfield.positions import __version__
+from turberfield.positions.homogeneous import point
+from turberfield.positions.homogeneous import vector
 #import turberfield.project
 
 
@@ -37,6 +56,13 @@ bottle.TEMPLATE_PATH.append(
 )
 
 app = Bottle()
+
+posns = OrderedDict([
+    ("nw", point(160, 100, 0)),
+    ("ne", point(484, 106, 0)),
+    ("se", point(478, 386, 0)),
+    ("sw", point(160, 386, 0)),
+])
 
 @app.route("/", "GET")
 @bottle.view("simulation")
@@ -64,11 +90,14 @@ def simulation_get():
 
 @app.route("/positions")
 def positions():
+    accns = itertools.repeat(Dl("-9.806"))
     x = int(50 + 4 * time.time() % 200)
     items = [
         Item((x, 80), "platform"),
         Item((x, 120), "actor"),
     ]
+    items.extend(
+        [Item((pos[0], pos[1]), "actor") for pos in posns.values()])
     return {
         "info": {
             "args": app.config.get("args"),
