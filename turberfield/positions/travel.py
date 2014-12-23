@@ -66,20 +66,27 @@ def time_correct_verlet(state, t, accn, mass=1):
 
 def trajectory(ticks, posns, accns):
     state = deque([], maxlen=2)
-    posns = iter(posns)
     if len(state) == 0:
-        t0 = next(ticks)
-        t1 = next(ticks)
-        state.appendleft(Impulse(t0, t1, next(accns), next(posns)))
+        t0 = ticks.popleft()
+        t1 = ticks.popleft()
+        state.appendleft(
+            Impulse(t0, t1, accns.popleft(), posns.popleft())
+        )
         yield state[0]
-        t2 = next(ticks)
-        state.appendleft(Impulse(t1, t2, next(accns), next(posns)))
+        t2 = ticks.popleft()
+        state.appendleft(
+            Impulse(t1, t2, accns.popleft(), posns.popleft())
+        )
         yield state[0]
-        t3 = next(ticks)
-        state = time_correct_verlet(state, t3, next(accns))
+        t3 = ticks.popleft()
+        state = time_correct_verlet(state, t3, accns.popleft())
         yield state[0]
     while True:
-        state = time_correct_verlet(state, next(ticks), next(accns))
-        # TODO: Apply constraints
-        # TODO: Terminal condition
-        yield state[0]
+        try:
+            state = time_correct_verlet(
+                state, ticks.popleft(), accns.popleft()
+            )
+        except IndexError:
+            raise StopIteration
+        else:
+            yield state[0]

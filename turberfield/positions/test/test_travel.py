@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import deque
 import decimal
 from decimal import Decimal as Dl
 import itertools
@@ -43,13 +44,13 @@ class ProjectileTests(unittest.TestCase):
         ]
 
         dt = Dl("0.5")
-        g = Dl("-9.806")
         vel = Dl("61.28750008")
-        posns = (0, vel * dt + Dl("0.5") * g * dt * dt)
-        samples = (Dl(i.t / 10) for i in ticks(0, 130, 5))
+        samples = deque([Dl(i.t / 10) for i in ticks(0, 130, 5)])
+        accns = deque([Dl("-9.806")] * len(samples))
+        posns = deque([0, vel * dt + Dl("0.5") * accns[0] * dt * dt])
         for n, x in enumerate(
             trajectory(
-                samples, posns=posns, accns=itertools.repeat(g))
+                samples, posns=posns, accns=accns)
         ):
             with self.subTest(n=n):
                 self.assertEqual(expected[n], x.pos)
@@ -68,16 +69,16 @@ class ProjectileTests(unittest.TestCase):
         ]
 
         dt = Dl("0.5")
-        g = vector(Dl("-9.806"), 0, 0)
         vel = vector(Dl("61.28750008"), 0, 0)
-        posns = (
+        samples = deque([Dl(i.t / 10) for i in ticks(0, 130, 5)])
+        accns = deque([vector(Dl("-9.806"), 0, 0)] * len(samples))
+        posns = deque([
             point(0, 0, 0),
-            point(0, 0, 0) + vel * dt + Dl("0.5") * g * dt * dt
-        )
-        samples = (Dl(i.t / 10) for i in ticks(0, 130, 5))
+            point(0, 0, 0) + vel * dt + Dl("0.5") * accns[0] * dt * dt
+        ])
         for n, x in enumerate(
             trajectory(
-                samples, posns=posns, accns=itertools.repeat(g))
+                samples, posns=posns, accns=accns)
         ):
             with self.subTest(n=n):
                 self.assertEqual(expected[n], x.pos)
@@ -97,8 +98,8 @@ class PolynomialTests(unittest.TestCase):
             Dl("1.212288"), Dl("2.525952"), Dl("4.114944"), Dl("6")
         ]
 
-        samples = (Dl(i.t / 100) for i in ticks(0, 300, 12))
-        accns = [
+        samples = deque([Dl(i.t / 100) for i in ticks(0, 300, 12)])
+        accns = deque([
             Dl("-14"), Dl("-12.56"), Dl("-11.12"), Dl("-9.68"),
             Dl("-8.24"), Dl("-6.8"), Dl("-5.36"), Dl("-3.92"),
             Dl("-2.48"), Dl("-1.04"), Dl("0.4"), Dl("1.84"),
@@ -106,12 +107,12 @@ class PolynomialTests(unittest.TestCase):
             Dl("10.48"), Dl("11.92"), Dl("13.36"), Dl("14.8"),
             Dl("16.24"), Dl("17.68"), Dl("19.12"), Dl("20.56"),
             Dl("22")
-        ]
+        ])
 
-        posns = (Dl(0), Dl("0.502656"))
+        posns = deque([Dl(0), Dl("0.502656")])
         for n, x in enumerate(
             trajectory(
-                samples, posns=posns, accns=iter(accns))
+                samples, posns=posns, accns=accns)
         ):
             with self.subTest(n=n):
                 self.assertEqual(
@@ -131,8 +132,8 @@ class PolynomialTests(unittest.TestCase):
             Dl("1.212288"), Dl("2.525952"), Dl("4.114944"), Dl("6")]
         ]
 
-        samples = (Dl(i.t / 100) for i in ticks(0, 300, 12))
-        accns = [vector(i, 0, 0) for i in [
+        samples = deque([Dl(i.t / 100) for i in ticks(0, 300, 12)])
+        accns = deque([vector(i, 0, 0) for i in [
             Dl("-14"), Dl("-12.56"), Dl("-11.12"), Dl("-9.68"),
             Dl("-8.24"), Dl("-6.8"), Dl("-5.36"), Dl("-3.92"),
             Dl("-2.48"), Dl("-1.04"), Dl("0.4"), Dl("1.84"),
@@ -140,18 +141,18 @@ class PolynomialTests(unittest.TestCase):
             Dl("10.48"), Dl("11.92"), Dl("13.36"), Dl("14.8"),
             Dl("16.24"), Dl("17.68"), Dl("19.12"), Dl("20.56"),
             Dl("22")]
-        ]
+        ])
 
-        posns = (
+        posns = deque([
             point(Dl(0), Dl(0), Dl(0)),
             point(Dl("0.502656"), Dl(0), Dl(0))
-        )
+        ])
 
         with decimal.localcontext() as ctx:
             ctx.prec = 15
             for n, x in enumerate(
                 trajectory(
-                    samples, posns=posns, accns=iter(accns))
+                    samples, posns=posns, accns=accns)
             ):
                 with self.subTest(n=n):
                     self.assertEqual(expected[n], x.pos)
