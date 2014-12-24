@@ -45,9 +45,12 @@ class Simulation:
         self.items = [
             Item((pos[0], pos[1]), "actor")
             for pos in Simulation.posns.values()]
+        self.path = itertools.cycle(Simulation.posns.values())
         dt = Dl("0.5")
         vel = (Simulation.posns["ne"] - Simulation.posns["nw"]) / Dl("2.0")
-        self.accns = deque([vector(0, 0, 0)])
+        self.accns = deque([
+            vector(0, 0, 0), vector(0, 0, 0)
+        ])
         self.samples = deque([0, 0.2, 0.4])
         posns = deque([
             Simulation.posns["nw"],
@@ -60,7 +63,6 @@ class Simulation:
         )
 
     def positions(self):
-        path = itertools.cycle(Simulation.posns.values())
         x = int(50 + 4 * time.time() % 200)
         items = self.items + [
             Item((x, 80), "platform"),
