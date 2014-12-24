@@ -21,6 +21,7 @@ from decimal import Decimal as Dl
 import itertools
 import unittest
 
+from turberfield.positions.demo import Simulation
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
 from turberfield.positions.travel import ticks
@@ -28,6 +29,10 @@ from turberfield.positions.travel import trajectory
 
 
 class PositionTests(unittest.TestCase):
+
+    def test_path_calculation(self):
+        sim = Simulation()
+        print(sim.positions())
 
     def test_point_calculation(self):
         expected = [point(i, 0, 0) for i in [
