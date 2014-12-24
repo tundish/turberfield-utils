@@ -30,6 +30,7 @@ from turberfield.positions.travel import trajectory
 
 Item = namedtuple("Item", ["pos", "class_"])
 
+
 class Simulation:
 
     posns = OrderedDict([
@@ -68,6 +69,8 @@ class Simulation:
             Item((x, 80), "platform"),
             Item((x, 120), "actor"),
         ]
+        n, imp = next(self.proc)
+        self.accns.append(vector(0, 0, 0))
         return {
             "info": {
                 "args": self.args,
@@ -77,6 +80,6 @@ class Simulation:
                 "title": "Turberfield positions {}".format(__version__),
                 "version": __version__
             },
-            "items": [i._asdict() for i in items],
+            "items": [Item((imp.pos[0], imp.pos[1]), "platform")],
             
         }
