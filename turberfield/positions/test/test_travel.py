@@ -78,18 +78,23 @@ class ProjectileTests(unittest.TestCase):
 
         dt = Dl("0.5")
         vel = vector(Dl("61.28750008"), 0, 0)
-        samples = deque([Dl(i.t / 10) for i in ticks(0, 130, 5)])
-        accns = deque([vector(Dl("-9.806"), 0, 0)] * len(samples))
-        posns = deque([
-            point(0, 0, 0),
-            point(0, 0, 0) + vel * dt + Dl("0.5") * accns[0] * dt * dt
-        ])
-        for n, x in enumerate(
-            Trajectory(
-                samples, posns=posns, accns=accns)
-        ):
+        accn = vector(Dl("-9.806"), 0, 0)
+        proc = trajectory()
+        proc.send(None)
+        for n, x in enumerate(expected):
+            if n == 0:
+                imp = proc.send(Impulse(
+                    Dl(0), Dl("0.5"), accn, point(0, 0, 0)))
+            elif n == 1:
+                p = (point(0, 0, 0) + vel * dt +
+                    Dl("0.5") * accn * dt * dt)
+                imp = proc.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, accn, p))
+            else:
+                imp = proc.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, accn, imp.pos))
             with self.subTest(n=n):
-                self.assertEqual(expected[n], x.pos)
+                self.assertEqual(x, imp.pos)
 
 
 class PolynomialTests(unittest.TestCase):
