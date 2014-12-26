@@ -93,6 +93,7 @@ class ProjectileTests(unittest.TestCase):
             else:
                 imp = proc.send(Impulse(
                     imp.tEnd, imp.tEnd + dt, accn, imp.pos))
+
             with self.subTest(n=n):
                 self.assertEqual(x, imp.pos)
 
@@ -111,7 +112,6 @@ class PolynomialTests(unittest.TestCase):
             Dl("1.212288"), Dl("2.525952"), Dl("4.114944"), Dl("6")
         ]
 
-        samples = deque([Dl(i.t / 100) for i in ticks(0, 300, 12)])
         accns = deque([
             Dl("-14"), Dl("-12.56"), Dl("-11.12"), Dl("-9.68"),
             Dl("-8.24"), Dl("-6.8"), Dl("-5.36"), Dl("-3.92"),
@@ -122,16 +122,23 @@ class PolynomialTests(unittest.TestCase):
             Dl("22")
         ])
 
-        posns = deque([Dl(0), Dl("0.502656")])
-        for n, x in enumerate(
-            Trajectory(
-                samples, posns=posns, accns=accns)
-        ):
+        dt = Dl("0.12")
+        proc = trajectory()
+        proc.send(None)
+        for n, x in enumerate(expected):
+            accn = accns[n]
+            if n == 0:
+                imp = proc.send(Impulse(Dl(0), dt, accn, Dl(0)))
+            elif n == 1:
+                imp = proc.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, accn,
+                    Dl("0.502656")))
+            else:
+                imp = proc.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, accn, imp.pos))
+
             with self.subTest(n=n):
-                self.assertEqual(
-                    expected[n],
-                    x.pos.quantize(Dl("0.00000000000001"))
-                )
+                self.assertEqual(x, imp.pos)
 
     def test_point_calculation(self):
         expected = [point(i, 0, 0) for i in [
@@ -145,7 +152,6 @@ class PolynomialTests(unittest.TestCase):
             Dl("1.212288"), Dl("2.525952"), Dl("4.114944"), Dl("6")]
         ]
 
-        samples = deque([Dl(i.t / 100) for i in ticks(0, 300, 12)])
         accns = deque([vector(i, 0, 0) for i in [
             Dl("-14"), Dl("-12.56"), Dl("-11.12"), Dl("-9.68"),
             Dl("-8.24"), Dl("-6.8"), Dl("-5.36"), Dl("-3.92"),
@@ -156,16 +162,21 @@ class PolynomialTests(unittest.TestCase):
             Dl("22")]
         ])
 
-        posns = deque([
-            point(Dl(0), Dl(0), Dl(0)),
-            point(Dl("0.502656"), Dl(0), Dl(0))
-        ])
+        dt = Dl("0.12")
+        proc = trajectory()
+        proc.send(None)
+        for n, x in enumerate(expected):
+            accn = accns[n]
+            if n == 0:
+                p = point(Dl(0), Dl(0), Dl(0))
+                imp = proc.send(Impulse(Dl(0), dt, accn, p))
+            elif n == 1:
+                p = point(Dl("0.502656"), Dl(0), Dl(0))
+                imp = proc.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, accn, p))
+            else:
+                imp = proc.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, accn, imp.pos))
 
-        with decimal.localcontext() as ctx:
-            ctx.prec = 15
-            for n, x in enumerate(
-                Trajectory(
-                    samples, posns=posns, accns=accns)
-            ):
-                with self.subTest(n=n):
-                    self.assertEqual(expected[n], x.pos)
+            with self.subTest(n=n):
+                self.assertEqual(x, imp.pos)
