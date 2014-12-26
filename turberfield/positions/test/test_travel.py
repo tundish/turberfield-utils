@@ -24,7 +24,9 @@ import unittest
 
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
+from turberfield.positions.travel import Impulse
 from turberfield.positions.travel import ticks
+from turberfield.positions.travel import trajectory
 from turberfield.positions.travel import Trajectory
 
 
@@ -45,15 +47,21 @@ class ProjectileTests(unittest.TestCase):
 
         dt = Dl("0.5")
         vel = Dl("61.28750008")
-        samples = deque([Dl(i.t / 10) for i in ticks(0, 130, 5)])
-        accns = deque([Dl("-9.806")] * len(samples))
-        posns = deque([0, vel * dt + Dl("0.5") * accns[0] * dt * dt])
-        for n, x in enumerate(
-            Trajectory(
-                samples, posns=posns, accns=accns)
-        ):
+        accn = Dl("-9.806")
+        proc = trajectory()
+        proc.send(None)
+        for n, x in enumerate(expected):
+            if n == 0:
+                imp = proc.send(Impulse(Dl(0), Dl("0.5"), accn, 0))
+            elif n == 1:
+                imp = proc.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, accn,
+                    vel * dt + Dl("0.5") * accn * dt * dt))
+            else:
+                imp = proc.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, accn, imp.pos))
             with self.subTest(n=n):
-                self.assertEqual(expected[n], x.pos)
+                self.assertEqual(x, imp.pos)
 
     def test_point_calculation(self):
         expected = [point(i, 0, 0) for i in [

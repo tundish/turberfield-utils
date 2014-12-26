@@ -100,3 +100,20 @@ class Trajectory:
                 raise StopIteration
             else:
                 yield state[0]
+
+
+def trajectory(stop=None):
+    state = deque([], maxlen=2)
+    if len(state) == 0:
+        imp = yield None
+        state.appendleft(imp)
+        imp = yield state[0]
+        state.appendleft(imp)
+        imp = yield state[0]
+        state = time_correct_verlet(state, imp.tEnd, imp.accn)
+        imp = yield state[0]
+    while True:
+        state = time_correct_verlet(
+            state, imp.tEnd, imp.accn
+        )
+        imp = yield state[0]

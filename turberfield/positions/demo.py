@@ -59,21 +59,22 @@ class Simulation:
             + Dl("0.5") * self.accns[0] * self.dt * self.dt)
         ])
         self.start = None
-        self.procs = {
+        self.procs = [enumerate(
             Trajectory(
-                self.samples, posns=posns, accns=self.accns): None
-        }
+                self.samples, posns=posns, accns=self.accns)
+        )]
 
     def positions(self, at=None):
+        self.samples.append(self.samples[-1] + self.dt)
+        self.accns.append(vector(0, 0, 0))
+
         items = []
         for proc in self.procs:
-            proc.ticks.append(self.samples[-1] + self.dt)
-            proc.accns.append(vector(0, 0, 0))
-
-            impulse = next(proc)
-            items.append(Item(
-                (int(impulse.pos[0]) % 800, int(impulse.pos[1]) % 600),
-                "platform"
+            n, imp = next(proc)
+            items.append(
+                Item(
+                    (int(imp.pos[0]) % 800, int(imp.pos[1]) % 600),
+                    "platform"
                 )
             )
         return items
