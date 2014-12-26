@@ -22,6 +22,7 @@ from collections import namedtuple
 import decimal
 from decimal import Decimal as Dl
 import itertools
+import warnings
 
 Impulse = namedtuple("Impulse", ["tBegin", "tEnd", "accn", "pos"])
 Tick = namedtuple("Tick", ["t", "priority"])
@@ -65,21 +66,32 @@ def time_correct_verlet(state, t, accn, mass=1):
 
 
 def trajectory(ticks, posns, accns):
+
+    def check_data():
+        if not (len(ticks) and len(accns)):
+            warnings.warn("Missing {} values during step {}".format(
+            "ticks" if len(accns) else "accn", len(state)))
+
     state = deque([], maxlen=2)
     if len(state) == 0:
+        check_data()
         t0 = ticks.popleft()
+        check_data()
         t1 = ticks.popleft()
         state.appendleft(
             Impulse(t0, t1, accns.popleft(), posns.popleft())
         )
         yield state[0]
+        check_data()
         t2 = ticks.popleft()
         state.appendleft(
             Impulse(t1, t2, accns.popleft(), posns.popleft())
         )
         yield state[0]
+        check_data()
         t3 = ticks.popleft()
-        state = time_correct_verlet(state, t3, accns.popleft())
+        accn = accns.popleft()
+        state = time_correct_verlet(state, t3, accn)
         yield state[0]
     while True:
         try:

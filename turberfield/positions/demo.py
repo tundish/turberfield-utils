@@ -47,39 +47,55 @@ class Simulation:
             Item((pos[0], pos[1]), "actor")
             for pos in Simulation.posns.values()]
         self.path = itertools.cycle(Simulation.posns.values())
-        dt = Dl("0.5")
+        self.dt = Dl("0.5")
         vel = (Simulation.posns["ne"] - Simulation.posns["nw"]) / Dl("2.0")
         self.accns = deque([
             vector(0, 0, 0), vector(0, 0, 0)
         ])
-        self.samples = deque([0, 0.2, 0.4])
+        self.samples = deque([Dl(0), Dl("0.2"), Dl("0.4")])
         posns = deque([
             Simulation.posns["nw"],
-            (Simulation.posns["nw"] + vel * dt
-            + Dl("0.5") * self.accns[0] * dt * dt)
+            (Simulation.posns["nw"] + vel * self.dt
+            + Dl("0.5") * self.accns[0] * self.dt * self.dt)
         ])
-        self.proc = enumerate(
+        self.start = None
+        self.procs = [enumerate(
             trajectory(
                 self.samples, posns=posns, accns=self.accns)
-        )
+        )]
 
-    def positions(self):
-        x = int(50 + 4 * time.time() % 200)
-        items = self.items + [
-            Item((x, 80), "platform"),
-            Item((x, 120), "actor"),
-        ]
-        n, imp = next(self.proc)
+    def positions(self, at=None):
+        self.samples.append(self.samples[-1] + self.dt)
         self.accns.append(vector(0, 0, 0))
+
+        items = []
+        for proc in self.procs:
+            n, imp = next(proc)
+            items.append(
+                Item(
+                    (int(imp.pos[0]) % 800, int(imp.pos[1]) % 600),
+                    "platform"
+                )
+            )
+        return items
+
+    def hateoas(self):
+        #x = int(50 + 4 * time.time() % 200)
+        #items = self.items + [
+        #    Item((x, 80), "platform"),
+        #    Item((x, 120), "actor"),
+        #]
+        now = time.time()
+        items = self.positions(at=now)
         return {
             "info": {
                 "args": self.args,
                 "debug": self.debug,
                 "interval": 200,
-                "time": "{:.1f}".format(time.time()),
+                "time": "{:.1f}".format(now),
                 "title": "Turberfield positions {}".format(__version__),
                 "version": __version__
             },
-            "items": [Item((imp.pos[0], imp.pos[1]), "platform")],
+            "items": [i._asdict() for i in items],
             
         }

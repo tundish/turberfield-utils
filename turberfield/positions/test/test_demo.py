@@ -32,10 +32,11 @@ class PositionTests(unittest.TestCase):
 
     def test_path_calculation(self):
         sim = Simulation()
-        print(sim.positions())
-        print(sim.positions())
-        print(sim.positions())
-        print(sim.positions())
+        for n in range(5):
+            with self.subTest(n=n):
+                data = sim.positions()
+                x, y = data[0].pos
+        self.assertEqual(Simulation.posns["ne"][:2], (x, y))
 
     def test_point_calculation(self):
         expected = [point(i, 0, 0) for i in [

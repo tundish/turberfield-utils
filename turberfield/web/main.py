@@ -111,7 +111,7 @@ def main(args):
         "args": vars(args)
     })
     sim = turberfield.positions.demo.Simulation(args, debug=True)
-    app.route("/positions", callback=sim.positions)
+    app.route("/positions", callback=sim.hateoas)
     bottle.run(app, host="localhost", port=8080)
 
 
