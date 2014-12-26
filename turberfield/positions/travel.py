@@ -65,40 +65,38 @@ def time_correct_verlet(state, t, accn, mass=1):
     return (rv, imp0)
 
 
-def trajectory(ticks, posns, accns):
+class Trajectory:
 
-    def check_data():
-        if not (len(ticks) and len(accns)):
-            warnings.warn("Missing {} values during step {}".format(
-            "ticks" if len(accns) else "accn", len(state)))
+    def __init__(self, ticks, posns, accns):
+        self.ticks = ticks
+        self.posns = posns
+        self.accns = accns
 
-    state = deque([], maxlen=2)
-    if len(state) == 0:
-        check_data()
-        t0 = ticks.popleft()
-        check_data()
-        t1 = ticks.popleft()
-        state.appendleft(
-            Impulse(t0, t1, accns.popleft(), posns.popleft())
-        )
-        yield state[0]
-        check_data()
-        t2 = ticks.popleft()
-        state.appendleft(
-            Impulse(t1, t2, accns.popleft(), posns.popleft())
-        )
-        yield state[0]
-        check_data()
-        t3 = ticks.popleft()
-        accn = accns.popleft()
-        state = time_correct_verlet(state, t3, accn)
-        yield state[0]
-    while True:
-        try:
-            state = time_correct_verlet(
-                state, ticks.popleft(), accns.popleft()
+    def __iter__(self):
+        ticks, posns, accns = self.ticks, self.posns, self.accns
+        state = deque([], maxlen=2)
+        if len(state) == 0:
+            t0 = ticks.popleft()
+            t1 = ticks.popleft()
+            state.appendleft(
+                Impulse(t0, t1, accns.popleft(), posns.popleft())
             )
-        except IndexError:
-            raise StopIteration
-        else:
             yield state[0]
+            t2 = ticks.popleft()
+            state.appendleft(
+                Impulse(t1, t2, accns.popleft(), posns.popleft())
+            )
+            yield state[0]
+            t3 = ticks.popleft()
+            accn = accns.popleft()
+            state = time_correct_verlet(state, t3, accn)
+            yield state[0]
+        while True:
+            try:
+                state = time_correct_verlet(
+                    state, ticks.popleft(), accns.popleft()
+                )
+            except IndexError:
+                raise StopIteration
+            else:
+                yield state[0]

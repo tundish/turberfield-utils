@@ -26,7 +26,7 @@ import time
 from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
-from turberfield.positions.travel import trajectory
+from turberfield.positions.travel import Trajectory
 
 Item = namedtuple("Item", ["pos", "class_"])
 
@@ -60,7 +60,7 @@ class Simulation:
         ])
         self.start = None
         self.procs = [enumerate(
-            trajectory(
+            Trajectory(
                 self.samples, posns=posns, accns=self.accns)
         )]
 

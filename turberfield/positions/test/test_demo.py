@@ -25,7 +25,7 @@ from turberfield.positions.demo import Simulation
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
 from turberfield.positions.travel import ticks
-from turberfield.positions.travel import trajectory
+from turberfield.positions.travel import Trajectory
 
 
 class PositionTests(unittest.TestCase):
@@ -35,6 +35,7 @@ class PositionTests(unittest.TestCase):
         for n in range(5):
             with self.subTest(n=n):
                 data = sim.positions()
+                print(data)
                 x, y = data[0].pos
         self.assertEqual(Simulation.posns["ne"][:2], (x, y))
 
@@ -60,7 +61,7 @@ class PositionTests(unittest.TestCase):
             point(0, 0, 0) + vel * dt + Dl("0.5") * accns[0] * dt * dt
         ])
         for n, x in enumerate(
-            trajectory(
+            Trajectory(
                 samples, posns=posns, accns=accns)
         ):
             with self.subTest(n=n):

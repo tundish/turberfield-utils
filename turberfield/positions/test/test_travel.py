@@ -25,7 +25,7 @@ import unittest
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
 from turberfield.positions.travel import ticks
-from turberfield.positions.travel import trajectory
+from turberfield.positions.travel import Trajectory
 
 
 class ProjectileTests(unittest.TestCase):
@@ -49,7 +49,7 @@ class ProjectileTests(unittest.TestCase):
         accns = deque([Dl("-9.806")] * len(samples))
         posns = deque([0, vel * dt + Dl("0.5") * accns[0] * dt * dt])
         for n, x in enumerate(
-            trajectory(
+            Trajectory(
                 samples, posns=posns, accns=accns)
         ):
             with self.subTest(n=n):
@@ -77,7 +77,7 @@ class ProjectileTests(unittest.TestCase):
             point(0, 0, 0) + vel * dt + Dl("0.5") * accns[0] * dt * dt
         ])
         for n, x in enumerate(
-            trajectory(
+            Trajectory(
                 samples, posns=posns, accns=accns)
         ):
             with self.subTest(n=n):
@@ -111,7 +111,7 @@ class PolynomialTests(unittest.TestCase):
 
         posns = deque([Dl(0), Dl("0.502656")])
         for n, x in enumerate(
-            trajectory(
+            Trajectory(
                 samples, posns=posns, accns=accns)
         ):
             with self.subTest(n=n):
@@ -151,7 +151,7 @@ class PolynomialTests(unittest.TestCase):
         with decimal.localcontext() as ctx:
             ctx.prec = 15
             for n, x in enumerate(
-                trajectory(
+                Trajectory(
                     samples, posns=posns, accns=accns)
             ):
                 with self.subTest(n=n):
