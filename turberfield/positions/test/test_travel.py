@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import deque
 import decimal
 from decimal import Decimal as Dl
 import itertools
@@ -27,7 +26,6 @@ from turberfield.positions.homogeneous import vector
 from turberfield.positions.travel import Impulse
 from turberfield.positions.travel import ticks
 from turberfield.positions.travel import trajectory
-from turberfield.positions.travel import Trajectory
 
 
 class ProjectileTests(unittest.TestCase):
@@ -112,7 +110,7 @@ class PolynomialTests(unittest.TestCase):
             Dl("1.212288"), Dl("2.525952"), Dl("4.114944"), Dl("6")
         ]
 
-        accns = deque([
+        accns = [
             Dl("-14"), Dl("-12.56"), Dl("-11.12"), Dl("-9.68"),
             Dl("-8.24"), Dl("-6.8"), Dl("-5.36"), Dl("-3.92"),
             Dl("-2.48"), Dl("-1.04"), Dl("0.4"), Dl("1.84"),
@@ -120,7 +118,7 @@ class PolynomialTests(unittest.TestCase):
             Dl("10.48"), Dl("11.92"), Dl("13.36"), Dl("14.8"),
             Dl("16.24"), Dl("17.68"), Dl("19.12"), Dl("20.56"),
             Dl("22")
-        ])
+        ]
 
         dt = Dl("0.12")
         proc = trajectory()
@@ -152,7 +150,7 @@ class PolynomialTests(unittest.TestCase):
             Dl("1.212288"), Dl("2.525952"), Dl("4.114944"), Dl("6")]
         ]
 
-        accns = deque([vector(i, 0, 0) for i in [
+        accns = [vector(i, 0, 0) for i in [
             Dl("-14"), Dl("-12.56"), Dl("-11.12"), Dl("-9.68"),
             Dl("-8.24"), Dl("-6.8"), Dl("-5.36"), Dl("-3.92"),
             Dl("-2.48"), Dl("-1.04"), Dl("0.4"), Dl("1.84"),
@@ -160,7 +158,7 @@ class PolynomialTests(unittest.TestCase):
             Dl("10.48"), Dl("11.92"), Dl("13.36"), Dl("14.8"),
             Dl("16.24"), Dl("17.68"), Dl("19.12"), Dl("20.56"),
             Dl("22")]
-        ])
+        ]
 
         dt = Dl("0.12")
         proc = trajectory()

@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import deque
 from collections import namedtuple
 from collections import OrderedDict
 from decimal import Decimal as Dl
@@ -26,7 +25,7 @@ import time
 from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
-from turberfield.positions.travel import Trajectory
+from turberfield.positions.travel import trajectory
 
 Item = namedtuple("Item", ["pos", "class_"])
 
@@ -49,20 +48,19 @@ class Simulation:
         self.path = itertools.cycle(Simulation.posns.values())
         self.dt = Dl("0.5")
         vel = (Simulation.posns["ne"] - Simulation.posns["nw"]) / Dl("2.0")
-        self.accns = deque([
+        self.accns = [
             vector(0, 0, 0), vector(0, 0, 0)
-        ])
-        self.samples = deque([Dl(0), Dl("0.2"), Dl("0.4")])
-        posns = deque([
+        ]
+        self.samples = [Dl(0), Dl("0.2"), Dl("0.4")]
+        posns = [
             Simulation.posns["nw"],
             (Simulation.posns["nw"] + vel * self.dt
             + Dl("0.5") * self.accns[0] * self.dt * self.dt)
-        ])
+        ]
         self.start = None
-        self.procs = [enumerate(
-            Trajectory(
-                self.samples, posns=posns, accns=self.accns)
-        )]
+        self.procs = OrderedDict([
+            (trajectory(), (0, None))
+        ])
 
     def positions(self, at=None):
         self.samples.append(self.samples[-1] + self.dt)
@@ -70,7 +68,8 @@ class Simulation:
 
         items = []
         for proc in self.procs:
-            n, imp = next(proc)
+            n, val = self.procs[proc]
+            self.procs[proc] = (n + 1, proc.send(val))
             items.append(
                 Item(
                     (int(imp.pos[0]) % 800, int(imp.pos[1]) % 600),
