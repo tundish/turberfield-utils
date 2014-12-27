@@ -47,47 +47,49 @@ class Simulation:
             Item((pos[0], pos[1]), "actor")
             for pos in Simulation.posns.values()]
         self.path = itertools.cycle(Simulation.posns.values())
-        self.dt = Dl("0.5")
-        vel = (Simulation.posns["ne"] - Simulation.posns["nw"]) / Dl("2.0")
-        self.accns = [
-            vector(0, 0, 0), vector(0, 0, 0)
-        ]
-        self.samples = [Dl(0), Dl("0.2"), Dl("0.4")]
-        posns = [
-            Simulation.posns["nw"],
-            (Simulation.posns["nw"] + vel * self.dt
-            + Dl("0.5") * self.accns[0] * self.dt * self.dt)
-        ]
-        self.start = None
         self.procs = OrderedDict([
             (trajectory(), (None, None))
         ])
 
     def positions(self, at=None):
-        self.samples.append(self.samples[-1] + self.dt)
-        self.accns.append(vector(0, 0, 0))
-
+        dt = Dl("0.5")
+        accn = vector(0, 0, 0),
         items = []
         for proc in self.procs:
             n, val = self.procs[proc]
             if n is None:
                 proc.send(None)
                 self.procs[proc] = (0, val)
+                continue
             elif n == 0:
                 self.procs[proc] = (
                     n + 1,
-                    Impulse(Dl(0), Dl("0.5"),
-                    vector(0, 0, 0), point(0, 0, 0))
+                    proc.send(Impulse(Dl(0), Dl("0.5"),
+                    accn,
+                    Simulation.posns["nw"]))
+                )
+            elif n == 1:
+                self.procs[proc] = (
+                    n + 1,
+                    proc.send(Impulse(Dl("0.5"), Dl(1),
+                    accn,
+                    (Simulation.posns["ne"]
+                    - Simulation.posns["nw"]) / Dl("2.0")))
                 )
             else:
-                self.procs[proc] = (n + 1, proc.send(val))
+                self.procs[proc] = (
+                    n + 1,
+                    proc.send(Impulse(val.tEnd, val.tEnd + dt, accn, val.pos)))
+
+
             print(self.procs[proc])
-            items.append(
-                Item(
-                    (int(val.pos[0]) % 800, int(val.pos[1]) % 600),
-                    "platform"
+            if val is not None:
+                items.append(
+                    Item(
+                        (int(val.pos[0]) % 800, int(val.pos[1]) % 600),
+                        "platform"
+                    )
                 )
-            )
         return items
 
     def hateoas(self):

@@ -34,6 +34,7 @@ class PositionTests(unittest.TestCase):
         for n in range(5):
             with self.subTest(n=n):
                 data = sim.positions()
+                if n == 0: continue
                 print(data)
                 x, y = data[0].pos
                 self.assertEqual(Simulation.posns["ne"][:2], (x, y))
