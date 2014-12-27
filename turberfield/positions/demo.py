@@ -25,6 +25,7 @@ import time
 from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
+from turberfield.positions.travel import Impulse
 from turberfield.positions.travel import trajectory
 
 Item = namedtuple("Item", ["pos", "class_"])
@@ -59,7 +60,7 @@ class Simulation:
         ]
         self.start = None
         self.procs = OrderedDict([
-            (trajectory(), (0, None))
+            (trajectory(), (None, None))
         ])
 
     def positions(self, at=None):
@@ -69,10 +70,21 @@ class Simulation:
         items = []
         for proc in self.procs:
             n, val = self.procs[proc]
-            self.procs[proc] = (n + 1, proc.send(val))
+            if n is None:
+                proc.send(None)
+                self.procs[proc] = (0, val)
+            elif n == 0:
+                self.procs[proc] = (
+                    n + 1,
+                    Impulse(Dl(0), Dl("0.5"),
+                    vector(0, 0, 0), point(0, 0, 0))
+                )
+            else:
+                self.procs[proc] = (n + 1, proc.send(val))
+            print(self.procs[proc])
             items.append(
                 Item(
-                    (int(imp.pos[0]) % 800, int(imp.pos[1]) % 600),
+                    (int(val.pos[0]) % 800, int(val.pos[1]) % 600),
                     "platform"
                 )
             )

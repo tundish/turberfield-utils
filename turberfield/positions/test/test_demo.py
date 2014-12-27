@@ -36,4 +36,4 @@ class PositionTests(unittest.TestCase):
                 data = sim.positions()
                 print(data)
                 x, y = data[0].pos
-        self.assertEqual(Simulation.posns["ne"][:2], (x, y))
+                self.assertEqual(Simulation.posns["ne"][:2], (x, y))
