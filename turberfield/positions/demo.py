@@ -47,49 +47,48 @@ class Simulation:
             Item((pos[0], pos[1]), "actor")
             for pos in Simulation.posns.values()]
         self.path = itertools.cycle(Simulation.posns.values())
-        self.procs = OrderedDict([
-            (trajectory(), (None, None))
-        ])
+        self.proc = trajectory()
+        self.state = (None, None)
 
     def positions(self, at=None):
-        dt = Dl("0.5")
-        accn = vector(0, 0, 0),
+        dt = Dl("0.2")
+        accn = vector(0, 0, 0)
         items = []
-        for proc in self.procs:
-            n, val = self.procs[proc]
-            if n is None:
-                proc.send(None)
-                self.procs[proc] = (0, val)
-                continue
-            elif n == 0:
-                self.procs[proc] = (
-                    n + 1,
-                    proc.send(Impulse(Dl(0), Dl("0.5"),
-                    accn,
-                    Simulation.posns["nw"]))
-                )
-            elif n == 1:
-                self.procs[proc] = (
-                    n + 1,
-                    proc.send(Impulse(Dl("0.5"), Dl(1),
-                    accn,
-                    (Simulation.posns["ne"]
-                    - Simulation.posns["nw"]) / Dl("2.0")))
-                )
-            else:
-                self.procs[proc] = (
-                    n + 1,
-                    proc.send(Impulse(val.tEnd, val.tEnd + dt, accn, val.pos)))
+        n, val = self.state
+        if n is None:
+            val = self.proc.send(None)
+            self.state = (0, val)
+        elif n == 0:
+            val = self.proc.send(Impulse(
+                Dl(0), Dl("0.2"),
+                accn, Simulation.posns["nw"]
+            ))
+            self.state = (n + 1, val)
+        elif n == 1:
+            val = self.proc.send(Impulse(
+                Dl("0.2"), Dl("0.4"),
+                accn,
+                Simulation.posns["nw"] +
+                (Simulation.posns["ne"]
+                - Simulation.posns["nw"]) / Dl(20)
+                ))
+            self.state = (n + 1, val)
+        else:
+            val = self.proc.send(Impulse(
+                val.tEnd, val.tEnd + dt, accn, val.pos)
+            )
+            self.state = (n + 1, val)
 
-
-            print(self.procs[proc])
-            if val is not None:
-                items.append(
-                    Item(
-                        (int(val.pos[0]) % 800, int(val.pos[1]) % 600),
-                        "platform"
-                    )
+        try:
+            items.append(
+                Item(
+                    (int(val.pos[0]) % 800, int(val.pos[1]) % 600),
+                    "platform"
                 )
+            )
+        except AttributeError:
+            pass
+
         return items
 
     def hateoas(self):

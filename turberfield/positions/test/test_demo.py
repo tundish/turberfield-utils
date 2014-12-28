@@ -31,10 +31,9 @@ class PositionTests(unittest.TestCase):
 
     def test_path_calculation(self):
         sim = Simulation()
-        for n in range(5):
+        for n in range(22):
             with self.subTest(n=n):
                 data = sim.positions()
                 if n == 0: continue
-                print(data)
                 x, y = data[0].pos
-                self.assertEqual(Simulation.posns["ne"][:2], (x, y))
+        self.assertEqual(Simulation.posns["ne"][:2], (x, y))
