@@ -46,8 +46,13 @@ class Simulation:
         self.items = [
             Item((pos[0], pos[1]), "actor")
             for pos in Simulation.posns.values()]
-        self.path = itertools.cycle(Simulation.posns.values())
+        self.route = itertools.cycle(
+            zip(Simulation.posns.values(),
+            list(Simulation.posns.values())[1:]
+            + [Simulation.posns["nw"]])
+        )
         self.proc = trajectory()
+        self.path = next(self.route)
         self.state = (None, None)
 
     def positions(self, at=None):
@@ -61,16 +66,15 @@ class Simulation:
         elif n == 0:
             val = self.proc.send(Impulse(
                 Dl(0), Dl("0.2"),
-                accn, Simulation.posns["nw"]
+                accn, self.path[0]
             ))
             self.state = (n + 1, val)
         elif n == 1:
             val = self.proc.send(Impulse(
                 Dl("0.2"), Dl("0.4"),
                 accn,
-                Simulation.posns["nw"] +
-                (Simulation.posns["ne"]
-                - Simulation.posns["nw"]) / Dl(20)
+                self.path[0] +
+                (self.path[1] - self.path[0]) / Dl(20)
                 ))
             self.state = (n + 1, val)
         else:
@@ -88,6 +92,10 @@ class Simulation:
             )
         except AttributeError:
             pass
+        else:
+            if val.pos == self.path[1]:
+                self.path = next(self.route)
+                self.state = (0, val)
 
         return items
 
