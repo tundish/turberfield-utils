@@ -148,11 +148,3 @@ class Simulation:
             "items": [i._asdict() for i in items],
             
         }
-
-    def view(self):
-        path = os.path.join(self.args.output, Simulation.path)
-        try:
-            with open(path, 'r') as output:
-                return output.read()
-        except (FileNotFoundError, OSError):
-            return None

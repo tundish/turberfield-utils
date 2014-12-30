@@ -87,14 +87,19 @@ def simulation_start():
     return future.result()
 
 @app.route("/css/<filename>")
-def server_static(filename):
+def serve_css(filename):
     locn = os.path.join(os.path.dirname(__file__), "static", "css")
     return bottle.static_file(filename, root=locn)
 
 @app.route("/js/<filename>")
-def server_static(filename):
+def serve_js(filename):
     locn = os.path.join(os.path.dirname(__file__), "static", "js")
     return bottle.static_file(filename, root=locn)
+
+@app.route("/data/<filename>")
+def serve_data(filename):
+    return bottle.static_file(
+        filename, root=app.config["args"].output)
 
 def main(args):
     log = logging.getLogger("turberfield.web")
@@ -120,12 +125,9 @@ def main(args):
     bottle.TEMPLATES.clear()
     log.debug(bottle.TEMPLATE_PATH)
     sim = turberfield.positions.demo.Simulation(args, debug=True)
-    sim.id = id(sim)
     app.route("/positions", callback=sim.hateoas)
-    app.route("/view", callback=sim.view)
     app.config.update({
         "args": args,
-        "sim": sim,
         "jobs": set(),
     })
     bottle.run(app, host="localhost", port=8080)
