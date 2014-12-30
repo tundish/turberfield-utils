@@ -19,8 +19,14 @@
 from collections import namedtuple
 from collections import OrderedDict
 from decimal import Decimal as Dl
+import glob
 import itertools
+import logging
+import stat
+import tempfile
 import time
+import operator
+import os.path
 
 from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
@@ -28,11 +34,29 @@ from turberfield.positions.homogeneous import vector
 from turberfield.positions.travel import Impulse
 from turberfield.positions.travel import trajectory
 
+import turberfield.web.main
+
 Item = namedtuple("Item", ["pos", "class_"])
 
 
+def run(args, start, stop, dt):
+    log = logging.getLogger("turberfield.demo.run")
+    ts = start
+    while ts < stop:
+        fD, fN = tempfile.mkstemp(suffix=".json", dir=args.output)
+        with open(fN, 'w') as output:
+            try:
+                output.write("\n".join(str(i) for i in (1, 2, 3)))
+            except OSError as e:
+                log.error(e)
+        os.close(fD)
+        os.replace(fN, os.path.join(args.output, Simulation.path))
+        ts += dt
+    return "\n".join(str(i) for i in (start, stop, args, dt))
+
 class Simulation:
 
+    path = "demo.json"
     posns = OrderedDict([
         ("nw", point(160, 100, 0)),
         ("ne", point(484, 106, 0)),
@@ -40,8 +64,13 @@ class Simulation:
         ("sw", point(160, 386, 0)),
     ])
 
+    @staticmethod
+    def run(start, stop):
+        return (start, stop)
+
     def __init__(self, args=None, debug=False):
-        self.args = vars(args) if args is not None else None
+        self.id = id(self)
+        self.args = args
         self.debug = debug
         self.items = [
             Item((pos[0], pos[1]), "actor")
@@ -109,7 +138,7 @@ class Simulation:
         items = self.positions(at=now)
         return {
             "info": {
-                "args": self.args,
+                "args": vars(self.args),
                 "debug": self.debug,
                 "interval": 200,
                 "time": "{:.1f}".format(now),
@@ -119,3 +148,11 @@ class Simulation:
             "items": [i._asdict() for i in items],
             
         }
+
+    def view(self):
+        path = os.path.join(self.args.output, Simulation.path)
+        try:
+            with open(path, 'r') as output:
+                return output.read()
+        except (FileNotFoundError, OSError):
+            return None

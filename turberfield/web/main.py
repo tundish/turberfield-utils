@@ -18,15 +18,15 @@
 
 
 import argparse
+import concurrent.futures
 import datetime
-import glob
+from decimal import Decimal as Dl
 import json
 import logging
 import operator
 import os
 import os.path
 import sys
-import tempfile
 import time
 
 import bottle
@@ -74,6 +74,18 @@ def simulation_get():
         
     }
 
+@app.route("/go", "GET")
+def simulation_start():
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        fn = turberfield.positions.demo.run
+        future = executor.submit(
+            turberfield.positions.demo.run,
+            app.config["args"],
+            0, 60, Dl("0.5")
+        )
+        app.config["jobs"].add(future)
+    return future.result()
+
 @app.route("/css/<filename>")
 def server_static(filename):
     locn = os.path.join(os.path.dirname(__file__), "static", "css")
@@ -107,11 +119,15 @@ def main(args):
     bottle.debug(True)
     bottle.TEMPLATES.clear()
     log.debug(bottle.TEMPLATE_PATH)
-    app.config.update({
-        "args": vars(args)
-    })
     sim = turberfield.positions.demo.Simulation(args, debug=True)
+    sim.id = id(sim)
     app.route("/positions", callback=sim.hateoas)
+    app.route("/view", callback=sim.view)
+    app.config.update({
+        "args": args,
+        "sim": sim,
+        "jobs": set(),
+    })
     bottle.run(app, host="localhost", port=8080)
 
 
