@@ -74,15 +74,13 @@ class EndpointTests(unittest.TestCase):
         self.assertEqual('"Test string"', fObj.getvalue())
 
     def test_run(self):
-        fP = os.path.join(
-                EndpointTests.drcty, EndpointTests.node)
-        print(turberfield.positions.demo.run(
+        fObj = StringIO()
+        rv = turberfield.positions.demo.run(
             Simulation.patterns,
             options=argparse.Namespace(output=EndpointTests.drcty),
-            node=EndpointTests.node,
-            stop=6))
-        with open(fP, 'r') as check:
-            print(check.read())
+            node=fObj,
+            stop=6)
+        print(fObj.getvalue())
 
 
 class PositionTests(unittest.TestCase):
