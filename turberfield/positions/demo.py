@@ -44,8 +44,6 @@ Item = namedtuple("Item", ["pos", "class_"])
 Actor = namedtuple("Actor", ["uuid", "class_"])
 Travel = namedtuple("Travel", ["path", "step", "proc"])
 
-# proc: pickle in route, dt?
-
 @contextlib.contextmanager
 def endpoint(node, parent=None, suffix=".json"):
     if isinstance(node, str):
@@ -63,7 +61,9 @@ def endpoint(node, parent=None, suffix=".json"):
 
 def position(integrator, state, route, durns):
     # TODO: Multi-path route trajectory
+    print("Hi")
     yield
+    print("Ho")
 
 def run(
     patterns,
@@ -77,6 +77,8 @@ def run(
     ops = OrderedDict(
         [(obj, position(trajectory(), [], rte, durns))
         for obj, rte, durns in patterns])
+    
+    # position: pickled-in state?
     while ts < stop:
         with endpoint(node, parent=options.output) as output:
             for obj, op in ops.items():
