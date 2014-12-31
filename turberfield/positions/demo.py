@@ -27,6 +27,7 @@ import tempfile
 import time
 import operator
 import os.path
+import uuid
 
 from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
@@ -37,7 +38,10 @@ from turberfield.positions.travel import trajectory
 import turberfield.web.main
 
 Item = namedtuple("Item", ["pos", "class_"])
+Actor = namedtuple("Actor", ["uuid", "class_"])
+Travel = namedtuple("Travel", ["path", "step", "proc"])
 
+# proc: pickle in route, dt?
 
 def run(args, start, stop, dt):
     log = logging.getLogger("turberfield.demo.run")
@@ -64,6 +68,14 @@ class Simulation:
         ("sw", point(160, 386, 0)),
     ])
 
+    patterns = [
+        (Actor(uuid.uuid4().hex, None),
+         itertools.cycle(
+            zip(posns.values(),
+            list(posns.values())[1:] + [posns["nw"]])
+         )
+        ),
+    ]
     @staticmethod
     def run(start, stop):
         return (start, stop)

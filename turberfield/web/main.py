@@ -76,12 +76,13 @@ def simulation_get():
 
 @app.route("/go", "GET")
 def simulation_start():
+    # Get all registered actors, routes
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        fn = turberfield.positions.demo.run
         future = executor.submit(
             turberfield.positions.demo.run,
             app.config["args"],
             0, 60, Dl("0.5")
+            # zip, actors, routes
         )
         app.config["jobs"].add(future)
     return future.result()
