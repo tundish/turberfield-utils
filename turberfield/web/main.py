@@ -80,9 +80,10 @@ def simulation_start():
     with concurrent.futures.ProcessPoolExecutor() as executor:
         future = executor.submit(
             turberfield.positions.demo.run,
-            app.config["args"],
-            0, 60, Dl("0.5")
-            # zip, actors, routes
+            turberfield.positions.demo.Simulation.patterns,
+            options=app.config["args"],
+            endpoint=turberfield.positions.demo.Simulation.path,
+            start=0, stop=60, dt=Dl("0.5"),
         )
         app.config["jobs"].add(future)
     return future.result()

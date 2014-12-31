@@ -16,11 +16,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 from collections import namedtuple
 from collections import OrderedDict
+import contextlib
 from decimal import Decimal as Dl
 import glob
 import itertools
+import json
 import logging
 import stat
 import tempfile
@@ -43,20 +46,39 @@ Travel = namedtuple("Travel", ["path", "step", "proc"])
 
 # proc: pickle in route, dt?
 
-def run(args, start, stop, dt):
+@contextlib.contextmanager
+def endpoint(node, parent=None, suffix=".json"):
+    fD, fN = tempfile.mkstemp(suffix=suffix, dir=parent)
+    try:
+        yield open(fN, 'w')
+    except Exception as e:
+        raise e
+    os.close(fD)
+    os.replace(fN, os.path.join(parent, node))
+
+def positions(patterns):
+    pass
+
+def run(
+    patterns,
+    options=argparse.Namespace(output="."),
+    endpoint="demo.json",
+    start=0, stop=Dl("Infinity"),
+    dt=1):
     log = logging.getLogger("turberfield.demo.run")
     ts = start
     while ts < stop:
-        fD, fN = tempfile.mkstemp(suffix=".json", dir=args.output)
+        fD, fN = tempfile.mkstemp(suffix=".json", dir=options.output)
         with open(fN, 'w') as output:
             try:
-                output.write("\n".join(str(i) for i in (1, 2, 3)))
+                #posns = proc(positions)
+                json.dump((1, 2, 3, 4), output)
             except OSError as e:
                 log.error(e)
         os.close(fD)
-        os.replace(fN, os.path.join(args.output, Simulation.path))
+        os.replace(fN, os.path.join(options.output, endpoint))
         ts += dt
-    return "\n".join(str(i) for i in (start, stop, args, dt))
+    return "\n".join(str(i) for i in (start, stop, options, dt))
 
 class Simulation:
 
@@ -73,9 +95,11 @@ class Simulation:
          itertools.cycle(
             zip(posns.values(),
             list(posns.values())[1:] + [posns["nw"]])
-         )
+         ),
+        itertools.repeat(Dl(5))
         ),
     ]
+
     @staticmethod
     def run(start, stop):
         return (start, stop)
