@@ -61,23 +61,31 @@ def endpoint(node, parent=None, suffix=".json"):
     else:
         yield node
 
-def positions(patterns):
-    pass
+def position(integrator, state, route, durns):
+    # TODO: Multi-path route trajectory
+    yield
 
 def run(
     patterns,
     options=argparse.Namespace(output="."),
     node="demo.json",
     start=0, stop=Dl("Infinity"),
-    dt=1):
+    dt=1
+    ):
     log = logging.getLogger("turberfield.demo.run")
     ts = start
+    ops = OrderedDict(
+        [(obj, position(trajectory(), [], rte, durns))
+        for obj, rte, durns in patterns])
     while ts < stop:
         with endpoint(node, parent=options.output) as output:
-            json.dump("Test string", output)
-            json.dump((1, 2, 3, 4), output)
+            for obj, op in ops.items():
+                if ts == start:
+                    op.send(None)
+                posn = op.send(ts)
+                json.dump(obj, output)
         ts += dt
-    return "\n".join(str(i) for i in (start, stop, options, dt))
+    return stop
 
 class Simulation:
 

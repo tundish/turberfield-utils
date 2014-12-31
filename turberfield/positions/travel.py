@@ -65,7 +65,7 @@ def time_correct_verlet(state, t, accn, mass=1):
     return (rv, imp0)
 
 
-def trajectory(stop=None):
+def trajectory(limits=None):
     state = deque([], maxlen=2)
     if len(state) == 0:
         imp = yield None
