@@ -48,13 +48,18 @@ Travel = namedtuple("Travel", ["path", "step", "proc"])
 
 @contextlib.contextmanager
 def endpoint(node, parent=None, suffix=".json"):
-    fD, fN = tempfile.mkstemp(suffix=suffix, dir=parent)
-    try:
-        yield open(fN, 'w')
-    except Exception as e:
-        raise e
-    os.close(fD)
-    os.replace(fN, os.path.join(parent, node))
+    if isinstance(node, str):
+        fD, fN = tempfile.mkstemp(suffix=suffix, dir=parent)
+        try:
+            rv = open(fN, 'w')
+            yield rv
+        except Exception as e:
+            raise e
+        rv.close()
+        os.close(fD)
+        os.replace(fN, os.path.join(parent, node))
+    else:
+        yield node
 
 def positions(patterns):
     pass
@@ -62,21 +67,15 @@ def positions(patterns):
 def run(
     patterns,
     options=argparse.Namespace(output="."),
-    endpoint="demo.json",
+    node="demo.json",
     start=0, stop=Dl("Infinity"),
     dt=1):
     log = logging.getLogger("turberfield.demo.run")
     ts = start
     while ts < stop:
-        fD, fN = tempfile.mkstemp(suffix=".json", dir=options.output)
-        with open(fN, 'w') as output:
-            try:
-                #posns = proc(positions)
-                json.dump((1, 2, 3, 4), output)
-            except OSError as e:
-                log.error(e)
-        os.close(fD)
-        os.replace(fN, os.path.join(options.output, endpoint))
+        with endpoint(node, parent=options.output) as output:
+            json.dump("Test string", output)
+            json.dump((1, 2, 3, 4), output)
         ts += dt
     return "\n".join(str(i) for i in (start, stop, options, dt))
 

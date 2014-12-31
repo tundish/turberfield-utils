@@ -16,8 +16,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 from collections import deque
 from decimal import Decimal as Dl
+from io import StringIO
 import itertools
 import json
 import os.path
@@ -50,13 +52,38 @@ class EndpointTests(unittest.TestCase):
                 EndpointTests.drcty, EndpointTests.node)
         self.assertFalse(os.path.isfile(fP))
         with turberfield.positions.demo.endpoint(
-            EndpointTests.node, parent=EndpointTests.drcty) as output:
+            EndpointTests.node,
+            parent=EndpointTests.drcty) as output:
             json.dump("Test string", output)
-            output.close()
-        self.assertTrue(os.path.isfile(fP))
 
+        self.assertTrue(os.path.isfile(fP))
         with open(fP, 'r') as check:
             self.assertEqual('"Test string"', check.read())
+
+    def test_content_goes_to_file_object(self):
+        fP = os.path.join(
+                EndpointTests.drcty, EndpointTests.node)
+        fObj = StringIO()
+        self.assertFalse(os.path.isfile(fP))
+        with turberfield.positions.demo.endpoint(
+            fObj,
+            parent=EndpointTests.drcty) as output:
+            json.dump("Test string", output)
+
+        self.assertFalse(os.path.isfile(fP))
+        self.assertEqual('"Test string"', fObj.getvalue())
+
+    def test_run(self):
+        fP = os.path.join(
+                EndpointTests.drcty, EndpointTests.node)
+        print(turberfield.positions.demo.run(
+            Simulation.patterns,
+            options=argparse.Namespace(output=EndpointTests.drcty),
+            node=EndpointTests.node,
+            stop=6))
+        with open(fP, 'r') as check:
+            print(check.read())
+
 
 class PositionTests(unittest.TestCase):
 
@@ -71,10 +98,6 @@ class PositionTests(unittest.TestCase):
         self.assertEqual(
             (Simulation.posns["ne"], Simulation.posns["se"]),
             sim.path)
-
-    def test_run(self):
-        print(turberfield.positions.demo.run(
-            Simulation.patterns, stop=6))
 
     def test_path_calculation(self):
         sim = Simulation()

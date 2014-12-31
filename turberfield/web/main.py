@@ -82,7 +82,7 @@ def simulation_start():
             turberfield.positions.demo.run,
             turberfield.positions.demo.Simulation.patterns,
             options=app.config["args"],
-            endpoint=turberfield.positions.demo.Simulation.path,
+            node=turberfield.positions.demo.Simulation.path,
             start=0, stop=60, dt=Dl("0.5"),
         )
         app.config["jobs"].add(future)
