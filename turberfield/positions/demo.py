@@ -62,7 +62,12 @@ def endpoint(node, parent=None, suffix=".json"):
 def position(integrator, state, route, durns):
     # TODO: Multi-path route trajectory
     print("Hi")
-    yield
+    imp = None
+    ts = yield imp
+    #while True:
+        #val = integrator.send(Impulse(
+        #    val.tEnd, ts, accn, val.pos)
+        #)
     print("Ho")
 
 def run(
