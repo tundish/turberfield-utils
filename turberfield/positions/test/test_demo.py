@@ -81,27 +81,3 @@ class EndpointTests(unittest.TestCase):
             node=fObj,
             stop=6)
         print(fObj.getvalue())
-
-
-class PositionTests(unittest.TestCase):
-
-    def test_path_definition(self):
-        sim = Simulation()
-        self.assertEqual(
-            (Simulation.posns["nw"], Simulation.posns["ne"]),
-            sim.path)
-        for n in range(22):
-            with self.subTest(n=n):
-                data = sim.positions()
-        self.assertEqual(
-            (Simulation.posns["ne"], Simulation.posns["se"]),
-            sim.path)
-
-    def test_path_calculation(self):
-        sim = Simulation()
-        for n in range(22):
-            with self.subTest(n=n):
-                data = sim.positions()
-                if n == 0: continue
-                x, y = data[0].pos
-        self.assertEqual(Simulation.posns["ne"][:2], (x, y))
