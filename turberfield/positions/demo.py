@@ -36,6 +36,7 @@ from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
 from turberfield.positions.travel import Impulse
+from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
 import turberfield.web.main
@@ -59,23 +60,6 @@ def endpoint(node, parent=None, suffix=".json"):
     else:
         yield node
 
-def position(integrator, state, route, durns):
-    log = logging.getLogger("turberfield.positions.travel.steadypace")
-    accn = vector(0, 0, 0)
-    integrator.send(None)
-    tBegin = yield None
-    tEnd = yield None
-    origin, destn = next(route)
-    tTransit = next(durns)
-    imp = integrator.send(Impulse(tBegin, tEnd, accn, origin))
-    hop = (destn - origin) * (tEnd - tBegin) / tTransit
-    tBegin, tEnd = tEnd, (yield imp)
-    imp = integrator.send(Impulse(tBegin, tEnd, accn, hop))
-    while True:
-        tBegin, tEnd = tEnd, (yield imp)
-        log.error(imp)
-        imp = integrator.send(Impulse(tBegin, tEnd, accn, imp.pos))
-
 def run(
     patterns,
     options=argparse.Namespace(output="."),
@@ -86,10 +70,9 @@ def run(
     log = logging.getLogger("turberfield.demo.run")
     ts = start
     ops = OrderedDict(
-        [(obj, position(trajectory(), [], rte, durns))
-        for obj, rte, durns in patterns])
+        [(obj, steadypace(trajectory(), routing, timing))
+        for obj, routing, timing in patterns])
     
-    # position: pickled-in state?
     while ts < stop:
         with endpoint(node, parent=options.output) as output:
             for obj, op in ops.items():

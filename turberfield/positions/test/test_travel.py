@@ -24,11 +24,12 @@ import unittest
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
 from turberfield.positions.travel import Impulse
+from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import ticks
 from turberfield.positions.travel import trajectory
 
 
-class ProjectileTests(unittest.TestCase):
+class ProjectileTrajectoryTests(unittest.TestCase):
 
     def test_scalar_calculation(self):
         expected = [
@@ -96,7 +97,7 @@ class ProjectileTests(unittest.TestCase):
                 self.assertEqual(x, imp.pos)
 
 
-class PolynomialTests(unittest.TestCase):
+class PolynomialTrajectoryTests(unittest.TestCase):
 
     def test_scalar_calculation(self):
         expected = [
@@ -178,3 +179,36 @@ class PolynomialTests(unittest.TestCase):
 
             with self.subTest(n=n):
                 self.assertEqual(x, imp.pos)
+
+
+class SteadypaceTests(unittest.TestCase):
+
+    def test_path_definition(self):
+        routes = [
+            (point(160, 100, 0), point(484, 106, 0)),
+            (point(484, 106, 0), point(160, 100, 0)),
+        ]
+        times = (2, 2)
+        op = steadypace(trajectory(), iter(routes), iter(times))
+        op.send(None)
+        for t in range(6):
+            imp = op.send(Dl(t))
+            print(imp)
+            if t == 3:
+                with self.subTest(t=t):
+                    self.assertEqual(2, imp.tBegin)
+                    self.assertEqual(routes[0][1], imp.pos)
+            elif t == 5:
+                with self.subTest(t=t):
+                    self.assertEqual(4, imp.tBegin)
+                    self.assertEqual(routes[1][1], imp.pos)
+
+
+    def tost_path_calculation(self):
+        sim = Simulation()
+        for n in range(22):
+            with self.subTest(n=n):
+                data = sim.positions()
+                if n == 0: continue
+                x, y = data[0].pos
+        self.assertEqual(Simulation.posns["ne"][:2], (x, y))

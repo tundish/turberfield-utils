@@ -24,6 +24,9 @@ from decimal import Decimal as Dl
 import itertools
 import warnings
 
+from turberfield.positions.homogeneous import vector
+
+
 Impulse = namedtuple("Impulse", ["tBegin", "tEnd", "accn", "pos"])
 Tick = namedtuple("Tick", ["t", "priority"])
 Stop = namedtuple("Stop", ["t", "priority"])
@@ -78,3 +81,20 @@ def trajectory(limits=None):
     while True:
         state = time_correct_verlet(state, imp.tEnd, imp.accn)
         imp = yield state[0]
+
+
+def steadypace(integrator, routing, timing):
+    accn = vector(0, 0, 0)
+    integrator.send(None)
+    tBegin = yield None
+    tEnd = yield None
+    origin, destn = next(routing)
+    tTransit = next(timing)
+    imp = integrator.send(Impulse(tBegin, tEnd, accn, origin))
+    hop = (destn - origin) * (tEnd - tBegin) / tTransit
+    tBegin, tEnd = tEnd, (yield imp)
+    imp = integrator.send(Impulse(tBegin, tEnd, accn, origin + hop))
+    while True:
+        tBegin, tEnd = tEnd, (yield imp)
+        imp = integrator.send(Impulse(tBegin, tEnd, accn, imp.pos))
+
