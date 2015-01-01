@@ -183,7 +183,7 @@ class PolynomialTrajectoryTests(unittest.TestCase):
 
 class SteadypaceTests(unittest.TestCase):
 
-    def test_path_definition(self):
+    def test_there_and_back_again(self):
         routes = [
             (point(160, 100, 0), point(484, 106, 0)),
             (point(484, 106, 0), point(160, 100, 0)),
@@ -191,23 +191,13 @@ class SteadypaceTests(unittest.TestCase):
         times = (2, 2)
         op = steadypace(trajectory(), iter(routes), iter(times))
         op.send(None)
-        for t in range(6):
-            imp = op.send(Dl(t))
-            if t == 3:
-                with self.subTest(t=t):
+        for n in range(42):
+            imp = op.send(Dl(n) / 10)
+            if n == 21:
+                with self.subTest(n=n):
                     self.assertEqual(2, imp.tBegin)
                     self.assertEqual(routes[0][1], imp.pos)
-            elif t == 5:
-                with self.subTest(t=t):
+            elif n == 41:
+                with self.subTest(n=n):
                     self.assertEqual(4, imp.tBegin)
                     self.assertEqual(routes[1][1], imp.pos)
-
-
-    def tost_path_calculation(self):
-        sim = Simulation()
-        for n in range(22):
-            with self.subTest(n=n):
-                data = sim.positions()
-                if n == 0: continue
-                x, y = data[0].pos
-        self.assertEqual(Simulation.posns["ne"][:2], (x, y))
