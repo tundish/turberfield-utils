@@ -60,15 +60,21 @@ def endpoint(node, parent=None, suffix=".json"):
         yield node
 
 def position(integrator, state, route, durns):
-    # TODO: Multi-path route trajectory
-    print("Hi")
-    imp = None
-    ts = yield imp
-    #while True:
-        #val = integrator.send(Impulse(
-        #    val.tEnd, ts, accn, val.pos)
-        #)
-    print("Ho")
+    log = logging.getLogger("turberfield.positions.travel.steadypace")
+    accn = vector(0, 0, 0)
+    integrator.send(None)
+    tBegin = yield None
+    tEnd = yield None
+    origin, destn = next(route)
+    tTransit = next(durns)
+    imp = integrator.send(Impulse(tBegin, tEnd, accn, origin))
+    hop = (destn - origin) * (tEnd - tBegin) / tTransit
+    tBegin, tEnd = tEnd, (yield imp)
+    imp = integrator.send(Impulse(tBegin, tEnd, accn, hop))
+    while True:
+        tBegin, tEnd = tEnd, (yield imp)
+        log.error(imp)
+        imp = integrator.send(Impulse(tBegin, tEnd, accn, imp.pos))
 
 def run(
     patterns,
@@ -90,7 +96,8 @@ def run(
                 if ts == start:
                     op.send(None)
                 posn = op.send(ts)
-                json.dump(obj, output)
+                if posn is not None:
+                    json.dump(obj, output)
         ts += dt
     return stop
 
