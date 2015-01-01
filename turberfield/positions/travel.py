@@ -96,5 +96,15 @@ def steadypace(integrator, routing, timing):
     imp = integrator.send(Impulse(tBegin, tEnd, accn, origin + hop))
     while True:
         tBegin, tEnd = tEnd, (yield imp)
-        imp = integrator.send(Impulse(tBegin, tEnd, accn, imp.pos))
+        if imp.pos == destn:
+            origin, destn = next(routing)
+            tTransit = next(timing)
+            hop = (destn - origin) * (tEnd - tBegin) / tTransit
+            imp = integrator.send(
+                Impulse(tBegin, tEnd, accn, origin + hop)
+            )
+        else:
+            imp = integrator.send(
+                Impulse(tBegin, tEnd, accn, imp.pos)
+            )
 

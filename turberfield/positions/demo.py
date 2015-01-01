@@ -45,6 +45,7 @@ Item = namedtuple("Item", ["pos", "class_"])
 Actor = namedtuple("Actor", ["uuid", "class_"])
 Travel = namedtuple("Travel", ["path", "step", "proc"])
 
+# TODO: turberfield.common
 @contextlib.contextmanager
 def endpoint(node, parent=None, suffix=".json"):
     if isinstance(node, str):
