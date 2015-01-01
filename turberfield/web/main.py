@@ -74,20 +74,6 @@ def simulation_get():
         
     }
 
-@app.route("/go", "GET")
-def simulation_start():
-    # Get all registered actors, routes
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        future = executor.submit(
-            turberfield.positions.demo.run,
-            turberfield.positions.demo.Simulation.patterns,
-            options=app.config["args"],
-            node=turberfield.positions.demo.Simulation.path,
-            start=0, stop=60, dt=Dl("0.5"),
-        )
-        app.config["jobs"].add(future)
-    return future.result()
-
 @app.route("/css/<filename>")
 def serve_css(filename):
     locn = os.path.join(os.path.dirname(__file__), "static", "css")
@@ -126,13 +112,20 @@ def main(args):
     bottle.debug(True)
     bottle.TEMPLATES.clear()
     log.debug(bottle.TEMPLATE_PATH)
-    sim = turberfield.positions.demo.Simulation(args, debug=True)
-    app.route("/positions", callback=sim.hateoas)
-    app.config.update({
-        "args": args,
-        "jobs": set(),
-    })
-    bottle.run(app, host="localhost", port=8080)
+    #sim = turberfield.positions.demo.Simulation(args, debug=True)
+    #app.route("/positions", callback=sim.hateoas)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        future = executor.submit(
+            turberfield.positions.demo.run,
+            options=args,
+            node="positions.json",
+            start=0, dt=Dl("0.5"),
+        )
+        app.config.update({
+            "args": args,
+            "jobs": set([future]),
+        })
+        bottle.run(app, host="localhost", port=8080)
 
 
 def parser(descr=__doc__):

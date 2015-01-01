@@ -25,6 +25,7 @@ import glob
 import itertools
 import json
 import logging
+import re
 import stat
 import tempfile
 import time
@@ -42,8 +43,21 @@ from turberfield.positions.travel import trajectory
 import turberfield.web.main
 
 Item = namedtuple("Item", ["pos", "class_"])
-Actor = namedtuple("Actor", ["uuid", "class_"])
+Actor = namedtuple("Actor", ["uuid", "label", "class_"])
 Travel = namedtuple("Travel", ["path", "step", "proc"])
+
+class TypesEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, Dl):
+            return str(obj)
+        if isinstance(obj, type(re.compile(""))):
+            return obj.pattern
+
+        try:
+            return obj.strftime("%Y-%m-%d %H:%M:%S")
+        except AttributeError:
+            return json.JSONEncoder.default(self, obj)
 
 # TODO: turberfield.common
 @contextlib.contextmanager
@@ -61,8 +75,15 @@ def endpoint(node, parent=None, suffix=".json"):
     else:
         yield node
 
+def movement(ops, start, ts):
+    for obj, op in ops.items():
+        if ts == start:
+            op.send(None)
+        imp = op.send(ts)
+        if imp is not None:
+            yield (obj, imp)
+
 def run(
-    patterns,
     options=argparse.Namespace(output="."),
     node="demo.json",
     start=0, stop=Dl("Infinity"),
@@ -72,17 +93,35 @@ def run(
     ts = start
     ops = OrderedDict(
         [(obj, steadypace(trajectory(), routing, timing))
-        for obj, routing, timing in patterns])
+        for obj, routing, timing in Simulation.patterns])
     
     while ts < stop:
+        now = time.time()
         with endpoint(node, parent=options.output) as output:
-            for obj, op in ops.items():
-                if ts == start:
-                    op.send(None)
-                posn = op.send(ts)
-                if posn is not None:
-                    json.dump(obj, output)
+            page = {
+                "info": {
+                    "args": vars(options),
+                    "interval": 200,
+                    "time": "{:.1f}".format(now),
+                    "title": "Turberfield positions {}".format(__version__),
+                    "version": __version__
+                },
+                "items": [],
+            }
+            for obj, imp in movement(ops, start, ts):
+                page["items"].append({
+                    "uuid": obj.uuid,
+                    "label": obj.label,
+                    "class_": obj.class_,
+                    "pos": imp.pos[0:2],
+                })
+            json.dump(
+                page, output,
+                cls=TypesEncoder,
+                indent=4
+            )
         ts += dt
+        time.sleep(dt)
     return stop
 
 class Simulation:
@@ -96,7 +135,7 @@ class Simulation:
     ])
 
     patterns = [
-        (Actor(uuid.uuid4().hex, None),
+        (Actor(uuid.uuid4().hex, "Bus", "platform"),
          itertools.cycle(
             zip(posns.values(),
             list(posns.values())[1:] + [posns["nw"]])

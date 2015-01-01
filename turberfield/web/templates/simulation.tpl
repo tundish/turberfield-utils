@@ -24,7 +24,7 @@ var viewModel = {
 
 var checkStatus = function() {
 
-    $.getJSON('/positions', function(data) {
+    $.getJSON('/data/positions.json', function(data) {
         viewModel.debug(data.debug);
         viewModel.interval(data.interval);
         viewModel.time(data.time);

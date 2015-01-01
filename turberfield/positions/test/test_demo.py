@@ -18,6 +18,7 @@
 
 import argparse
 from collections import deque
+from collections import OrderedDict
 from decimal import Decimal as Dl
 from io import StringIO
 import itertools
@@ -27,9 +28,13 @@ import shutil
 import unittest
 
 import turberfield.positions
+from turberfield.positions.demo import movement
 from turberfield.positions.demo import Simulation
 from turberfield.positions.homogeneous import point
 from turberfield.positions.homogeneous import vector
+from turberfield.positions.travel import Impulse
+from turberfield.positions.travel import steadypace
+from turberfield.positions.travel import trajectory
 from turberfield.positions.travel import ticks
 
 
@@ -73,11 +78,16 @@ class EndpointTests(unittest.TestCase):
         self.assertFalse(os.path.isfile(fP))
         self.assertEqual('"Test string"', fObj.getvalue())
 
-    def test_run(self):
-        fObj = StringIO()
-        rv = turberfield.positions.demo.run(
-            Simulation.patterns,
-            options=argparse.Namespace(output=EndpointTests.drcty),
-            node=fObj,
-            stop=6)
-        print(fObj.getvalue())
+class SimulationTests(unittest.TestCase):
+
+    def test_movement(self):
+        ops = OrderedDict(
+            [(obj, steadypace(trajectory(), routing, timing))
+            for obj, routing, timing in Simulation.patterns])
+        ts = start = 0
+        stop = 6
+        while ts < stop:
+            for obj, imp in movement(ops, start, ts):
+                self.assertIn(obj, ops)
+                self.assertIsInstance(imp, Impulse)
+            ts += 1
