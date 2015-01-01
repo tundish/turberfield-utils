@@ -79,7 +79,10 @@ def trajectory(limits=None):
         state = time_correct_verlet(state, imp.tEnd, imp.accn)
         imp = yield state[0]
     while True:
-        state = time_correct_verlet(state, imp.tEnd, imp.accn)
+        if imp.pos != state[0].pos:
+            state = (imp, state[0])
+        else:
+            state = time_correct_verlet(state, imp.tEnd, imp.accn)
         imp = yield state[0]
 
 

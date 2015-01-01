@@ -193,7 +193,6 @@ class SteadypaceTests(unittest.TestCase):
         op.send(None)
         for t in range(6):
             imp = op.send(Dl(t))
-            print(imp)
             if t == 3:
                 with self.subTest(t=t):
                     self.assertEqual(2, imp.tBegin)
