@@ -101,7 +101,7 @@ def run(
             page = {
                 "info": {
                     "args": vars(options),
-                    "interval": 200,
+                    "interval": 800,
                     "time": "{:.1f}".format(now),
                     "title": "Turberfield positions {}".format(__version__),
                     "version": __version__
@@ -140,7 +140,7 @@ class Simulation:
             zip(posns.values(),
             list(posns.values())[1:] + [posns["nw"]])
          ),
-        itertools.repeat(Dl(5))
+        itertools.repeat(Dl(30))
         ),
     ]
 

@@ -17,7 +17,7 @@
 
 var viewModel = {
     debug: ko.observable(false),
-    interval: ko.observable(2000),
+    interval: ko.observable(),
     time: ko.observable(),
     items: ko.observableArray()
 }
