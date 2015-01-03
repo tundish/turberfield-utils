@@ -102,7 +102,7 @@ def steadypace(integrator, routing, timing):
     while True:
         tBegin, tEnd = tEnd, (yield imp)
         dist = (destn - imp.pos).magnitude
-        if dist < 0.01:
+        if dist < 1:
             origin, destn = next(routing)
             tTransit = next(timing)
             hop = (destn - origin) * (tEnd - tBegin) / tTransit
