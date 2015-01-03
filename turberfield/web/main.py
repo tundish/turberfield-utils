@@ -87,8 +87,12 @@ def serve_js(filename):
 
 @app.route("/data/<filename>")
 def serve_data(filename):
-    return bottle.static_file(
-        filename, root=app.config["args"].output)
+    bottle.request.environ["HTTP_IF_MODIFIED_SINCE"] = None
+    locn = app.config["args"].output
+    response  = bottle.static_file(filename, root=locn)
+    response.expires = os.path.getmtime(locn)
+    response.set_header("Cache-control", "max-age=0")
+    return response
 
 def main(args):
     log = logging.getLogger("turberfield.web")
