@@ -17,7 +17,6 @@
 
 var viewModel = {
     debug: ko.observable(false),
-    interval: ko.observable(),
     time: ko.observable(),
     items: ko.observableArray()
 }
@@ -26,17 +25,15 @@ var checkStatus = function() {
 
     $.getJSON('/data/positions.json', function(data) {
         viewModel.debug(data.debug);
-        viewModel.interval(data.interval);
         viewModel.time(data.time);
         viewModel.items(data.items);
     });
 
-    setTimeout(checkStatus, viewModel.interval());
 
 };
 
 ko.applyBindings(viewModel);
-checkStatus();
+setInterval(checkStatus, {{info.get("interval", 500)}});
 
 </script>
 
