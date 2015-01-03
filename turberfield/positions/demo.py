@@ -21,30 +21,47 @@ from collections import namedtuple
 from collections import OrderedDict
 import contextlib
 from decimal import Decimal as Dl
-import glob
 import itertools
 import json
 import logging
+from logging.handlers import WatchedFileHandler
 import re
-import stat
 import tempfile
 import time
-import operator
 import os.path
 import uuid
 
 from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
-from turberfield.positions.homogeneous import vector
-from turberfield.positions.travel import Impulse
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
-import turberfield.web.main
 
 Item = namedtuple("Item", ["pos", "class_"])
 Actor = namedtuple("Actor", ["uuid", "label", "class_"])
 Travel = namedtuple("Travel", ["path", "step", "proc"])
+
+
+class Simulation:
+
+    path = "demo.json"
+    posns = OrderedDict([
+        ("nw", point(160, 100, 0)),
+        ("ne", point(484, 106, 0)),
+        ("se", point(478, 386, 0)),
+        ("sw", point(160, 386, 0)),
+    ])
+
+    patterns = [
+        (Actor(uuid.uuid4().hex, "Bus", "platform"),
+         itertools.cycle(
+            zip(posns.values(),
+            list(posns.values())[1:] + [posns["nw"]])
+         ),
+        itertools.repeat(Dl(6))
+        ),
+    ]
+
 
 class TypesEncoder(json.JSONEncoder):
 
@@ -84,12 +101,32 @@ def movement(ops, start, ts):
             yield (obj, imp)
 
 def run(
-    options=argparse.Namespace(output="."),
+    options=argparse.Namespace(
+        output=".", log_level=logging.INFO, log_path=None
+    ),
     node="demo.json",
     start=0, stop=Dl("Infinity"),
     dt=1
     ):
     log = logging.getLogger("turberfield.demo.run")
+    log.setLevel(options.log_level)
+
+    formatter = logging.Formatter(
+        "%(asctime)s %(levelname)-7s %(name)s|%(message)s")
+    ch = logging.StreamHandler()
+
+    if options.log_path is None:
+        ch.setLevel(options.log_level)
+    else:
+        fh = WatchedFileHandler(options.log_path)
+        fh.setLevel(options.log_level)
+        fh.setFormatter(formatter)
+        log.addHandler(fh)
+        ch.setLevel(logging.WARNING)
+
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
+
     ts = start
     ops = OrderedDict(
         [(obj, steadypace(trajectory(), routing, timing))
@@ -124,43 +161,3 @@ def run(
         time.sleep(dt)
     return stop
 
-class Simulation:
-
-    path = "demo.json"
-    posns = OrderedDict([
-        ("nw", point(160, 100, 0)),
-        ("ne", point(484, 106, 0)),
-        ("se", point(478, 386, 0)),
-        ("sw", point(160, 386, 0)),
-    ])
-
-    patterns = [
-        (Actor(uuid.uuid4().hex, "Bus", "platform"),
-         itertools.cycle(
-            zip(posns.values(),
-            list(posns.values())[1:] + [posns["nw"]])
-         ),
-        itertools.repeat(Dl(30))
-        ),
-    ]
-
-    def hateoas(self):
-        #x = int(50 + 4 * time.time() % 200)
-        #items = self.items + [
-        #    Item((x, 80), "platform"),
-        #    Item((x, 120), "actor"),
-        #]
-        now = time.time()
-        items = self.positions(at=now)
-        return {
-            "info": {
-                "args": vars(self.args),
-                "debug": self.debug,
-                "interval": 200,
-                "time": "{:.1f}".format(now),
-                "title": "Turberfield positions {}".format(__version__),
-                "version": __version__
-            },
-            "items": [i._asdict() for i in items],
-            
-        }

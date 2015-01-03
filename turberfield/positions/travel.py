@@ -22,6 +22,7 @@ from collections import namedtuple
 import decimal
 from decimal import Decimal as Dl
 import itertools
+import logging
 import warnings
 
 from turberfield.positions.homogeneous import vector
@@ -87,6 +88,7 @@ def trajectory(limits=None):
 
 
 def steadypace(integrator, routing, timing):
+    log = logging.getLogger("turberfield.positions.travel.steadypace")
     accn = vector(0, 0, 0)
     integrator.send(None)
     tBegin = yield None
@@ -99,7 +101,8 @@ def steadypace(integrator, routing, timing):
     imp = integrator.send(Impulse(tBegin, tEnd, accn, origin + hop))
     while True:
         tBegin, tEnd = tEnd, (yield imp)
-        if imp.pos == destn:
+        dist = (destn - imp.pos).magnitude
+        if dist < 0.01:
             origin, destn = next(routing)
             tTransit = next(timing)
             hop = (destn - origin) * (tEnd - tBegin) / tTransit

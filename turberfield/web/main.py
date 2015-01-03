@@ -23,6 +23,7 @@ import datetime
 from decimal import Decimal as Dl
 import json
 import logging
+from logging.handlers import WatchedFileHandler
 import operator
 import os
 import os.path
@@ -112,14 +113,12 @@ def main(args):
     bottle.debug(True)
     bottle.TEMPLATES.clear()
     log.debug(bottle.TEMPLATE_PATH)
-    #sim = turberfield.positions.demo.Simulation(args, debug=True)
-    #app.route("/positions", callback=sim.hateoas)
     with concurrent.futures.ProcessPoolExecutor() as executor:
         future = executor.submit(
             turberfield.positions.demo.run,
             options=args,
             node="positions.json",
-            start=0, dt=Dl("0.5"),
+            start=0, dt=Dl("0.1"),
         )
         app.config.update({
             "args": args,
