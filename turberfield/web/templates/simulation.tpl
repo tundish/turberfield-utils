@@ -11,6 +11,15 @@
 <body>
 % include("gainsborough_square.tpl")
 
+<ul data-bind="foreach: options">
+  <li>
+    <dl>
+        <dt data-bind="text: label"></dt>
+        <dd data-bind="text: value"</dd>
+    </dl>
+  </li>
+</ul>
+
 <script type="text/javascript" src="/js/jquery-2.1.1.js"></script>
 <script type="text/javascript" src="/js/knockout-3.2.0.js"></script>
 <script type="text/javascript">
@@ -18,7 +27,8 @@
 var viewModel = {
     debug: ko.observable(false),
     time: ko.observable(),
-    items: ko.observableArray()
+    items: ko.observableArray(),
+    options: ko.observableArray()
 }
 
 var checkStatus = function() {
@@ -27,6 +37,7 @@ var checkStatus = function() {
         viewModel.debug(data.debug);
         viewModel.time(data.time);
         viewModel.items(data.items);
+        viewModel.options(data.options);
     });
 
 

@@ -154,19 +154,26 @@ def run(
                     "class_": obj.class_,
                     "pos": pos[0:2],
                 } for obj, pos in Simulation.static],
+                "options": []
             }
-            for obj, imp in movement(ops, start, ts):
+            for item, imp in movement(ops, start, ts):
                 page["items"].append({
-                    "uuid": obj.uuid,
-                    "label": obj.label,
-                    "class_": obj.class_,
+                    "uuid": item.uuid,
+                    "label": item.label,
+                    "class_": item.class_,
                     "pos": imp.pos[0:2],
                 })
+                page["options"].extend([{
+                    "label": obj.label,
+                    "value": (imp.pos - pos).magnitude
+                } for obj, pos in Simulation.static])
             json.dump(
                 page, output,
                 cls=TypesEncoder,
                 indent=4
             )
+            # for colln in collisions:
+            #     yield from transfer queue
         ts += dt
         time.sleep(dt)
     return stop
