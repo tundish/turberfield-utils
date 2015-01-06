@@ -13,6 +13,13 @@
     <circle id="object_actor"
         cx="0" cy="0" r="5"
         stroke="#eeeeec" stroke-width="1.5" fill="#729fcf" />
+    <circle id="object_zone"
+        cx="0" cy="0" r="40"
+        stroke="#a40000"
+        stroke-dasharray="5,5"
+        stroke-width="0.5"
+        fill="#ffd700"
+        fill-opacity="0.1" />
 </defs>
   <g id="layer01_background"
      style="display:inline">

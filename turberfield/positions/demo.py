@@ -62,6 +62,11 @@ class Simulation:
         ),
     ]
 
+    static = [
+        (Actor(uuid.uuid4().hex, "A", "zone"), point(285, 60, 0)),
+        (Actor(uuid.uuid4().hex, "B", "zone"), point(530, 245, 0)),
+        (Actor(uuid.uuid4().hex, "C", "zone"), point(120, 245, 0)),
+    ]
 
 class TypesEncoder(json.JSONEncoder):
 
@@ -143,7 +148,12 @@ def run(
                     "title": "Turberfield positions {}".format(__version__),
                     "version": __version__
                 },
-                "items": [],
+                "items": [{
+                    "uuid": obj.uuid,
+                    "label": obj.label,
+                    "class_": obj.class_,
+                    "pos": pos[0:2],
+                } for obj, pos in Simulation.static],
             }
             for obj, imp in movement(ops, start, ts):
                 page["items"].append({
@@ -160,4 +170,3 @@ def run(
         ts += dt
         time.sleep(dt)
     return stop
-
