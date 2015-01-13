@@ -148,7 +148,7 @@
   </g>
   <g data-bind="foreach: items">
     <use xlink:href=""
-    data-bind="attr: { 'xlink:href': '#object_'+class_, transform: 'translate('+pos[0]+', '+pos[1]+')'}"/>
+    data-bind="attr: { 'xlink:href': '#object_'+class_, transform: 'translate('+pos[0]+', '+pos[1]+')', 'class': class_}"/>
   </g>
   <g id="layer08_positions">
     <path

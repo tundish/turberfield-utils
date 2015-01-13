@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>{{info.get("title", "Turberfield")}}</title>
+<link rel="stylesheet" href="/css/animations.css" />
 <link rel="stylesheet" href="/css/pure/base-min.css" />
 <link rel="stylesheet" href="/css/pure/pure-min.css" media="screen" />
 <link rel="stylesheet" href="/css/pure/grids-responsive-min.css" media="screen" />

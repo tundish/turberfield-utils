@@ -1,0 +1,93 @@
+#layer05_labels text {
+    animation: pulse_animation 5s linear infinite;
+    -webkit-animation-name: "pulse_animation";
+    -webkit-animation-duration: 5000ms;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+}
+
+@keyframes pulse_animation {
+    0% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    30% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    40% {
+        -webkit-transform: scale(1.08);
+        ms-transform: scale(1.08);
+        transform: scale(1.08);
+        }
+    50% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    60% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    70% {
+        -webkit-transform: scale(1.05);
+        ms-transform: scale(1.05);
+        transform: scale(1.05);
+    }
+    80% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    100% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+}
+
+@-webkit-keyframes pulse_animation {
+    0% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    30% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    40% {
+        -webkit-transform: scale(1.08);
+        ms-transform: scale(1.08);
+        transform: scale(1.08);
+        }
+    50% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    60% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    70% {
+        -webkit-transform: scale(1.05);
+        ms-transform: scale(1.05);
+        transform: scale(1.05);
+    }
+    80% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+    100% {
+        -webkit-transform: scale(1);
+        ms-transform: scale(1);
+        transform: scale(1);
+    }
+}
