@@ -1,5 +1,7 @@
-#layer05_labels text {
-    animation: pulse_animation 5s linear infinite;
+g.pulse path {
+    animation: pulse_animation 3s ease infinite;
+    transform-origin: 50% 50%;
+    -webkit-transform-origin: 50% 50%;
     -webkit-animation-name: "pulse_animation";
     -webkit-animation-duration: 5000ms;
     -webkit-animation-iteration-count: infinite;
