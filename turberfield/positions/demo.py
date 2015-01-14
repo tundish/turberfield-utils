@@ -17,6 +17,7 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+from collections import defaultdict
 from collections import namedtuple
 from collections import OrderedDict
 import contextlib
@@ -37,8 +38,7 @@ from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
 
-Item = namedtuple("Item", ["pos", "class_"])
-Actor = namedtuple("Actor", ["uuid", "label", "class_"])
+Item = namedtuple("Item", ["uuid", "label", "class_"])
 Travel = namedtuple("Travel", ["path", "step", "proc"])
 
 
@@ -53,7 +53,7 @@ class Simulation:
     ])
 
     patterns = [
-        (Actor(uuid.uuid4().hex, "Bus", "platform"),
+        (Item(uuid.uuid4().hex, "Bus", "platform"),
          itertools.cycle(
             zip(posns.values(),
             list(posns.values())[1:] + [posns["nw"]])
@@ -63,9 +63,9 @@ class Simulation:
     ]
 
     static = [
-        (Actor(uuid.uuid4().hex, "A", "zone"), point(285, 60, 0)),
-        (Actor(uuid.uuid4().hex, "B", "zone"), point(530, 245, 0)),
-        (Actor(uuid.uuid4().hex, "C", "zone"), point(120, 245, 0)),
+        (Item(uuid.uuid4().hex, "A", "zone"), point(285, 60, 0), 45),
+        (Item(uuid.uuid4().hex, "B", "zone"), point(530, 245, 0), 50),
+        (Item(uuid.uuid4().hex, "C", "zone"), point(120, 245, 0), 42),
     ]
 
 class TypesEncoder(json.JSONEncoder):
@@ -136,7 +136,8 @@ def run(
     ops = OrderedDict(
         [(obj, steadypace(trajectory(), routing, timing))
         for obj, routing, timing in Simulation.patterns])
-    
+
+    collisions = defaultdict(set)
     while ts < stop:
         now = time.time()
         with endpoint(node, parent=options.output) as output:
@@ -153,7 +154,7 @@ def run(
                     "label": obj.label,
                     "class_": obj.class_,
                     "pos": pos[0:2],
-                } for obj, pos in Simulation.static],
+                } for obj, pos, rad in Simulation.static],
                 "options": []
             }
             for item, imp in movement(ops, start, ts):
@@ -163,10 +164,16 @@ def run(
                     "class_": item.class_,
                     "pos": imp.pos[0:2],
                 })
-                page["options"].extend([{
-                    "label": obj.label,
-                    "value": (imp.pos - pos).magnitude
-                } for obj, pos in Simulation.static])
+                gaps = [
+                    (obj, (imp.pos - pos).magnitude, rad)
+                    for obj, pos, rad in Simulation.static]
+                [collisions[obj].add(item) for obj, gap, rad in gaps
+                 if gap < rad]
+
+            page["options"].extend([{
+                "label": obj.label,
+                "value": str(hits)
+            } for obj, hits in collisions.items() for h in hits])
             json.dump(
                 page, output,
                 cls=TypesEncoder,
@@ -177,3 +184,6 @@ def run(
         ts += dt
         time.sleep(dt)
     return stop
+
+if __name__ == "__main__":
+    run()
