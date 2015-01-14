@@ -17,6 +17,7 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import asyncio
 from collections import defaultdict
 from collections import namedtuple
 from collections import OrderedDict
@@ -67,6 +68,37 @@ class Simulation:
         (Item(uuid.uuid4().hex, "B", "zone"), point(530, 245, 0), 50),
         (Item(uuid.uuid4().hex, "C", "zone"), point(120, 245, 0), 42),
     ]
+
+
+    def __init__(self, args, config):
+        self.args = args
+        self.config = config
+        self.collisions = defaultdict(set)
+
+    @staticmethod
+    def queue(args, config, loop=None):
+        return asyncio.Queue(loop=loop)
+
+    @asyncio.coroutine
+    def __call__(self, loop, msgQ):
+        """
+        Just a sketch
+        """
+        ts = self.start
+        while ts < self.stop:
+            now = time.time()
+            with endpoint(node, parent=options.output) as output:
+                for item, imp in movement(ops, start, ts):
+                    pass
+
+            #while len(self.collisions):
+            #     msg = yield from msgQ.get()
+            # Act on msg
+            # Remove collision
+            ts += self.dt
+            self.ticks.send(ts) # Game clock
+            yield from asyncio.sleep(self.dt)
+
 
 class TypesEncoder(json.JSONEncoder):
 
