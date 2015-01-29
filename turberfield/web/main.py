@@ -62,6 +62,8 @@ def simulation_get():
     log.info("Loading demo data")
 
     #steps = list(turberfield.project.load(data))
+    # TODO: get data endpoints from job in config and
+    #       pass to template as items.
     return {
         "info": {
             "args": app.config.get("args"),
@@ -117,6 +119,10 @@ def main(args):
     bottle.debug(True)
     bottle.TEMPLATES.clear()
     log.debug(bottle.TEMPLATE_PATH)
+
+    # TODO: discover endpoints from each publisher
+    # TODO: positions, collisions, accounts, inventory, relationships
+    # TODO: standardise call (remove special parameters)
     with concurrent.futures.ProcessPoolExecutor() as executor:
         future = executor.submit(
             turberfield.positions.demo.run,

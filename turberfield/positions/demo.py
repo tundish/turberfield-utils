@@ -45,6 +45,8 @@ Travel = namedtuple("Travel", ["path", "step", "proc"])
 
 class Simulation:
 
+    # TODO: populate stages with bus driver and travellers
+
     path = "demo.json"
     posns = OrderedDict([
         ("nw", point(160, 100, 0)),
