@@ -19,10 +19,15 @@
 import asyncio
 from collections import Counter
 from collections import defaultdict
+from collections import namedtuple
 
 __doc__ = """
 Machina places an actor on a stage.
 """
+
+Mobile = namedtuple("Mobile", ["motion", "reach"])
+Fixed = namedtuple("Fixed", ["posn", "reach"])
+
 
 class Props:
     """
@@ -60,4 +65,4 @@ class Placement:
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
-        pass
+        return "Hi"

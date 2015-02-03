@@ -21,24 +21,35 @@ from collections import OrderedDict
 import unittest
 
 from turberfield.positions.demo import Simulation
+from turberfield.positions.machina import Fixed
+from turberfield.positions.machina import Mobile
 from turberfield.positions.machina import Placement
 from turberfield.positions.machina import Props
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
+
 
 class PlacementTests(unittest.TestCase):
 
     def setUp(self):
         self.props = Props()
         self.props._clear()
-        self.theatre = OrderedDict(
-            [(stage, steadypace(trajectory(), routing, timing))
-            for stage, routing, timing in Simulation.patterns])
-        # TODO: Add static stages to theatre
-
+        self.theatre = OrderedDict([
+                (stage, Mobile(
+                    steadypace(trajectory(), routing, timing),
+                    10)
+                )
+                for stage, routing, timing in Simulation.patterns])
+        self.theatre.update(
+            OrderedDict([
+                (stage, Fixed(posn, reach))
+                for stage, posn, reach in Simulation.static]))
 
     def test_first_collision(self):
-        op = Placement(None, self.props)
+        op = Placement(self.theatre, self.props)
+        task = asyncio.Task(op(0, 60, 1))
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(op(0, 60, 1))
+        loop.run_until_complete(task)
+        print(task.result())
         loop.close()
+        print(self.theatre)
