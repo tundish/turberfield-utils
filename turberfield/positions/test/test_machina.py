@@ -63,4 +63,3 @@ class EndpointTests(unittest.TestCase):
 
         self.assertFalse(os.path.isfile(fP))
         self.assertEqual('"Test string"', fObj.getvalue())
-

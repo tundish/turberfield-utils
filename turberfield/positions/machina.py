@@ -122,10 +122,6 @@ class Provider:
         super().__init__(**kwargs)
 
     @property
-    def services(self):
-        raise NotImplementedError
-
-    @property
     def template(self):
         return Provider.Page(
             info = {
@@ -152,10 +148,6 @@ class Provider:
 class Shifter(Provider, Borg):
 
     @staticmethod
-    def queue(loop=None):
-        return asyncio.Queue(loop=loop)
-
-    @staticmethod
     def movement(theatre, start, ts):
         infinity = decimal.Decimal("Infinity")
         for stage, job in theatre.items():
@@ -169,19 +161,24 @@ class Shifter(Provider, Borg):
                 if imp is not None:
                     yield (stage, imp)
 
+    @staticmethod
+    def services():
+        return [
+            Provider.Attribute("tick"),
+            Provider.Attribute("page"),
+            Provider.HATEOAS("positions", "page", "positions.json"),
+        ]
+
+    @staticmethod
+    def queue(loop=None):
+        return asyncio.Queue(loop=loop)
+
     def __init__(self, theatre, props, **kwargs):
         Borg.__init__(self)
         super().__init__(**kwargs)
         self.theatre = theatre
         self.props = props
 
-    @property
-    def services(self):
-        return [
-            Provider.Attribute("tick"),
-            Provider.Attribute("page"),
-            Provider.HATEOAS("positions", "page", "positions.json"),
-        ]
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):

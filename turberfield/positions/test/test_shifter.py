@@ -59,7 +59,6 @@ class ShifterTests(unittest.TestCase):
 
     def test_has_services(self):
         p = Provider()
-        self.assertRaises(NotImplementedError, getattr, p, "services")
         shifter = Shifter(self.theatre, self.props)
         self.assertIsInstance(shifter, Provider)
         self.assertEqual(3, len(shifter.services))

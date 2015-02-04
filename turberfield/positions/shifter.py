@@ -54,19 +54,20 @@ class Shifter(Provider, Borg):
                 if imp is not None:
                     yield (stage, imp)
 
-    def __init__(self, theatre, props, **kwargs):
-        Borg.__init__(self)
-        super().__init__(**kwargs)
-        self.theatre = theatre
-        self.props = props
-
-    @property
-    def services(self):
+    @staticmethod
+    def services():
         return [
             Provider.Attribute("tick"),
             Provider.Attribute("page"),
             Provider.HATEOAS("positions", "page", "positions.json"),
         ]
+
+    def __init__(self, theatre, props, **kwargs):
+        Borg.__init__(self)
+        self.services = kwargs.pop("services", Shifter.services())
+        super().__init__(**kwargs)
+        self.theatre = theatre
+        self.props = props
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
