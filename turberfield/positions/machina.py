@@ -32,6 +32,7 @@ Machina places an actor on a stage.
 Fixed = namedtuple("Fixed", ["posn", "reach"])
 Mobile = namedtuple("Mobile", ["motion", "reach"])
 Page = namedtuple("Page", ["info", "nav", "items", "options"])
+Tick = namedtuple("Tick", ["start", "stop", "step", "ts"])
 
 
 class Props:
@@ -91,8 +92,9 @@ class Shifter:
                 self.theatre, start, ts
             ):
                 pass
-            #self.ticks.send(ts) # Game clock
+            tick = Tick(start, stop, step, ts)
+            #self.ticks.send(tick) # Game clock
             ts += step
             yield from asyncio.sleep(step)
 
-        return "Hi"
+        return tick

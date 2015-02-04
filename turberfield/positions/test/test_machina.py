@@ -50,6 +50,6 @@ class ShifterTests(unittest.TestCase):
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
-        print(task.result())
+        rv = task.result()
+        self.assertAlmostEqual(rv.stop, rv.ts + rv.step, places=10)
         loop.close()
-        print(self.theatre)
