@@ -35,6 +35,11 @@ import uuid
 
 from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
+from turberfield.positions.machina import Fixed
+from turberfield.positions.machina import Mobile
+from turberfield.positions.machina import Props
+from turberfield.positions.machina import Provider
+from turberfield.positions.machina import Shifter
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
@@ -166,6 +171,23 @@ def run(
     ch.setFormatter(formatter)
     log.addHandler(ch)
 
+    props = Props()
+    theatre = OrderedDict([
+            (stage, Mobile(
+                steadypace(trajectory(), routing, timing),
+                10)
+            )
+            for stage, routing, timing in Simulation.patterns])
+    theatre.update(
+        OrderedDict([
+            (stage, Fixed(posn, reach))
+            for stage, posn, reach in Simulation.static]))
+
+    shifter = Shifter(theatre, props)
+    task = asyncio.Task(shifter(0, 0.3, 0.1))
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(task)
+    return
     ts = start
     ops = OrderedDict(
         [(obj, steadypace(trajectory(), routing, timing))
