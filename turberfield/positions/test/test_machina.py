@@ -23,13 +23,13 @@ import unittest
 from turberfield.positions.demo import Simulation
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
-from turberfield.positions.machina import Placement
 from turberfield.positions.machina import Props
+from turberfield.positions.machina import Shifter
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
 
-class PlacementTests(unittest.TestCase):
+class ShifterTests(unittest.TestCase):
 
     def setUp(self):
         self.props = Props()
@@ -46,7 +46,7 @@ class PlacementTests(unittest.TestCase):
                 for stage, posn, reach in Simulation.static]))
 
     def test_first_collision(self):
-        op = Placement(self.theatre, self.props)
+        op = Shifter(self.theatre, self.props)
         task = asyncio.Task(op(0, 60, 1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)

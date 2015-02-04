@@ -25,8 +25,9 @@ __doc__ = """
 Machina places an actor on a stage.
 """
 
-Mobile = namedtuple("Mobile", ["motion", "reach"])
 Fixed = namedtuple("Fixed", ["posn", "reach"])
+Mobile = namedtuple("Mobile", ["motion", "reach"])
+Page = namedtuple("Page", ["info", "nav", "items", "options"])
 
 
 class Props:
@@ -53,7 +54,7 @@ class Props:
         except AttributeError:
             pass
 
-class Placement:
+class Shifter:
 
     @staticmethod
     def queue(loop=None):
@@ -65,4 +66,13 @@ class Placement:
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
+        ts = start
+        while ts < stop:
+            now = time.time()
+            for stage, push in movement(self.theatre, start, ts):
+                pass
+            ts += step
+            self.ticks.send(ts) # Game clock
+            yield from asyncio.sleep(step)
+
         return "Hi"
