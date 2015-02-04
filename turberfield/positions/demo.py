@@ -34,14 +34,14 @@ from turberfield.positions.homogeneous import point
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
 from turberfield.positions.machina import Props
-from turberfield.positions.machina import Shifter
+from turberfield.positions.shifter import Shifter
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
 DFLT_LOCN = os.path.expanduser(os.path.join("~", ".turberfield"))
 
 __doc__ = """
-Serves a graphical web interface for Turberfield positions.
+Provides a demonstration of Turberfield stages.
 """
 
 Item = namedtuple("Item", ["uuid", "label", "class_"])
@@ -108,7 +108,8 @@ def main(args):
             (stage, Fixed(posn, reach))
             for stage, posn, reach in Simulation.static]))
 
-    shifter = Shifter(theatre, props)
+    services = Shifter.services(parent=args.output)
+    shifter = Shifter(theatre, props, services=services)
     task = asyncio.Task(shifter(0, decimal.Decimal("Infinity"), 1))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(task)

@@ -19,6 +19,7 @@
 import asyncio
 from collections import defaultdict
 import decimal
+import os.path
 import time
 
 
@@ -55,11 +56,17 @@ class Shifter(Provider, Borg):
                     yield (stage, imp)
 
     @staticmethod
-    def services():
+    def services(
+        parent=os.path.expanduser(os.path.join("~", ".turberfield"))
+    ):
         return [
             Provider.Attribute("tick"),
             Provider.Attribute("page"),
-            Provider.HATEOAS("positions", "page", "positions.json"),
+            Provider.HATEOAS(
+                "positions",
+                "page",
+                os.path.join(parent, "positions.json")
+            ),
         ]
 
     def __init__(self, theatre, props, **kwargs):

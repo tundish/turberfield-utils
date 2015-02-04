@@ -97,8 +97,9 @@ class Provider:
 
     @staticmethod
     @contextlib.contextmanager
-    def endpoint(arg, parent, suffix=".json"):
+    def endpoint(arg, suffix=".json"):
         if isinstance(arg, str):
+            parent = os.path.dirname(arg)
             fD, fN = tempfile.mkstemp(suffix=suffix, dir=parent)
             try:
                 rv = open(fN, 'w')
@@ -107,7 +108,7 @@ class Provider:
                 raise e
             rv.close()
             os.close(fD)
-            os.replace(fN, os.path.join(parent, arg))
+            os.replace(fN, arg)
         else:
             yield arg
 
@@ -139,81 +140,7 @@ class Provider:
             setattr(self, service.name, data[service.name])
         elif isinstance(service, Provider.HATEOAS):
             content = data[service.attr]
-            with Provider.endpoint(
-                service.dst, parent=self.options.output
-            ) as output:
+            with Provider.endpoint(service.dst) as output:
                 json.dump(
-                    vars(content), output, cls=TypesEncoder, indent=4)
-
-class Shifter(Provider, Borg):
-
-    @staticmethod
-    def movement(theatre, start, ts):
-        infinity = decimal.Decimal("Infinity")
-        for stage, job in theatre.items():
-            if isinstance(job, Fixed):
-                imp = Impulse(start, 0, infinity, job.posn)
-                yield (stage, imp)
-            elif isinstance(job, Mobile):
-                if ts == start:
-                    job.motion.send(None)
-                imp = job.motion.send(ts)
-                if imp is not None:
-                    yield (stage, imp)
-
-    @staticmethod
-    def services():
-        return [
-            Provider.Attribute("tick"),
-            Provider.Attribute("page"),
-            Provider.HATEOAS("positions", "page", "positions.json"),
-        ]
-
-    @staticmethod
-    def queue(loop=None):
-        return asyncio.Queue(loop=loop)
-
-    def __init__(self, theatre, props, **kwargs):
-        Borg.__init__(self)
-        super().__init__(**kwargs)
-        self.theatre = theatre
-        self.props = props
-
-
-    @asyncio.coroutine
-    def __call__(self, start, stop, step):
-        ts = start
-        while ts < stop:
-            collisions = defaultdict(set)
-            page = self.template
-            page.info["ts"] = time.time()
-            for stage, push in Shifter.movement(
-                self.theatre, start, ts
-            ):
-                page.items.append({
-                    "uuid": stage.uuid,
-                    "label": stage.label,
-                    "class_": stage.class_,
-                    "pos": push.pos[0:2],
-                })
-                gaps = [
-                    (other, (push.pos - fix.posn).magnitude, fix.reach)
-                    for other, fix in self.theatre.items()
-                    if isinstance(fix, Fixed)]
-                [collisions[other].add(stage)
-                 for other, gap, rad in gaps
-                 if gap < rad]
-
-            page.options.extend([{
-                "label": obj.label,
-                "value": str(hits)
-            } for obj, hits in collisions.items() for h in hits])
-
-            tick = Tick(start, stop, step, ts)
-            for i in self.services:
-                self.provide(i, locals())
-
-            ts += step
-            yield from asyncio.sleep(step)
-
-        return tick
+                    vars(content), output, cls=TypesEncoder, indent=4
+                )

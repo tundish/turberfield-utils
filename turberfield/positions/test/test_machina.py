@@ -42,9 +42,7 @@ class EndpointTests(unittest.TestCase):
         fP = os.path.join(
                 EndpointTests.drcty, EndpointTests.node)
         self.assertFalse(os.path.isfile(fP))
-        with Provider.endpoint(
-            EndpointTests.node,
-            parent=EndpointTests.drcty) as output:
+        with Provider.endpoint(fP) as output:
             json.dump("Test string", output)
 
         self.assertTrue(os.path.isfile(fP))
@@ -56,9 +54,7 @@ class EndpointTests(unittest.TestCase):
                 EndpointTests.drcty, EndpointTests.node)
         fObj = StringIO()
         self.assertFalse(os.path.isfile(fP))
-        with Provider.endpoint(
-            fObj,
-            parent=EndpointTests.drcty) as output:
+        with Provider.endpoint(fObj) as output:
             json.dump("Test string", output)
 
         self.assertFalse(os.path.isfile(fP))
