@@ -57,7 +57,7 @@ class ShifterTests(unittest.TestCase):
         self.assertRaises(NotImplementedError, getattr, p, "services")
         shifter = Shifter(self.theatre, self.props)
         self.assertIsInstance(shifter, Provider)
-        self.assertEqual(1, len(shifter.services))
+        self.assertEqual(2, len(shifter.services))
 
     def test_tick_attribute_service(self):
         shifter = Shifter(self.theatre, self.props)
@@ -67,6 +67,16 @@ class ShifterTests(unittest.TestCase):
         rv = task.result()
         self.assertAlmostEqual(rv.stop, rv.ts + rv.step, places=10)
         self.assertEqual(rv, shifter.tick)
+
+    def test_page_attribute_service(self):
+        shifter = Shifter(self.theatre, self.props)
+        task = asyncio.Task(shifter(0, 0.3, 0.1))
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(task)
+        self.assertIn("info", shifter.page)
+        self.assertIn("nav", shifter.page)
+        self.assertIn("items", shifter.page)
+        self.assertIn("options", shifter.page)
 
     def test_first_collision(self):
         shifter = Shifter(self.theatre, self.props)

@@ -24,6 +24,7 @@ import decimal
 from functools import singledispatch
 import time
 
+from turberfield.positions import __version__
 from turberfield.positions.travel import Impulse
 
 __doc__ = """
@@ -76,9 +77,29 @@ class Provider:
     def services(self):
         raise NotImplementedError
 
+    @property
+    def template(self):
+        return {
+            "info": {
+                "interval": 800,
+                "title": self.__class__.__name__,
+                "version": __version__
+            },
+            "nav": [],
+            "items": [],
+            "options": [],
+        }
+
     def provide(self, service, data):
         if isinstance(service, Provider.Attribute):
             setattr(self, service.name, data[service.name])
+
+        #with endpoint(node, parent=options.output) as output:
+        #    json.dump(
+        #        page, output,
+        #        cls=TypesEncoder,
+        #        indent=4
+        #    )
 
 class Shifter(Borg, Provider):
 
@@ -104,6 +125,7 @@ class Shifter(Borg, Provider):
     def services(self):
         return [
             Provider.Attribute("tick"),
+            Provider.Attribute("page"),
         ]
 
     def __init__(self, theatre, props):
@@ -116,10 +138,32 @@ class Shifter(Borg, Provider):
         ts = start
         while ts < stop:
             now = time.time()
+            collisions = defaultdict(set)
+            page = self.template
             for stage, push in Shifter.movement(
                 self.theatre, start, ts
             ):
-                pass
+                page["items"].append({
+                    "uuid": stage.uuid,
+                    "label": stage.label,
+                    "class_": stage.class_,
+                    "pos": push.pos[0:2],
+                })
+                gaps = [
+                    (other, (push.pos - fix.posn).magnitude, fix.reach)
+                    for other, fix in self.theatre.items()
+                    if isinstance(fix, Fixed)]
+            #gaps = [
+            #    (obj, (push.pos - pos).magnitude, rad)
+            #    for obj, pos, rad in Simulation.static]
+            #[collisions[obj].add(item) for obj, gap, rad in gaps
+            # if gap < rad]
+
+            #page["options"].extend([{
+            #    "label": obj.label,
+            #    "value": str(hits)
+            #} for obj, hits in collisions.items() for h in hits])
+
             tick = Tick(start, stop, step, ts)
             for i in self.services:
                 self.provide(i, locals())
