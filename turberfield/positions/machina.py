@@ -146,7 +146,8 @@ class Provider:
             with Provider.endpoint(
                 service.dst, parent=self.options.output
             ) as output:
-                json.dump(content, output, cls=TypesEncoder, indent=4)
+                json.dump(
+                    vars(content), output, cls=TypesEncoder, indent=4)
 
 class Shifter(Provider, Borg):
 
@@ -186,9 +187,9 @@ class Shifter(Provider, Borg):
     def __call__(self, start, stop, step):
         ts = start
         while ts < stop:
-            now = time.time()
             collisions = defaultdict(set)
             page = self.template
+            page.info["ts"] = time.time()
             for stage, push in Shifter.movement(
                 self.theatre, start, ts
             ):
