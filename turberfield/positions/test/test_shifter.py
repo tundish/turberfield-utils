@@ -59,11 +59,6 @@ class ShifterTests(unittest.TestCase):
         self.assertIsInstance(shifter, Provider)
         self.assertTrue(hasattr(shifter, "provide"))
 
-    def test_has_options(self):
-        shifter = Shifter(
-            self.theatre, self.props, services=self.services)
-        self.assertIsInstance(shifter.options, argparse.Namespace)
-
     def test_has_services(self):
         p = Provider()
         shifter = Shifter(

@@ -112,16 +112,6 @@ class Provider:
         else:
             yield arg
 
-    def __init__(self, **kwargs):
-        self.options = kwargs.pop(
-            "options",
-            argparse.Namespace(
-                output=".",
-                log_level=logging.INFO,
-                log_path=None)
-        )
-        super().__init__(**kwargs)
-
     @property
     def template(self):
         return Provider.Page(
