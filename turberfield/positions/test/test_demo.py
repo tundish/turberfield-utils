@@ -20,8 +20,8 @@ from collections import OrderedDict
 import unittest
 
 import turberfield.positions
-from turberfield.positions.demo import movement
 from turberfield.positions.demo import Simulation
+from turberfield.positions.shifter import Shifter
 from turberfield.positions.travel import Impulse
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
@@ -36,7 +36,7 @@ class SimulationTests(unittest.TestCase):
         ts = start = 0
         stop = 6
         while ts < stop:
-            for obj, imp in movement(ops, start, ts):
+            for obj, imp in Shifter.movement(ops, start, ts):
                 self.assertIn(obj, ops)
                 self.assertIsInstance(imp, Impulse)
             ts += 1

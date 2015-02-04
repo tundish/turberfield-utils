@@ -18,19 +18,15 @@
 
 import argparse
 import asyncio
-from collections import defaultdict
 from collections import namedtuple
 from collections import OrderedDict
-import contextlib
-from decimal import Decimal as Dl
+import decimal
 import itertools
-import json
 import logging
 from logging.handlers import WatchedFileHandler
-import re
-import tempfile
-import time
+import os
 import os.path
+import sys
 import uuid
 
 from turberfield.positions import __version__
@@ -38,14 +34,17 @@ from turberfield.positions.homogeneous import point
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
 from turberfield.positions.machina import Props
-from turberfield.positions.machina import Provider
 from turberfield.positions.machina import Shifter
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
+DFLT_LOCN = os.path.expanduser(os.path.join("~", ".turberfield"))
+
+__doc__ = """
+Serves a graphical web interface for Turberfield positions.
+"""
 
 Item = namedtuple("Item", ["uuid", "label", "class_"])
-Travel = namedtuple("Travel", ["path", "step", "proc"])
 
 
 class Simulation:
@@ -66,7 +65,7 @@ class Simulation:
             zip(posns.values(),
             list(posns.values())[1:] + [posns["nw"]])
          ),
-        itertools.repeat(Dl(6))
+        itertools.repeat(decimal.Decimal(6))
         ),
     ]
 
@@ -77,93 +76,19 @@ class Simulation:
     ]
 
 
-    def __init__(self, args, config):
-        self.args = args
-        self.config = config
-        self.collisions = defaultdict(set)
-
-    @staticmethod
-    def queue(args, config, loop=None):
-        return asyncio.Queue(loop=loop)
-
-    @asyncio.coroutine
-    def __call__(self, loop, msgQ):
-        """
-        Just a sketch
-        """
-        ts = self.start
-        while ts < self.stop:
-            now = time.time()
-            with endpoint(node, parent=options.output) as output:
-                for item, imp in movement(ops, start, ts):
-                    pass
-
-            #while len(self.collisions):
-            #     msg = yield from msgQ.get()
-            # Act on msg
-            # Remove collision
-            ts += self.dt
-            self.ticks.send(ts) # Game clock
-            yield from asyncio.sleep(self.dt)
-
-
-class TypesEncoder(json.JSONEncoder):
-
-    def default(self, obj):
-        if isinstance(obj, Dl):
-            return str(obj)
-        if isinstance(obj, type(re.compile(""))):
-            return obj.pattern
-
-        try:
-            return obj.strftime("%Y-%m-%d %H:%M:%S")
-        except AttributeError:
-            return json.JSONEncoder.default(self, obj)
-
-# TODO: turberfield.common
-@contextlib.contextmanager
-def endpoint(node, parent=None, suffix=".json"):
-    if isinstance(node, str):
-        fD, fN = tempfile.mkstemp(suffix=suffix, dir=parent)
-        try:
-            rv = open(fN, 'w')
-            yield rv
-        except Exception as e:
-            raise e
-        rv.close()
-        os.close(fD)
-        os.replace(fN, os.path.join(parent, node))
-    else:
-        yield node
-
-def movement(ops, start, ts):
-    for obj, op in ops.items():
-        if ts == start:
-            op.send(None)
-        imp = op.send(ts)
-        if imp is not None:
-            yield (obj, imp)
-
-def run(
-    options=argparse.Namespace(
-        output=".", log_level=logging.INFO, log_path=None
-    ),
-    node="demo.json",
-    start=0, stop=Dl("Infinity"),
-    dt=1
-    ):
+def main(args):
     log = logging.getLogger("turberfield.demo.run")
-    log.setLevel(options.log_level)
+    log.setLevel(args.log_level)
 
     formatter = logging.Formatter(
         "%(asctime)s %(levelname)-7s %(name)s|%(message)s")
     ch = logging.StreamHandler()
 
-    if options.log_path is None:
-        ch.setLevel(options.log_level)
+    if args.log_path is None:
+        ch.setLevel(args.log_level)
     else:
-        fh = WatchedFileHandler(options.log_path)
-        fh.setLevel(options.log_level)
+        fh = WatchedFileHandler(args.log_path)
+        fh.setLevel(args.log_level)
         fh.setFormatter(formatter)
         log.addHandler(fh)
         ch.setLevel(logging.WARNING)
@@ -184,62 +109,44 @@ def run(
             for stage, posn, reach in Simulation.static]))
 
     shifter = Shifter(theatre, props)
-    task = asyncio.Task(shifter(0, 0.3, 0.1))
+    task = asyncio.Task(shifter(0, decimal.Decimal("Infinity"), 1))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(task)
-    return
-    ts = start
-    ops = OrderedDict(
-        [(obj, steadypace(trajectory(), routing, timing))
-        for obj, routing, timing in Simulation.patterns])
+    return task.result()
 
-    collisions = defaultdict(set)
-    while ts < stop:
-        now = time.time()
-        with endpoint(node, parent=options.output) as output:
-            page = {
-                "info": {
-                    "args": vars(options),
-                    "interval": 800,
-                    "time": "{:.1f}".format(now),
-                    "title": "Turberfield positions {}".format(__version__),
-                    "version": __version__
-                },
-                "items": [{
-                    "uuid": obj.uuid,
-                    "label": obj.label,
-                    "class_": obj.class_,
-                    "pos": pos[0:2],
-                } for obj, pos, rad in Simulation.static],
-                "options": []
-            }
-            for item, imp in movement(ops, start, ts):
-                page["items"].append({
-                    "uuid": item.uuid,
-                    "label": item.label,
-                    "class_": item.class_,
-                    "pos": imp.pos[0:2],
-                })
-                gaps = [
-                    (obj, (imp.pos - pos).magnitude, rad)
-                    for obj, pos, rad in Simulation.static]
-                [collisions[obj].add(item) for obj, gap, rad in gaps
-                 if gap < rad]
 
-            page["options"].extend([{
-                "label": obj.label,
-                "value": str(hits)
-            } for obj, hits in collisions.items() for h in hits])
-            json.dump(
-                page, output,
-                cls=TypesEncoder,
-                indent=4
-            )
-            # for colln in collisions:
-            #     yield from transfer queue
-        ts += dt
-        time.sleep(dt)
-    return stop
+def parser(descr=__doc__):
+    rv = argparse.ArgumentParser(description=descr)
+    rv.add_argument(
+        "--version", action="store_true", default=False,
+        help="Print the current version number")
+    rv.add_argument(
+        "-v", "--verbose", required=False,
+        action="store_const", dest="log_level",
+        const=logging.DEBUG, default=logging.INFO,
+        help="Increase the verbosity of output")
+    rv.add_argument(
+        "--log", default=None, dest="log_path",
+        help="Set a file path for log output")
+    rv.add_argument(
+        "--output", default=DFLT_LOCN,
+        help="path to output directory [{}]".format(DFLT_LOCN))
+    return rv
+
+
+def run():
+    p = parser()
+    args = p.parse_args()
+    if args.version:
+        sys.stdout.write(__version__ + "\n")
+        rv = 0
+    else:
+        try:
+            os.mkdir(args.output)
+        except OSError:
+            pass
+        rv = main(args)
+    sys.exit(rv)
 
 if __name__ == "__main__":
     run()
