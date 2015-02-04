@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 import asyncio
 from collections import OrderedDict
 import unittest
@@ -52,12 +53,16 @@ class ShifterTests(unittest.TestCase):
         self.assertIsInstance(shifter, Provider)
         self.assertTrue(hasattr(shifter, "provide"))
 
+    def test_has_options(self):
+        shifter = Shifter(self.theatre, self.props)
+        self.assertIsInstance(shifter.options, argparse.Namespace)
+
     def test_has_services(self):
         p = Provider()
         self.assertRaises(NotImplementedError, getattr, p, "services")
         shifter = Shifter(self.theatre, self.props)
         self.assertIsInstance(shifter, Provider)
-        self.assertEqual(2, len(shifter.services))
+        self.assertEqual(3, len(shifter.services))
 
     def test_tick_attribute_service(self):
         shifter = Shifter(self.theatre, self.props)
@@ -73,10 +78,10 @@ class ShifterTests(unittest.TestCase):
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
-        self.assertIn("info", shifter.page)
-        self.assertIn("nav", shifter.page)
-        self.assertIn("items", shifter.page)
-        self.assertIn("options", shifter.page)
+        self.assertIn("info", vars(shifter.page))
+        self.assertIn("nav", vars(shifter.page))
+        self.assertIn("items", vars(shifter.page))
+        self.assertIn("options", vars(shifter.page))
 
     def test_first_collision(self):
         shifter = Shifter(self.theatre, self.props)

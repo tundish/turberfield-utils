@@ -16,12 +16,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 import asyncio
 from collections import Counter
 from collections import defaultdict
 from collections import namedtuple
+import contextlib
 import decimal
 from functools import singledispatch
+import json
+import logging
+import os
+import re
+import tempfile
 import time
 
 from turberfield.positions import __version__
@@ -33,7 +40,6 @@ Machina places an actor on a stage.
 
 Fixed = namedtuple("Fixed", ["posn", "reach"])
 Mobile = namedtuple("Mobile", ["motion", "reach"])
-Page = namedtuple("Page", ["info", "nav", "items", "options"])
 Tick = namedtuple("Tick", ["start", "stop", "step", "ts"])
 
 
@@ -66,12 +72,54 @@ class Props(Borg):
         except AttributeError:
             pass
 
+
+class TypesEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return str(obj)
+        if isinstance(obj, type(re.compile(""))):
+            return obj.pattern
+
+        try:
+            return obj.strftime("%Y-%m-%d %H:%M:%S")
+        except AttributeError:
+            return json.JSONEncoder.default(self, obj)
+
+
 class Provider:
 
     Attribute = namedtuple("Attribute", ["name"])
+    HATEOAS = namedtuple("HATEOAS", ["name", "attr", "dst"])
     JSON = namedtuple("JSON", ["name"])
+    Page = namedtuple("Page", ["info", "nav", "items", "options"])
     RSON = namedtuple("RSON", ["name"])
-    HATEOAS = namedtuple("HATEOAS", ["name"])
+
+    @staticmethod
+    @contextlib.contextmanager
+    def endpoint(arg, parent, suffix=".json"):
+        if isinstance(arg, str):
+            fD, fN = tempfile.mkstemp(suffix=suffix, dir=parent)
+            try:
+                rv = open(fN, 'w')
+                yield rv
+            except Exception as e:
+                raise e
+            rv.close()
+            os.close(fD)
+            os.replace(fN, os.path.join(parent, arg))
+        else:
+            yield arg
+
+    def __init__(self, **kwargs):
+        self.options = kwargs.pop(
+            "options",
+            argparse.Namespace(
+                output=".",
+                log_level=logging.INFO,
+                log_path=None)
+        )
+        super().__init__(**kwargs)
 
     @property
     def services(self):
@@ -79,29 +127,28 @@ class Provider:
 
     @property
     def template(self):
-        return {
-            "info": {
+        return Provider.Page(
+            info = {
                 "interval": 800,
                 "title": self.__class__.__name__,
                 "version": __version__
             },
-            "nav": [],
-            "items": [],
-            "options": [],
-        }
+            nav = [],
+            items = [],
+            options = []
+        )
 
     def provide(self, service, data):
         if isinstance(service, Provider.Attribute):
             setattr(self, service.name, data[service.name])
+        elif isinstance(service, Provider.HATEOAS):
+            content = data[service.attr]
+            with Provider.endpoint(
+                service.dst, parent=self.options.output
+            ) as output:
+                json.dump(content, output, cls=TypesEncoder, indent=4)
 
-        #with endpoint(node, parent=options.output) as output:
-        #    json.dump(
-        #        page, output,
-        #        cls=TypesEncoder,
-        #        indent=4
-        #    )
-
-class Shifter(Borg, Provider):
+class Shifter(Provider, Borg):
 
     @staticmethod
     def queue(loop=None):
@@ -121,17 +168,19 @@ class Shifter(Borg, Provider):
                 if imp is not None:
                     yield (stage, imp)
 
+    def __init__(self, theatre, props, **kwargs):
+        Borg.__init__(self)
+        super().__init__(**kwargs)
+        self.theatre = theatre
+        self.props = props
+
     @property
     def services(self):
         return [
             Provider.Attribute("tick"),
             Provider.Attribute("page"),
+            Provider.HATEOAS("positions", "page", "positions.json"),
         ]
-
-    def __init__(self, theatre, props):
-        super().__init__()
-        self.theatre = theatre
-        self.props = props
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
@@ -143,7 +192,7 @@ class Shifter(Borg, Provider):
             for stage, push in Shifter.movement(
                 self.theatre, start, ts
             ):
-                page["items"].append({
+                page.items.append({
                     "uuid": stage.uuid,
                     "label": stage.label,
                     "class_": stage.class_,
@@ -153,21 +202,19 @@ class Shifter(Borg, Provider):
                     (other, (push.pos - fix.posn).magnitude, fix.reach)
                     for other, fix in self.theatre.items()
                     if isinstance(fix, Fixed)]
-            #gaps = [
-            #    (obj, (push.pos - pos).magnitude, rad)
-            #    for obj, pos, rad in Simulation.static]
-            #[collisions[obj].add(item) for obj, gap, rad in gaps
-            # if gap < rad]
+                [collisions[other].add(stage)
+                 for other, gap, rad in gaps
+                 if gap < rad]
 
-            #page["options"].extend([{
-            #    "label": obj.label,
-            #    "value": str(hits)
-            #} for obj, hits in collisions.items() for h in hits])
+            page.options.extend([{
+                "label": obj.label,
+                "value": str(hits)
+            } for obj, hits in collisions.items() for h in hits])
 
             tick = Tick(start, stop, step, ts)
             for i in self.services:
                 self.provide(i, locals())
-            #self.ticks.send(tick) # Game clock
+
             ts += step
             yield from asyncio.sleep(step)
 
