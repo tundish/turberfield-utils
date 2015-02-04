@@ -24,6 +24,7 @@ from turberfield.positions.demo import Simulation
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
 from turberfield.positions.machina import Props
+from turberfield.positions.machina import Provider
 from turberfield.positions.machina import Shifter
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
@@ -45,11 +46,31 @@ class ShifterTests(unittest.TestCase):
                 (stage, Fixed(posn, reach))
                 for stage, posn, reach in Simulation.static]))
 
-    def test_first_collision(self):
+    def test_has_provide(self):
+        p = Provider()
+        shifter = Shifter(self.theatre, self.props)
+        self.assertIsInstance(shifter, Provider)
+        self.assertTrue(hasattr(shifter, "provide"))
+
+    def test_has_services(self):
+        p = Provider()
+        self.assertRaises(NotImplementedError, getattr, p, "services")
+        shifter = Shifter(self.theatre, self.props)
+        self.assertIsInstance(shifter, Provider)
+        self.assertEqual(1, len(shifter.services))
+
+    def test_tick_attribute_service(self):
         shifter = Shifter(self.theatre, self.props)
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
         rv = task.result()
         self.assertAlmostEqual(rv.stop, rv.ts + rv.step, places=10)
-        loop.close()
+        self.assertEqual(rv, shifter.tick)
+
+    def test_first_collision(self):
+        shifter = Shifter(self.theatre, self.props)
+        task = asyncio.Task(shifter(0, 0.3, 0.1))
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(task)
+        rv = task.result()

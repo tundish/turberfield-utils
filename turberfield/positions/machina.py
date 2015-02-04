@@ -21,6 +21,7 @@ from collections import Counter
 from collections import defaultdict
 from collections import namedtuple
 import decimal
+from functools import singledispatch
 import time
 
 from turberfield.positions.travel import Impulse
@@ -35,15 +36,20 @@ Page = namedtuple("Page", ["info", "nav", "items", "options"])
 Tick = namedtuple("Tick", ["start", "stop", "step", "ts"])
 
 
-class Props:
-    """
-    TODO: Move a base class to turberfield.common.inventory
-    """ 
-
+class Borg:
     _shared_state = {}
 
     def __init__(self):
         self.__dict__ = self._shared_state
+
+
+class Props(Borg):
+    """
+    TODO: Move a base class to turberfield.common.inventory
+    """ 
+
+    def __init__(self):
+        super().__init__()
         if not hasattr(self, "pockets"):
             self.places = defaultdict(list)
             self.pockets = defaultdict(Counter)
@@ -59,16 +65,31 @@ class Props:
         except AttributeError:
             pass
 
-class Shifter:
+class Provider:
+
+    Attribute = namedtuple("Attribute", ["name"])
+    JSON = namedtuple("JSON", ["name"])
+    RSON = namedtuple("RSON", ["name"])
+    HATEOAS = namedtuple("HATEOAS", ["name"])
+
+    @property
+    def services(self):
+        raise NotImplementedError
+
+    def provide(self, service, data):
+        if isinstance(service, Provider.Attribute):
+            setattr(self, service.name, data[service.name])
+
+class Shifter(Borg, Provider):
 
     @staticmethod
     def queue(loop=None):
         return asyncio.Queue(loop=loop)
 
     @staticmethod
-    def movement(ops, start, ts):
+    def movement(theatre, start, ts):
         infinity = decimal.Decimal("Infinity")
-        for stage, job in ops.items():
+        for stage, job in theatre.items():
             if isinstance(job, Fixed):
                 imp = Impulse(start, 0, infinity, job.posn)
                 yield (stage, imp)
@@ -79,7 +100,14 @@ class Shifter:
                 if imp is not None:
                     yield (stage, imp)
 
+    @property
+    def services(self):
+        return [
+            Provider.Attribute("tick"),
+        ]
+
     def __init__(self, theatre, props):
+        super().__init__()
         self.theatre = theatre
         self.props = props
 
@@ -93,6 +121,8 @@ class Shifter:
             ):
                 pass
             tick = Tick(start, stop, step, ts)
+            for i in self.services:
+                self.provide(i, locals())
             #self.ticks.send(tick) # Game clock
             ts += step
             yield from asyncio.sleep(step)
