@@ -110,6 +110,6 @@ class Shifter(Provider, Borg):
                 self.provide(i, locals())
 
             ts += step
-            yield from asyncio.sleep(step)
+            yield from asyncio.sleep(max(step, 0.2))
 
         return tick

@@ -116,7 +116,7 @@ class Provider:
     def template(self):
         return Provider.Page(
             info = {
-                "interval": 800,
+                "interval": 200,
                 "title": self.__class__.__name__,
                 "version": __version__
             },

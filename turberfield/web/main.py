@@ -126,9 +126,6 @@ def main(args):
     with concurrent.futures.ProcessPoolExecutor() as executor:
         future = executor.submit(
             turberfield.positions.demo.run,
-            options=args,
-            node="positions.json",
-            start=0, dt=Dl("0.1"),
         )
         app.config.update({
             "args": args,
