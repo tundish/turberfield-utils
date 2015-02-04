@@ -19,6 +19,8 @@
 import argparse
 import asyncio
 from collections import OrderedDict
+from io import StringIO
+import json
 import unittest
 
 from turberfield.positions.demo import Simulation
@@ -46,25 +48,32 @@ class ShifterTests(unittest.TestCase):
             OrderedDict([
                 (stage, Fixed(posn, reach))
                 for stage, posn, reach in Simulation.static]))
+        self.services = Shifter.services()
+        hateoas = self.services.pop(2)
+        self.services.append(hateoas._replace(dst=StringIO()))
 
     def test_has_provide(self):
         p = Provider()
-        shifter = Shifter(self.theatre, self.props)
+        shifter = Shifter(
+            self.theatre, self.props, services=self.services)
         self.assertIsInstance(shifter, Provider)
         self.assertTrue(hasattr(shifter, "provide"))
 
     def test_has_options(self):
-        shifter = Shifter(self.theatre, self.props)
+        shifter = Shifter(
+            self.theatre, self.props, services=self.services)
         self.assertIsInstance(shifter.options, argparse.Namespace)
 
     def test_has_services(self):
         p = Provider()
-        shifter = Shifter(self.theatre, self.props)
+        shifter = Shifter(
+            self.theatre, self.props, services=self.services)
         self.assertIsInstance(shifter, Provider)
         self.assertEqual(3, len(shifter.services))
 
     def test_tick_attribute_service(self):
-        shifter = Shifter(self.theatre, self.props)
+        shifter = Shifter(
+            self.theatre, self.props, services=self.services)
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
@@ -73,7 +82,8 @@ class ShifterTests(unittest.TestCase):
         self.assertEqual(rv, shifter.tick)
 
     def test_page_attribute_service(self):
-        shifter = Shifter(self.theatre, self.props)
+        shifter = Shifter(
+            self.theatre, self.props, services=self.services)
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
@@ -82,8 +92,23 @@ class ShifterTests(unittest.TestCase):
         self.assertIn("items", vars(shifter.page))
         self.assertIn("options", vars(shifter.page))
 
+    def test_hateoas_attribute_service(self):
+        shifter = Shifter(
+            self.theatre, self.props, services=self.services)
+        task = asyncio.Task(shifter(0, 0.3, 0.1))
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(task)
+        history = shifter.services[2].dst.getvalue()
+        data = "{" + history.rpartition("}{")[-1]
+        output = json.loads(data)
+        self.assertIn("info", output)
+        self.assertIn("nav", output)
+        self.assertIn("items", output)
+        self.assertIn("options", output)
+
     def test_first_collision(self):
-        shifter = Shifter(self.theatre, self.props)
+        shifter = Shifter(
+            self.theatre, self.props, services=self.services)
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
