@@ -20,6 +20,10 @@ import asyncio
 from collections import Counter
 from collections import defaultdict
 from collections import namedtuple
+import decimal
+import time
+
+from turberfield.positions.travel import Impulse
 
 __doc__ = """
 Machina places an actor on a stage.
@@ -60,6 +64,20 @@ class Shifter:
     def queue(loop=None):
         return asyncio.Queue(loop=loop)
 
+    @staticmethod
+    def movement(ops, start, ts):
+        infinity = decimal.Decimal("Infinity")
+        for stage, job in ops.items():
+            if isinstance(job, Fixed):
+                imp = Impulse(start, 0, infinity, job.posn)
+                yield (stage, imp)
+            elif isinstance(job, Mobile):
+                if ts == start:
+                    job.motion.send(None)
+                imp = job.motion.send(ts)
+                if imp is not None:
+                    yield (stage, imp)
+
     def __init__(self, theatre, props):
         self.theatre = theatre
         self.props = props
@@ -69,10 +87,12 @@ class Shifter:
         ts = start
         while ts < stop:
             now = time.time()
-            for stage, push in movement(self.theatre, start, ts):
+            for stage, push in Shifter.movement(
+                self.theatre, start, ts
+            ):
                 pass
+            #self.ticks.send(ts) # Game clock
             ts += step
-            self.ticks.send(ts) # Game clock
             yield from asyncio.sleep(step)
 
         return "Hi"

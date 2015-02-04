@@ -87,7 +87,7 @@ def trajectory(limits=None):
         imp = yield state[0]
 
 
-def steadypace(integrator, routing, timing):
+def steadypace(integrator, routing, timing, tol=1):
     log = logging.getLogger("turberfield.positions.travel.steadypace")
     accn = vector(0, 0, 0)
     integrator.send(None)
@@ -96,13 +96,13 @@ def steadypace(integrator, routing, timing):
     origin, destn = next(routing)
     tTransit = next(timing)
     imp = integrator.send(Impulse(tBegin, tEnd, accn, origin))
-    hop = (destn - origin) * (tEnd - tBegin) / tTransit
+    hop = (destn - origin) * Dl(tEnd - tBegin) / tTransit
     tBegin, tEnd = tEnd, (yield imp)
     imp = integrator.send(Impulse(tBegin, tEnd, accn, origin + hop))
     while True:
         tBegin, tEnd = tEnd, (yield imp)
         dist = (destn - imp.pos).magnitude
-        if dist < 1:
+        if dist < tol:
             origin, destn = next(routing)
             tTransit = next(timing)
             hop = (destn - origin) * (tEnd - tBegin) / tTransit

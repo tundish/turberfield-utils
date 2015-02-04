@@ -46,8 +46,8 @@ class ShifterTests(unittest.TestCase):
                 for stage, posn, reach in Simulation.static]))
 
     def test_first_collision(self):
-        op = Shifter(self.theatre, self.props)
-        task = asyncio.Task(op(0, 60, 1))
+        shifter = Shifter(self.theatre, self.props)
+        task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
         print(task.result())
