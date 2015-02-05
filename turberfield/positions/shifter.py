@@ -96,10 +96,9 @@ class Shifter(Provider, Borg):
                 gaps = [
                     (other, (push.pos - fix.posn).magnitude, fix.reach)
                     for other, fix in self.theatre.items()
-                    if isinstance(fix, Fixed) and other != fix]
+                    if isinstance(fix, Fixed) and stage is not other]
                 [collisions[other].add(stage)
-                 for other, gap, rad in gaps
-                 if gap < rad]
+                 for other, gap, rad in gaps if gap < rad]
 
             page.options.extend([{
                 "label": obj.label,
