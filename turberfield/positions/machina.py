@@ -116,7 +116,6 @@ class Provider:
     def template(self):
         return Provider.Page(
             info = {
-                "interval": 200,
                 "title": self.__class__.__name__,
                 "version": __version__
             },
@@ -125,12 +124,14 @@ class Provider:
             options = []
         )
 
-    def provide(self, service, data):
-        if isinstance(service, Provider.Attribute):
-            setattr(self, service.name, data[service.name])
-        elif isinstance(service, Provider.HATEOAS):
-            content = data[service.attr]
-            with Provider.endpoint(service.dst) as output:
-                json.dump(
-                    vars(content), output, cls=TypesEncoder, indent=4
-                )
+    def provide(self, services, data):
+        for service in services:
+            if isinstance(service, Provider.Attribute):
+                setattr(self, service.name, data[service.name])
+            elif isinstance(service, Provider.HATEOAS):
+                content = data[service.attr]
+                with Provider.endpoint(service.dst) as output:
+                    json.dump(
+                        vars(content), output,
+                        cls=TypesEncoder, indent=4
+                    )

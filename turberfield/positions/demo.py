@@ -65,7 +65,7 @@ class Simulation:
             zip(posns.values(),
             list(posns.values())[1:] + [posns["nw"]])
          ),
-        itertools.repeat(decimal.Decimal(6))
+        itertools.repeat(decimal.Decimal(24))
         ),
     ]
 

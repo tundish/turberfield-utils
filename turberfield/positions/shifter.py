@@ -19,6 +19,7 @@
 import asyncio
 from collections import defaultdict
 import decimal
+from operator import attrgetter
 import os.path
 import time
 
@@ -95,7 +96,7 @@ class Shifter(Provider, Borg):
                 gaps = [
                     (other, (push.pos - fix.posn).magnitude, fix.reach)
                     for other, fix in self.theatre.items()
-                    if isinstance(fix, Fixed)]
+                    if isinstance(fix, Fixed) and other != fix]
                 [collisions[other].add(stage)
                  for other, gap, rad in gaps
                  if gap < rad]
@@ -103,11 +104,10 @@ class Shifter(Provider, Borg):
             page.options.extend([{
                 "label": obj.label,
                 "value": str(hits)
-            } for obj, hits in collisions.items() for h in hits])
+            } for obj, hits in collisions.items()])
 
             tick = Tick(start, stop, step, ts)
-            for i in self.services:
-                self.provide(i, locals())
+            self.provide(self.services, locals())
 
             ts += step
             yield from asyncio.sleep(max(step, 0.2))
