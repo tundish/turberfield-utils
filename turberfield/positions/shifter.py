@@ -23,6 +23,7 @@ import decimal
 from operator import attrgetter
 import os.path
 import time
+import warnings
 
 
 from turberfield.positions.machina import borg  # TODO: common
@@ -75,11 +76,11 @@ class Shifter(borg(Provider)):
         super().__init__()
         self.theatre = theatre
         self.props = props
-        if not hasattr(self, "_services"):
-            self._services = kwargs
-        elif kwargs:
-            print(kwargs)
-            raise NotImplementedError
+        if kwargs:
+            if not hasattr(self, "_services"):
+                self._services = kwargs
+            else:
+                warnings.warn("Re-initialisation: {}".format(kwargs))
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):

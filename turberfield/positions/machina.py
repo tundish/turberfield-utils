@@ -128,7 +128,7 @@ class Provider:
         )
 
     def provide(self, services, data):
-        for service in services:
+        for name, service in services.items():
             if isinstance(service, Provider.Attribute):
                 setattr(self, service.name, data[service.name])
             elif isinstance(service, Provider.HATEOAS):

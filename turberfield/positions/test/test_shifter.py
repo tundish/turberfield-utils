@@ -24,6 +24,7 @@ from collections.abc import Mapping
 from io import StringIO
 import json
 import unittest
+import warnings
 
 from turberfield.positions.demo import Simulation
 from turberfield.positions.machina import Fixed
@@ -38,6 +39,7 @@ from turberfield.positions.travel import trajectory
 class ShifterTests(unittest.TestCase):
 
     def setUp(self):
+        warnings.simplefilter("error")
         self.props = Props()
         self.props._clear()
         self.theatre = OrderedDict([
@@ -50,11 +52,16 @@ class ShifterTests(unittest.TestCase):
             OrderedDict([
                 (stage, Fixed(posn, reach))
                 for stage, posn, reach in Simulation.static]))
-        self.services = Shifter.options()
-        hateoas = self.services["positions"]
-        self.services["positions"] = (hateoas._replace(dst=StringIO()))
-        self._shifter = Shifter(
-            self.theatre, self.props, **self.services)
+
+        self.shifter = Shifter(self.theatre, self.props)
+        if not hasattr(self.shifter, "_services"):
+            self.services = Shifter.options()
+            hateoas = self.services["positions"]
+            self.services["positions"] = (
+                hateoas._replace(dst=StringIO())
+            )
+            self._shifter = Shifter(
+                self.theatre, self.props, **self.services)
 
     def test_has_provide(self):
         p = Provider()
@@ -64,26 +71,25 @@ class ShifterTests(unittest.TestCase):
 
     def test_has_services(self):
         p = Provider()
-        shifter = Shifter(
-            self.theatre, self.props, **self.services)
+        shifter = Shifter(self.theatre, self.props)
         self.assertIsInstance(shifter, Provider)
-        self.assertEqual(3, len(shifter.services))
+        self.assertEqual(3, len(shifter._services))
 
     def test_first_instantiation_defines_services(self):
         p = Provider()
         self.assertIsInstance(Shifter.options, Callable)
-        shifter = Shifter(
-            self.theatre, self.props, **self.services)
+        shifter = Shifter(self.theatre, self.props)
         self.assertIsInstance(shifter._services, Mapping)
-        self.assertIsInstance(shifter._services[-1].dst, StringIO)
+        self.assertIsInstance(
+            shifter._services["positions"].dst, StringIO)
 
         borg = Shifter(self.theatre, self.props)
-        self.assertIsInstance(shifter._services, Sequence)
-        self.assertIsInstance(shifter._services[-1].dst, StringIO)
+        self.assertIsInstance(shifter._services, Mapping)
+        self.assertIsInstance(
+            shifter._services["positions"].dst, StringIO)
 
     def test_tick_attribute_service(self):
-        shifter = Shifter(
-            self.theatre, self.props, **self.services)
+        shifter = Shifter(self.theatre, self.props)
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
@@ -92,8 +98,7 @@ class ShifterTests(unittest.TestCase):
         self.assertEqual(rv, shifter.tick)
 
     def test_page_attribute_service(self):
-        shifter = Shifter(
-            self.theatre, self.props, **self.services)
+        shifter = Shifter(self.theatre, self.props)
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
@@ -103,12 +108,11 @@ class ShifterTests(unittest.TestCase):
         self.assertIn("options", vars(shifter.page))
 
     def test_hateoas_attribute_service(self):
-        shifter = Shifter(
-            self.theatre, self.props, **self.services)
+        shifter = Shifter(self.theatre, self.props)
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
-        history = shifter.services[2].dst.getvalue()
+        history = shifter._services["positions"].dst.getvalue()
         data = "{" + history.rpartition("}{")[-1]
         output = json.loads(data)
         self.assertIn("info", output)
@@ -117,8 +121,7 @@ class ShifterTests(unittest.TestCase):
         self.assertIn("options", output)
 
     def test_first_collision(self):
-        shifter = Shifter(
-            self.theatre, self.props, **self.services)
+        shifter = Shifter(self.theatre, self.props)
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
