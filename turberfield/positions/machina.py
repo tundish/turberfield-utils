@@ -42,13 +42,22 @@ Fixed = namedtuple("Fixed", ["posn", "reach"])
 Mobile = namedtuple("Mobile", ["motion", "reach"])
 Tick = namedtuple("Tick", ["start", "stop", "step", "ts"])
 
-
 class Borg:
     _shared_state = {}
 
     def __init__(self):
         self.__dict__ = self._shared_state
 
+
+# TODO: Move to turberfield.common.facets
+def facet(name):
+
+    def __init__(self):
+        self.__dict__ = self._shared_state
+
+    rv = type(name, (), {"__init__": __init__})
+    rv._shared_state = {}
+    return rv
 
 class Props(Borg):
     """

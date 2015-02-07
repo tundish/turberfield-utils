@@ -22,7 +22,28 @@ import os
 import shutil
 import unittest
 
+from turberfield.positions.machina import facet
 from turberfield.positions.machina import Provider
+
+class FacetTests(unittest.TestCase):
+
+    def test_facet_leakage(self):
+
+        class A(facet("A")):
+            pass
+
+        class B(facet("B")):
+            pass
+
+        a = A()
+        b = B()
+        a.attr = None
+
+        self.assertFalse(hasattr(b, "attr"))
+
+        c = A()
+        self.assertTrue(hasattr(c, "attr"))
+
 
 class EndpointTests(unittest.TestCase):
 

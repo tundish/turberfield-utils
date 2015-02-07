@@ -19,6 +19,8 @@
 import argparse
 import asyncio
 from collections import OrderedDict
+from collections.abc import Callable
+from collections.abc import Sequence
 from io import StringIO
 import json
 import unittest
@@ -65,6 +67,18 @@ class ShifterTests(unittest.TestCase):
             self.theatre, self.props, services=self.services)
         self.assertIsInstance(shifter, Provider)
         self.assertEqual(3, len(shifter.services))
+
+    def test_first_instantiation_defines_services(self):
+        p = Provider()
+        self.assertIsInstance(Shifter.services, Callable)
+        shifter = Shifter(
+            self.theatre, self.props, services=self.services)
+        self.assertIsInstance(shifter.services, Sequence)
+        self.assertIsInstance(shifter.services[-1].dst, StringIO)
+
+        borg = Shifter(self.theatre, self.props)
+        self.assertIsInstance(shifter.services, Sequence)
+        self.assertIsInstance(shifter.services[-1].dst, StringIO)
 
     def test_tick_attribute_service(self):
         shifter = Shifter(
