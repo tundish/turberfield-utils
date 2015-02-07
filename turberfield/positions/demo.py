@@ -108,8 +108,8 @@ def main(args):
             (stage, Fixed(posn, reach))
             for stage, posn, reach in Simulation.static]))
 
-    services = Shifter.services(parent=args.output)
-    shifter = Shifter(theatre, props, services=services)
+    kwargs = Shifter.options(parent=args.output)
+    shifter = Shifter(theatre, props, **kwargs)
     task = asyncio.Task(shifter(0, decimal.Decimal("Infinity"), 1))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(task)

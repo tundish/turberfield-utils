@@ -22,27 +22,38 @@ import os
 import shutil
 import unittest
 
-from turberfield.positions.machina import facet
+from turberfield.positions.machina import borg
 from turberfield.positions.machina import Provider
 
-class FacetTests(unittest.TestCase):
+class BorgTests(unittest.TestCase):
 
-    def test_facet_leakage(self):
+    def test_borg_leakage(self):
 
-        class A(facet("A")):
+        class A():
             pass
 
-        class B(facet("B")):
+        class B(borg(A)):
+            pass
+
+        class C(borg(A)):
             pass
 
         a = A()
         b = B()
-        a.attr = None
+        c = C()
 
+        a.attr = False
         self.assertFalse(hasattr(b, "attr"))
+        self.assertFalse(hasattr(c, "attr"))
 
-        c = A()
-        self.assertTrue(hasattr(c, "attr"))
+        b.attr = True
+        self.assertFalse(a.attr)
+        self.assertFalse(hasattr(c, "attr"))
+
+        _b = B()
+        _c = C()
+        self.assertTrue(hasattr(_b, "attr"))
+        self.assertFalse(hasattr(_c, "attr"))
 
 
 class EndpointTests(unittest.TestCase):

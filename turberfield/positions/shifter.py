@@ -18,13 +18,14 @@
 
 import asyncio
 from collections import defaultdict
+from collections import OrderedDict
 import decimal
 from operator import attrgetter
 import os.path
 import time
 
 
-from turberfield.positions.machina import Borg  # TODO: common
+from turberfield.positions.machina import borg  # TODO: common
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
 from turberfield.positions.machina import Provider
@@ -36,7 +37,7 @@ __doc__ = """
 Shifter moves stages around
 """
 
-class Shifter(Provider, Borg):
+class Shifter(borg(Provider)):
 
     @staticmethod
     def queue(loop=None):
@@ -57,25 +58,28 @@ class Shifter(Provider, Borg):
                     yield (stage, imp)
 
     @staticmethod
-    def services(
+    def options(
         parent=os.path.expanduser(os.path.join("~", ".turberfield"))
     ):
-        return [
-            Provider.Attribute("tick"),
-            Provider.Attribute("page"),
-            Provider.HATEOAS(
+        return OrderedDict([
+            ("tick", Provider.Attribute("tick")),
+            ("page", Provider.Attribute("page")),
+            ("positions", Provider.HATEOAS(
                 "positions",
                 "page",
-                os.path.join(parent, "positions.json")
+                os.path.join(parent, "positions.json"))
             ),
-        ]
+        ])
 
     def __init__(self, theatre, props, **kwargs):
-        Borg.__init__(self)
-        self.services = kwargs.pop("services", Shifter.services())
-        super().__init__(**kwargs)
+        super().__init__()
         self.theatre = theatre
         self.props = props
+        if not hasattr(self, "_services"):
+            self._services = kwargs
+        elif kwargs:
+            print(kwargs)
+            raise NotImplementedError
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
@@ -106,7 +110,7 @@ class Shifter(Provider, Borg):
             } for obj, hits in collisions.items()])
 
             tick = Tick(start, stop, step, ts)
-            self.provide(self.services, locals())
+            self.provide(self._services, locals())
 
             ts += step
             yield from asyncio.sleep(max(step, 0.2))
