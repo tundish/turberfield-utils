@@ -72,12 +72,13 @@ class Shifter(borg(Provider)):
             ),
         ])
 
-    def __init__(self, theatre, props, **kwargs):
+    def __init__(self, theatre=None, props=None, **kwargs):
         super().__init__()
-        self.theatre = theatre
-        self.props = props
         if kwargs:
-            if not hasattr(self, "_services"):
+            if (theatre is not None and props is not None
+                and not hasattr(self, "_services")):
+                self.theatre = theatre
+                self.props = props
                 self._services = kwargs
             else:
                 warnings.warn("Re-initialisation: {}".format(kwargs))
@@ -89,6 +90,7 @@ class Shifter(borg(Provider)):
             collisions = defaultdict(set)
             page = self.template
             page.info["ts"] = time.time()
+            assert self.theatre
             for stage, push in Shifter.movement(
                 self.theatre, start, ts
             ):
