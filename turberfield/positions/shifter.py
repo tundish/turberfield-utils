@@ -94,7 +94,6 @@ class Shifter(borg(Provider)):
             collisions = defaultdict(set)
             page = self.template
             page.info["ts"] = time.time()
-            assert self.theatre
             for stage, push in Shifter.movement(
                 self.theatre, start, ts
             ):
@@ -117,7 +116,7 @@ class Shifter(borg(Provider)):
             } for obj, hits in collisions.items()])
 
             tick = Tick(start, stop, step, ts)
-            self.provide(self._services, locals())
+            self.provide(self._services, dict(page=page, tick=tick))
 
             ts += step
             yield from asyncio.sleep(max(step, 0.2))
