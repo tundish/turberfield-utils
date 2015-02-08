@@ -30,6 +30,7 @@ import os
 import re
 import tempfile
 import time
+import uuid
 
 from turberfield.positions import __version__
 from turberfield.positions.travel import Impulse
@@ -48,7 +49,8 @@ def borg(class_):
     def __init__(self):
         self.__dict__ = self._shared_state
 
-    rv = type(class_.__name__, (class_,), {"__init__": __init__})
+    #rv = type(class_.__name__, (class_,), {"__init__": __init__})
+    rv = type(uuid.uuid4().hex, (class_,), {"__init__": __init__})
     rv._shared_state = {}
     return rv
 

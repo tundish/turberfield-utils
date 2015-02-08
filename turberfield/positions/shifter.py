@@ -26,6 +26,7 @@ import time
 import warnings
 
 
+from turberfield.positions.homogeneous import vector
 from turberfield.positions.machina import borg  # TODO: common
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
@@ -49,7 +50,9 @@ class Shifter(borg(Provider)):
         infinity = decimal.Decimal("Infinity")
         for stage, job in theatre.items():
             if isinstance(job, Fixed):
-                imp = Impulse(start, 0, infinity, job.posn)
+                imp = Impulse(
+                    start, infinity, vector(0, 0, 0), job.posn
+                )
                 yield (stage, imp)
             elif isinstance(job, Mobile):
                 if ts == start:
@@ -85,8 +88,9 @@ class Shifter(borg(Provider)):
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
+        assert all(i is not None for i in (start, stop, step))
         ts = start
-        while ts < stop:
+        while stop > ts:
             collisions = defaultdict(set)
             page = self.template
             page.info["ts"] = time.time()

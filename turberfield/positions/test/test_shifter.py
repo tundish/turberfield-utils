@@ -107,6 +107,7 @@ class ShifterTests(unittest.TestCase):
 
     def test_gateoas_attribute_service(self):
         shifter = Shifter()
+        print(vars(shifter))
         task = asyncio.Task(self._shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         rv = loop.run_until_complete(task)
@@ -120,11 +121,9 @@ class ShifterTests(unittest.TestCase):
 
     def test_hateoas_attribute_service(self):
         shifter = Shifter()
-        print(vars(shifter))
         task = asyncio.Task(shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         rv = loop.run_until_complete(task)
-        print(rv)
         history = shifter._services["positions"].dst.getvalue()
         data = "{" + history.rpartition("}{")[-1]
         output = json.loads(data)

@@ -71,7 +71,6 @@ def time_correct_verlet(state, t, accn, mass=1):
 
 def trajectory(limits=None):
     state = deque([], maxlen=2)
-    print(state)
     if len(state) == 0:
         imp = yield None
         state.appendleft(imp)
@@ -84,7 +83,6 @@ def trajectory(limits=None):
         if imp.pos != state[0].pos:
             state = (imp, state[0])
         else:
-            assert all(i.tEnd for i in state), state
             state = time_correct_verlet(state, imp.tEnd, imp.accn)
         imp = yield state[0]
 
