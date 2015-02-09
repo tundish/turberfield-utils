@@ -108,7 +108,7 @@ class Shifter(Provider):
             } for obj, hits in collisions.items()])
 
             tick = Tick(start, stop, step, ts)
-            self.provide(self._services, dict(page=page, tick=tick))
+            self.provide(locals())
 
             ts += step
             yield from asyncio.sleep(max(step, 0.2))

@@ -142,10 +142,10 @@ class Provider:
             options = []
         )
 
-    def provide(self, services, data):
+    def provide(self, data):
         kwargs = defaultdict(None)
         class_ = self.__class__
-        for name, service in services.items():
+        for name, service in self._services.items():
             if isinstance(service, Provider.Attribute):
                 kwargs[service.name] = data[service.name]
             elif isinstance(service, Provider.HATEOAS):
