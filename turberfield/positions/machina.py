@@ -45,24 +45,12 @@ Mobile = namedtuple("Mobile", ["motion", "reach"])
 Tick = namedtuple("Tick", ["start", "stop", "step", "ts"])
 
 
-def borg(class_):
-
-    def __init__(self):
-        self.__dict__ = self._shared_state
-
-    #rv = type(class_.__name__, (class_,), {"__init__": __init__})
-    rv = type(uuid.uuid4().hex, (class_,), {"__init__": __init__})
-    rv._shared_state = {}
-    return rv
-
-
-class Props(borg(object)):
+class Props:
     """
     TODO: Move a base class to turberfield.common.inventory
     """ 
 
     def __init__(self):
-        super().__init__()
         if not hasattr(self, "pockets"):
             self.places = defaultdict(list)
             self.pockets = defaultdict(Counter)
@@ -120,8 +108,30 @@ class Provider:
         else:
             yield arg
 
+    @staticmethod
+    def options():
+        raise NotImplementedError
+
+    def __init__(self, **kwargs):
+        class_ = self.__class__
+        self.log = logging.getLogger(class_.__name__)
+        if kwargs:
+            if class_.public is not None:
+                warnings.warn("Re-initialisation of {}: {}".format(
+                    class_.__name__, kwargs))
+
+            attributes = [k for k, v in kwargs.items()
+                          if isinstance(v, Provider.Attribute)]
+            self.Interface = namedtuple(
+                class_.__name__ + "Interface", attributes)
+
+            class_.public = self.Interface._make(
+                itertools.repeat(None, len(attributes)))
+            
+            self._services = kwargs
+
     @property
-    def template(self):
+    def page(self):
         return Provider.Page(
             info = {
                 "title": self.__class__.__name__,
@@ -132,12 +142,9 @@ class Provider:
             options = []
         )
 
-    @staticmethod
-    def options():
-        raise NotImplementedError
-
     def provide(self, services, data):
         kwargs = defaultdict(None)
+        class_ = self.__class__
         for name, service in services.items():
             if isinstance(service, Provider.Attribute):
                 kwargs[service.name] = data[service.name]
@@ -149,20 +156,4 @@ class Provider:
                         cls=TypesEncoder, indent=4
                     )
 
-        self.__class__.public = self.__class__.public._replace(
-            **kwargs)
-
-    def __init__(self, **kwargs):
-        if kwargs:
-            if hasattr(self, "_services"):
-                warnings.warn("Re-initialisation: {}".format(kwargs))
-
-            attributes = [k for k, v in kwargs.items()
-                          if isinstance(v, Provider.Attribute)]
-            self.Interface = namedtuple(
-                self.__class__.__name__ + "Interface", attributes)
-
-            self.__class__.public = self.Interface._make(
-                itertools.repeat(None, len(attributes)))
-            
-            self._services = kwargs
+        class_.public = class_.public._replace(**kwargs)

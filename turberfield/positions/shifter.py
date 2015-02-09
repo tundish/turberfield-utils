@@ -27,7 +27,6 @@ import warnings
 
 
 from turberfield.positions.homogeneous import vector
-from turberfield.positions.machina import borg  # TODO: common
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
 from turberfield.positions.machina import Provider
@@ -39,7 +38,7 @@ __doc__ = """
 Shifter moves stages around
 """
 
-class Shifter(borg(Provider)):
+class Shifter(Provider):
 
     @staticmethod
     def queue(loop=None):
@@ -75,16 +74,10 @@ class Shifter(borg(Provider)):
             ),
         ])
 
-    def __init__(self, theatre=None, props=None, **kwargs):
-        super().__init__()
-        if kwargs:
-            if (theatre is not None and props is not None
-                and not hasattr(self, "_services")):
-                self.theatre = theatre
-                self.props = props
-                self._services = kwargs
-            else:
-                warnings.warn("Re-initialisation: {}".format(kwargs))
+    def __init__(self, theatre, props, **kwargs):
+        super().__init__(**kwargs)
+        self.theatre = theatre
+        self.props = props
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
@@ -92,7 +85,7 @@ class Shifter(borg(Provider)):
         ts = start
         while stop > ts:
             collisions = defaultdict(set)
-            page = self.template
+            page = self.page
             page.info["ts"] = time.time()
             for stage, push in Shifter.movement(
                 self.theatre, start, ts

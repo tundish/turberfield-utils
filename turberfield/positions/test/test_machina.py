@@ -23,39 +23,7 @@ import os
 import shutil
 import unittest
 
-from turberfield.positions.machina import borg
 from turberfield.positions.machina import Provider
-
-class BorgTests(unittest.TestCase):
-
-    def test_borg_leakage(self):
-
-        class A():
-            pass
-
-        class B(borg(A)):
-            pass
-
-        class C(borg(A)):
-            pass
-
-        a = A()
-        b = B()
-        c = C()
-
-        a.attr = False
-        self.assertFalse(hasattr(b, "attr"))
-        self.assertFalse(hasattr(c, "attr"))
-
-        b.attr = True
-        self.assertFalse(a.attr)
-        self.assertFalse(hasattr(c, "attr"))
-
-        _b = B()
-        _c = C()
-        self.assertTrue(hasattr(_b, "attr"))
-        self.assertFalse(hasattr(_c, "attr"))
-
 
 class EndpointTests(unittest.TestCase):
 
@@ -95,7 +63,7 @@ class EndpointTests(unittest.TestCase):
 
 class ProviderTests(unittest.TestCase):
 
-    def test_subclass(self):
+    def test_subclassing_provider(self):
 
         class Subclass(Provider):
 
@@ -110,4 +78,5 @@ class ProviderTests(unittest.TestCase):
         options = Subclass.options()
         sub = Subclass(**options)
         self.assertTrue(hasattr(sub, "Interface"))
-        print(Subclass.public)
+        self.assertIs(None, Provider.public)
+        self.assertIsInstance(Subclass.public, sub.Interface)
