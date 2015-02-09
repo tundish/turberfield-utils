@@ -31,6 +31,7 @@ from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
 from turberfield.positions.machina import Props
 from turberfield.positions.machina import Provider
+from turberfield.positions.machina import Tick
 from turberfield.positions.shifter import Shifter
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
@@ -38,20 +39,26 @@ from turberfield.positions.travel import trajectory
 
 class ShifterTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(class_):
-        class_.props = Props()
-        class_.theatre = OrderedDict([
+    def create_theatre():
+        rv = OrderedDict([
                 (stage, Mobile(
                     steadypace(trajectory(), routing, timing),
                     10)
                 )
                 for stage, routing, timing in Simulation.patterns])
-        class_.theatre.update(
+        rv.update(
             OrderedDict([
                 (stage, Fixed(posn, reach))
                 for stage, posn, reach in Simulation.static]))
+        return rv
 
+        
+    def setUp(self):
+        class_ = self.__class__
+        class_.props = Props()
+        class_.theatre = ShifterTests.create_theatre()
+
+        # Plug in a StringIO object to the positions endpoint
         services = Shifter.options()
         hateoas = services["positions"]
         class_._output = StringIO()
@@ -61,6 +68,8 @@ class ShifterTests(unittest.TestCase):
         class_._shifter = Shifter(
             class_.theatre, class_.props, **services
         )
+
+        class_.tick = Tick(0, 0.3, 0.1, None)
 
     def test_has_provide(self):
         p = Provider()
@@ -92,14 +101,18 @@ class ShifterTests(unittest.TestCase):
         task = asyncio.Task(ShifterTests._shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
-        rv = task.result()
-        self.assertAlmostEqual(rv.stop, rv.ts + rv.step, places=10)
-        self.assertEqual(rv, Shifter.public.tick)
+        self.tick = task.result()
+        self.assertAlmostEqual(
+            self.tick.stop,
+            self.tick.ts + self.tick.step, places=10
+        )
+        self.assertEqual(self.tick, Shifter.public.tick)
 
     def test_page_attribute_service(self):
         task = asyncio.Task(ShifterTests._shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
+        self.tick = task.result()
         self.assertIn("info", vars(Shifter.public.page))
         self.assertIn("nav", vars(Shifter.public.page))
         self.assertIn("items", vars(Shifter.public.page))
@@ -108,7 +121,8 @@ class ShifterTests(unittest.TestCase):
     def test_hateoas_attribute_service(self):
         task = asyncio.Task(ShifterTests._shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
-        rv = loop.run_until_complete(task)
+        loop.run_until_complete(task)
+        self.tick = task.result()
         history = ShifterTests._output.getvalue()
         data = "{" + history.rpartition("}{")[-1]
         output = json.loads(data)
@@ -121,4 +135,4 @@ class ShifterTests(unittest.TestCase):
         task = asyncio.Task(ShifterTests._shifter(0, 0.3, 0.1))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
-        rv = task.result()
+        self.tick = task.result()
