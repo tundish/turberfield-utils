@@ -70,6 +70,7 @@ class ShifterTests(unittest.TestCase):
         )
 
         class_.tick = Tick(0, 0.3, 0.1, None)
+        warnings.simplefilter("ignore")
 
     def test_has_provide(self):
         p = Provider()
