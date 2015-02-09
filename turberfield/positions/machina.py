@@ -23,7 +23,7 @@ from collections import defaultdict
 from collections import namedtuple
 import contextlib
 import decimal
-from functools import singledispatch
+import itertools
 import json
 import logging
 import os
@@ -31,6 +31,7 @@ import re
 import tempfile
 import time
 import uuid
+import warnings
 
 from turberfield.positions import __version__
 from turberfield.positions.travel import Impulse
@@ -100,6 +101,8 @@ class Provider:
     Page = namedtuple("Page", ["info", "nav", "items", "options"])
     RSON = namedtuple("RSON", ["name"])
 
+    public = None
+
     @staticmethod
     @contextlib.contextmanager
     def endpoint(arg, suffix=".json"):
@@ -129,10 +132,15 @@ class Provider:
             options = []
         )
 
+    @staticmethod
+    def options():
+        raise NotImplementedError
+
     def provide(self, services, data):
+        kwargs = defaultdict(None)
         for name, service in services.items():
             if isinstance(service, Provider.Attribute):
-                setattr(self, service.name, data[service.name])
+                kwargs[service.name] = data[service.name]
             elif isinstance(service, Provider.HATEOAS):
                 content = data[service.attr]
                 with Provider.endpoint(service.dst) as output:
@@ -140,3 +148,21 @@ class Provider:
                         vars(content), output,
                         cls=TypesEncoder, indent=4
                     )
+
+        self.__class__.public = self.__class__.public._replace(
+            **kwargs)
+
+    def __init__(self, **kwargs):
+        if kwargs:
+            if hasattr(self, "_services"):
+                warnings.warn("Re-initialisation: {}".format(kwargs))
+
+            attributes = [k for k, v in kwargs.items()
+                          if isinstance(v, Provider.Attribute)]
+            self.Interface = namedtuple(
+                self.__class__.__name__ + "Interface", attributes)
+
+            self.__class__.public = self.Interface._make(
+                itertools.repeat(None, len(attributes)))
+            
+            self._services = kwargs

@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import OrderedDict
 from io import StringIO
 import json
 import os
@@ -91,3 +92,22 @@ class EndpointTests(unittest.TestCase):
 
         self.assertFalse(os.path.isfile(fP))
         self.assertEqual('"Test string"', fObj.getvalue())
+
+class ProviderTests(unittest.TestCase):
+
+    def test_subclass(self):
+
+        class Subclass(Provider):
+
+            @staticmethod
+            def options():
+                return OrderedDict([
+                    ("tick", Provider.Attribute("tick")),
+                    ("page", Provider.Attribute("page")),
+                ])
+
+        self.assertTrue(hasattr(Subclass, "public"))
+        options = Subclass.options()
+        sub = Subclass(**options)
+        self.assertTrue(hasattr(sub, "Interface"))
+        print(Subclass.public)
