@@ -81,7 +81,6 @@ class Shifter(Provider):
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
-        assert all(i is not None for i in (start, stop, step))
         ts = start
         while stop > ts:
             collisions = defaultdict(set)
