@@ -109,10 +109,11 @@ def main(args):
             for stage, posn, reach in Simulation.static]))
 
     kwargs = Shifter.options(parent=args.output)
+    # TODO: args = (PipeQueue.pipequeue(path), )
     shifter = Shifter(theatre, props, **kwargs)
     task = asyncio.Task(shifter(0, decimal.Decimal("Infinity"), 1))
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(task)
+    loop.run_until_complete(asyncio.wait(asyncio.Task.all_tasks(loop)))
     return task.result()
 
 

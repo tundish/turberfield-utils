@@ -33,6 +33,8 @@ import time
 import uuid
 import warnings
 
+# TODO:
+#from turberfield.common.pipes import PipeQueue
 from turberfield.positions import __version__
 from turberfield.positions.travel import Impulse
 

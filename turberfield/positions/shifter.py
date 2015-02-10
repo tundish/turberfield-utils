@@ -78,6 +78,8 @@ class Shifter(Provider):
         super().__init__(**kwargs)
         self.theatre = theatre
         self.props = props
+        # TODO: Start listener Task for each of *args
+        # which gets and dispatches message
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):
@@ -102,6 +104,8 @@ class Shifter(Provider):
                 [collisions[other].add(stage)
                  for other, gap, rad in gaps if gap < rad]
 
+            # TODO: collisions are Real Time Events (RTEs)
+            # TODO: store and send deadline ts for each collision
             page.options.extend([{
                 "label": obj.label,
                 "value": str(hits)
@@ -109,6 +113,8 @@ class Shifter(Provider):
 
             tick = Tick(start, stop, step, ts)
             self.provide(locals())
+            # TODO: calculate sum wait time dispatched collisions
+            # TODO: sleep for that time.
 
             ts += step
             yield from asyncio.sleep(max(step, 0.2))
