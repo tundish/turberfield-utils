@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 from collections import OrderedDict
 from io import StringIO
 import json
@@ -80,3 +81,11 @@ class ProviderTests(unittest.TestCase):
         self.assertTrue(hasattr(sub, "Interface"))
         self.assertIs(None, Provider.public)
         self.assertIsInstance(Subclass.public, sub.Interface)
+
+
+class TaskTests(unittest.TestCase):
+
+    def test_task_from_queue(self):
+        q = asyncio.Queue()
+        p = Provider(q)
+        self.assertEqual(1, len(p._watchers))

@@ -114,9 +114,15 @@ class Provider:
     def options():
         raise NotImplementedError
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         class_ = self.__class__
         self.log = logging.getLogger(class_.__name__)
+        self._watchers = []
+        for arg in args:
+            coro = self.watch(arg)
+            watcher = asyncio.Task(coro)
+            watcher.q = arg
+            self._watchers.append(watcher)
         if kwargs:
             if class_.public is not None:
                 warnings.warn("Re-initialisation of {}: {}".format(
@@ -159,3 +165,10 @@ class Provider:
                     )
 
         class_.public = class_.public._replace(**kwargs)
+
+    @asyncio.coroutine
+    def watch(self, q):
+        rv = asyncio.Future()
+        rv.set_result(None)
+        return rv
+
