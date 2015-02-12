@@ -72,6 +72,7 @@ setup(
     install_requires=[
         "bottle>=0.12.7",
         "rson>=0.9",
+        "turberfield-common>=0.015.0",
         ],
     tests_require=[
         ],

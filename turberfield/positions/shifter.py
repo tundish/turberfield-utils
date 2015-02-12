@@ -41,10 +41,6 @@ Shifter moves stages around
 class Shifter(Provider):
 
     @staticmethod
-    def queue(loop=None):
-        return asyncio.Queue(loop=loop)
-
-    @staticmethod
     def movement(theatre, start, ts):
         infinity = decimal.Decimal("Infinity")
         for stage, job in theatre.items():

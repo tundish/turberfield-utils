@@ -33,8 +33,7 @@ import time
 import uuid
 import warnings
 
-# TODO:
-#from turberfield.common.pipes import PipeQueue
+from turberfield.common.pipes import PipeQueue
 from turberfield.positions import __version__
 from turberfield.positions.travel import Impulse
 
@@ -117,12 +116,15 @@ class Provider:
     def __init__(self, *args, **kwargs):
         class_ = self.__class__
         self.log = logging.getLogger(class_.__name__)
-        self._watchers = []
-        for arg in args:
-            coro = self.watch(arg)
-            watcher = asyncio.Task(coro)
-            watcher.q = arg
-            self._watchers.append(watcher)
+        self.inputs = [
+            i for i in args
+            if isinstance(i, (asyncio.Queue, PipeQueue))
+            # TODO: accept JobQueue, via hasattr duck typing?
+        ]
+        self._watchers = [
+            asyncio.Task(self.watch(q)) for q in self.inputs
+        ]
+        self._services = kwargs
         if kwargs:
             if class_.public is not None:
                 warnings.warn("Re-initialisation of {}: {}".format(
@@ -136,7 +138,6 @@ class Provider:
             class_.public = self.Interface._make(
                 itertools.repeat(None, len(attributes)))
             
-            self._services = kwargs
 
     @property
     def page(self):

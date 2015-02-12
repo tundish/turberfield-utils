@@ -85,7 +85,17 @@ class ProviderTests(unittest.TestCase):
 
 class TaskTests(unittest.TestCase):
 
-    def test_task_from_queue(self):
-        q = asyncio.Queue()
-        p = Provider(q)
-        self.assertEqual(1, len(p._watchers))
+    # TODO: Test PipeQueue, JobQueue
+    def test_tasks_for_queues(self):
+        q, r = (asyncio.Queue(), asyncio.Queue())
+        p = Provider(q, r)
+
+        self.assertEqual(2, len(p.inputs))
+        self.assertTrue(
+            all(isinstance(i, asyncio.Queue) for i in p.inputs)
+        )
+
+        self.assertEqual(2, len(p._watchers))
+        self.assertTrue(
+            all(isinstance(i, asyncio.Task) for i in p._watchers)
+        )
