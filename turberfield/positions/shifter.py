@@ -70,12 +70,10 @@ class Shifter(Provider):
             ),
         ])
 
-    def __init__(self, theatre, props, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, theatre, props, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.theatre = theatre
         self.props = props
-        # TODO: Start listener Task for each of *args
-        # which gets and dispatches message
 
     @asyncio.coroutine
     def __call__(self, start, stop, step):

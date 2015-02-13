@@ -137,3 +137,27 @@ class ShifterTests(unittest.TestCase):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task)
         self.tick = task.result()
+
+
+class TaskTests(unittest.TestCase):
+
+    def setUp(self):
+        class_ = self.__class__
+        class_.props = Props()
+        class_.theatre = ShifterTests.create_theatre()
+
+    def test_tasks_for_queues(self):
+        q = asyncio.Queue()
+        shifter = Shifter(
+            self.theatre, self.props, q
+        )
+
+        self.assertEqual(1, len(shifter.inputs))
+        self.assertTrue(
+            all(isinstance(i, asyncio.Queue) for i in shifter.inputs)
+        )
+
+        self.assertEqual(1, len(shifter._watchers))
+        self.assertTrue(
+            all(isinstance(i, asyncio.Task) for i in shifter._watchers)
+        )
