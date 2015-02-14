@@ -116,13 +116,15 @@ class Provider:
     def __init__(self, *args, **kwargs):
         class_ = self.__class__
         self.log = logging.getLogger(class_.__name__)
+        loop = kwargs.pop("loop", None)
         self.inputs = [
             i for i in args
             if isinstance(i, (asyncio.Queue, PipeQueue))
             # TODO: accept JobQueue, via hasattr duck typing?
         ]
         self._watchers = [
-            asyncio.Task(self.watch(q)) for q in self.inputs
+            asyncio.Task(self.watch(q, loop=loop), loop=loop)
+            for q in self.inputs
         ]
         self._services = kwargs
         if kwargs:
@@ -138,7 +140,6 @@ class Provider:
             class_.public = self.Interface._make(
                 itertools.repeat(None, len(attributes)))
             
-
     @property
     def page(self):
         return Provider.Page(
@@ -168,8 +169,9 @@ class Provider:
         class_.public = class_.public._replace(**kwargs)
 
     @asyncio.coroutine
-    def watch(self, q):
-        rv = asyncio.Future()
+    def watch(self, q, **kwargs):
+        loop = kwargs.pop("loop", None)
+        rv = asyncio.Future(loop=loop)
         rv.set_result(None)
         return rv
 

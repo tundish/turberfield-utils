@@ -114,3 +114,10 @@ class Shifter(Provider):
             yield from asyncio.sleep(max(step, 0.2))
 
         return tick
+
+    @asyncio.coroutine
+    def watch(self, q, **kwargs):
+        loop = kwargs.pop("loop", None)
+        msg = yield from q.get()
+        print(msg)
+

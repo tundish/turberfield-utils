@@ -132,12 +132,6 @@ class ShifterTests(unittest.TestCase):
         self.assertIn("items", output)
         self.assertIn("options", output)
 
-    def test_first_collision(self):
-        task = asyncio.Task(ShifterTests._shifter(0, 0.3, 0.1))
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(task)
-        self.tick = task.result()
-
 
 class TaskTests(unittest.TestCase):
 
@@ -145,9 +139,11 @@ class TaskTests(unittest.TestCase):
         class_ = self.__class__
         class_.props = Props()
         class_.theatre = ShifterTests.create_theatre()
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(None)
 
     def test_tasks_for_queues(self):
-        q = asyncio.Queue()
+        q = asyncio.Queue(loop=self.loop)
         shifter = Shifter(
             self.theatre, self.props, q
         )
@@ -161,3 +157,24 @@ class TaskTests(unittest.TestCase):
         self.assertTrue(
             all(isinstance(i, asyncio.Task) for i in shifter._watchers)
         )
+
+    def test_watcher_consumes_queues(self):
+
+        @asyncio.coroutine
+        def one_shot(q):
+            yield from q.put(None)
+
+        q = asyncio.Queue(loop=self.loop)
+        shifter = Shifter(
+            self.theatre, self.props, q
+        )
+
+        listener = shifter._watchers[0]
+        self.assertIsInstance(listener, asyncio.Task)
+        self.assertIs(shifter.inputs[0], q)
+        #done, pending = asyncio.wait(
+        #    [one_shot(shifter.inputs[0])]
+        #    #[one_shot(shifter.inputs[0]), listener]
+        #)
+        self.loop.run_until_complete(one_shot(shifter.inputs[0]))
+        print(done, pending)
