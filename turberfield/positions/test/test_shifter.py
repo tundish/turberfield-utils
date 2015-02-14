@@ -145,7 +145,7 @@ class TaskTests(unittest.TestCase):
     def test_tasks_for_queues(self):
         q = asyncio.Queue(loop=self.loop)
         shifter = Shifter(
-            self.theatre, self.props, q
+            self.theatre, self.props, q, loop=self.loop
         )
 
         self.assertEqual(1, len(shifter.inputs))
@@ -166,15 +166,14 @@ class TaskTests(unittest.TestCase):
 
         q = asyncio.Queue(loop=self.loop)
         shifter = Shifter(
-            self.theatre, self.props, q
+            self.theatre, self.props, q, loop=self.loop
         )
 
         listener = shifter._watchers[0]
         self.assertIsInstance(listener, asyncio.Task)
         self.assertIs(shifter.inputs[0], q)
-        #done, pending = asyncio.wait(
-        #    [one_shot(shifter.inputs[0])]
-        #    #[one_shot(shifter.inputs[0]), listener]
-        #)
-        self.loop.run_until_complete(one_shot(shifter.inputs[0]))
-        print(done, pending)
+        self.loop.run_until_complete(asyncio.wait(
+            [one_shot(shifter.inputs[0]), listener],
+            loop=self.loop,
+            timeout=1)
+        )
