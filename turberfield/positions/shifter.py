@@ -100,6 +100,7 @@ class Shifter(Provider):
 
             # TODO: collisions are Real Time Events (RTEs)
             # TODO: store and send deadline ts for each collision
+            # TODO: remove expired collsions
             page.options.extend([{
                 "label": obj.label,
                 "value": str(hits)
@@ -118,6 +119,14 @@ class Shifter(Provider):
     @asyncio.coroutine
     def watch(self, q, **kwargs):
         loop = kwargs.pop("loop", None)
-        msg = yield from q.get()
-        print(msg)
+        msg = object()
+        while msg is not None:
+            msg = yield from q.get()
+            # TODO:
+            # 1. Look up collision by id
+            # 2. Check timeframe acceptable
+            # 3. Check actor is on stage
+            # 4. Check destination valid
+            # 5. Perform move to destination
+            print(msg)
 

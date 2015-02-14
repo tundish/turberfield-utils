@@ -24,6 +24,7 @@ from collections.abc import Mapping
 from io import StringIO
 import json
 import unittest
+import uuid
 import warnings
 
 from turberfield.positions.demo import Simulation
@@ -162,6 +163,9 @@ class TaskTests(unittest.TestCase):
 
         @asyncio.coroutine
         def one_shot(q):
+            # Collision id, actor, stage
+            obj = (id(None), uuid.uuid4().hex, uuid.uuid4().hex)
+            yield from q.put(obj)
             yield from q.put(None)
 
         q = asyncio.Queue(loop=self.loop)
