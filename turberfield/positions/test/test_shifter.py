@@ -38,16 +38,20 @@ from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
 
-def collision(theatre, start, ts):
-    collisions = defaultdict(set) # Persists across calls
-    gaps = [
-        (other, (push.pos - fix.posn).magnitude, fix.reach)
-        for other, fix in theatre.items()
-        if isinstance(fix, Fixed) and stage is not other]
-    [collisions[other].add(stage)
-     for other, gap, rad in gaps if gap < rad]
+# Prototyping
+from collections import defaultdict
 
-    # yield collisions items?
+def collision(pending=None):
+    pending = defaultdict(set) if pending is None else pending
+    while True:
+        ts, theatre = (yield pending)
+        for stage, push in theatre.items():
+            gaps = [
+                (other, (push.pos - fix.posn).magnitude, fix.reach)
+                for other, fix in theatre.items()
+                if isinstance(fix, Fixed) and stage is not other]
+            [collisions[other].add(stage)
+             for other, gap, rad in gaps if gap < rad]
 
 
 class ShifterTests(unittest.TestCase):
@@ -223,17 +227,16 @@ class TaskTests(unittest.TestCase):
             timeout=1)
         )
 
-    def test_shifter_collsion(self):
+    def test_shifter_collision(self):
         theatre = self.theatre.copy()
-        print(theatre)
-        q = asyncio.Queue(loop=self.loop)
-        shifter = Shifter(
-            self.theatre, self.props, q, loop=self.loop
-        )
+        stage, job = list(theatre.items())[-1]
+        theatre[stage._replace(uuid=uuid.uuid4().hex, label="D")] = job
 
-        listener = shifter._watchers[0]
-        self.assertIsInstance(listener, asyncio.Task)
-        self.assertIs(shifter.inputs[0], q)
+        collider = collision()
+        collider.send(None)
+        ts = 0
+        collisions = list(collider.send((ts, theatre)))
+        print(collisions)
         #self.loop.run_until_complete(asyncio.wait(
         #    [one_shot(shifter.inputs[0]), listener],
         #    loop=self.loop,
