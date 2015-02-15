@@ -41,6 +41,21 @@ Shifter moves stages around
 class Shifter(Provider):
 
     @staticmethod
+    def collision(theatre, pending=None):
+        pending = defaultdict(int) if pending is None else pending
+        while True:
+            stage, impulse, durn = (yield pending)
+            gaps = [
+                (other, (impulse.pos - fix.posn).magnitude, fix.reach)
+                for other, fix in theatre.items()
+                if isinstance(fix, Fixed) and stage is not other]
+
+            for other, gap, rad in gaps:
+                if gap < rad:
+                    pending[frozenset((stage, other))] = (
+                        impulse.tBegin + durn)
+
+    @staticmethod
     def movement(theatre, start, ts):
         infinity = decimal.Decimal("Infinity")
         for stage, job in theatre.items():
@@ -74,12 +89,13 @@ class Shifter(Provider):
         super().__init__(*args, **kwargs)
         self.theatre = theatre
         self.props = props
+        self._events = Shifter.collision(theatre)
 
     @asyncio.coroutine
     def __call__(self, start, stop, step, loop=None):
         ts = start
+        self._events.send(None)
         while stop > ts:
-            collisions = defaultdict(set)
             page = self.page
             page.info["ts"] = time.time()
             for stage, push in Shifter.movement(
@@ -91,20 +107,12 @@ class Shifter(Provider):
                     "class_": stage.class_,
                     "pos": push.pos[0:2],
                 })
-                gaps = [
-                    (other, (push.pos - fix.posn).magnitude, fix.reach)
-                    for other, fix in self.theatre.items()
-                    if isinstance(fix, Fixed) and stage is not other]
-                [collisions[other].add(stage)
-                 for other, gap, rad in gaps if gap < rad]
+                bridging = self._events.send((stage, push, 5))
 
-            # TODO: collisions are Real Time Events (RTEs)
-            # TODO: store and send deadline ts for each collision
-            # TODO: remove expired collsions
             page.options.extend([{
-                "label": obj.label,
-                "value": str(hits)
-            } for obj, hits in collisions.items()])
+                "label": "{0.label} - {1.label}".format(a, b),
+                "value": expires
+            } for (a, b), expires in bridging.items()])
 
             tick = Tick(start, stop, step, ts)
             self.provide(locals())
@@ -128,5 +136,4 @@ class Shifter(Provider):
             # 3. Check actor is on stage
             # 4. Check destination valid
             # 5. Perform move to destination
-            print(msg)
 

@@ -21,38 +21,29 @@ import asyncio
 from collections import OrderedDict
 from collections.abc import Callable
 from collections.abc import Mapping
+import decimal
 from io import StringIO
+import itertools
 import json
 import unittest
 import uuid
 import warnings
 
 from turberfield.positions.demo import Simulation
+from turberfield.positions.homogeneous import vector
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
 from turberfield.positions.machina import Props
 from turberfield.positions.machina import Provider
 from turberfield.positions.machina import Tick
 from turberfield.positions.shifter import Shifter
+from turberfield.positions.travel import Impulse
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
 
 # Prototyping
 from collections import defaultdict
-
-def collision(pending=None):
-    pending = defaultdict(set) if pending is None else pending
-    while True:
-        ts, theatre = (yield pending)
-        for stage, push in theatre.items():
-            gaps = [
-                (other, (push.pos - fix.posn).magnitude, fix.reach)
-                for other, fix in theatre.items()
-                if isinstance(fix, Fixed) and stage is not other]
-            [collisions[other].add(stage)
-             for other, gap, rad in gaps if gap < rad]
-
 
 class ShifterTests(unittest.TestCase):
 
@@ -227,18 +218,17 @@ class TaskTests(unittest.TestCase):
             timeout=1)
         )
 
-    def test_shifter_collision(self):
+    def test_shifter_collisions_detected(self):
         theatre = self.theatre.copy()
-        stage, job = list(theatre.items())[-1]
-        theatre[stage._replace(uuid=uuid.uuid4().hex, label="D")] = job
-
-        collider = collision()
+        collider = Shifter.collision(theatre)
         collider.send(None)
-        ts = 0
-        collisions = list(collider.send((ts, theatre)))
-        print(collisions)
-        #self.loop.run_until_complete(asyncio.wait(
-        #    [one_shot(shifter.inputs[0]), listener],
-        #    loop=self.loop,
-        #    timeout=1)
-        #)
+
+        # During movement, c moves on to b's position
+        infinity = decimal.Decimal("Infinity")
+        items = list(theatre.items())
+        (c, _), (b, fix) = items[-1], items[-2]
+        imp = Impulse(
+            0, infinity, vector(0, 0, 0), fix.posn
+        )
+        collisions = collider.send((c, imp, 5))
+        self.assertEqual(5, collisions[frozenset((b, c))])
