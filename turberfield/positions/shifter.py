@@ -76,7 +76,7 @@ class Shifter(Provider):
         self.props = props
 
     @asyncio.coroutine
-    def __call__(self, start, stop, step):
+    def __call__(self, start, stop, step, loop=None):
         ts = start
         while stop > ts:
             collisions = defaultdict(set)
@@ -112,7 +112,7 @@ class Shifter(Provider):
             # TODO: sleep for that time.
 
             ts += step
-            yield from asyncio.sleep(max(step, 0.2))
+            yield from asyncio.sleep(max(step, 0.2), loop=loop)
 
         return tick
 

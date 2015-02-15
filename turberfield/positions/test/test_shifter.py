@@ -71,34 +71,44 @@ class ShifterTests(unittest.TestCase):
         class_.props = Props()
         class_.theatre = ShifterTests.create_theatre()
 
-        # Plug in a StringIO object to the positions endpoint
-        services = Shifter.options()
-        hateoas = services["positions"]
-        class_._output = StringIO()
-        services["positions"] = (
-            hateoas._replace(dst=class_._output)
-        )
-        class_._shifter = Shifter(
-            class_.theatre, class_.props, **services
-        )
-
-        class_.tick = Tick(0, 0.3, 0.1, None)
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(None)
         warnings.simplefilter("ignore")
+
+        # Plug in a StringIO object to the positions endpoint
+        self._services = Shifter.options()
+        class_._output = StringIO()
+        self._services["positions"] = (
+            self._services["positions"]._replace(dst=class_._output)
+        )
+        class_.tick = Tick(0, 0.3, 0.1, None)
 
     def test_has_provide(self):
         p = Provider()
-        self.assertIsInstance(ShifterTests._shifter, Provider)
-        self.assertTrue(hasattr(ShifterTests._shifter, "provide"))
+        shifter = Shifter(
+            self.theatre, self.props,
+            loop=self.loop, **self._services
+        )
+        self.assertIsInstance(shifter, Provider)
+        self.assertTrue(hasattr(shifter, "provide"))
 
     def test_has_services(self):
-        self.assertEqual(3, len(ShifterTests._shifter._services))
+        shifter = Shifter(
+            self.theatre, self.props,
+            loop=self.loop, **self._services
+        )
+        self.assertEqual(3, len(shifter._services))
 
     def test_first_instantiation_defines_services(self):
+        shifter = Shifter(
+            self.theatre, self.props,
+            loop=self.loop, **self._services
+        )
         self.assertIsInstance(Shifter.options, Callable)
         self.assertIsInstance(
-            ShifterTests._shifter._services, Mapping)
+            shifter._services, Mapping)
         self.assertIsInstance(
-            ShifterTests._shifter._services["positions"].dst, StringIO)
+            shifter._services["positions"].dst, StringIO)
 
         self.assertIsNot(Shifter.public, None)
 
@@ -108,13 +118,20 @@ class ShifterTests(unittest.TestCase):
                 UserWarning,
                 Shifter,
                 ShifterTests.theatre, ShifterTests.props,
+                loop=self.loop,
                 **Shifter.options()
             )
 
     def test_tick_attribute_service(self):
-        task = asyncio.Task(ShifterTests._shifter(0, 0.3, 0.1))
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(task)
+        shifter = Shifter(
+            self.theatre, self.props,
+            loop=self.loop, **self._services
+        )
+        task = asyncio.Task(
+            shifter(0, 0.3, 0.1, loop=self.loop), loop=self.loop
+        )
+
+        self.loop.run_until_complete(task)
         self.tick = task.result()
         self.assertAlmostEqual(
             self.tick.stop,
@@ -123,9 +140,15 @@ class ShifterTests(unittest.TestCase):
         self.assertEqual(self.tick, Shifter.public.tick)
 
     def test_page_attribute_service(self):
-        task = asyncio.Task(ShifterTests._shifter(0, 0.3, 0.1))
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(task)
+        shifter = Shifter(
+            self.theatre, self.props,
+            loop=self.loop, **self._services
+        )
+        task = asyncio.Task(
+            shifter(0, 0.3, 0.1, loop=self.loop), loop=self.loop
+        )
+
+        self.loop.run_until_complete(task)
         self.tick = task.result()
         self.assertIn("info", vars(Shifter.public.page))
         self.assertIn("nav", vars(Shifter.public.page))
@@ -133,9 +156,15 @@ class ShifterTests(unittest.TestCase):
         self.assertIn("options", vars(Shifter.public.page))
 
     def test_hateoas_attribute_service(self):
-        task = asyncio.Task(ShifterTests._shifter(0, 0.3, 0.1))
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(task)
+        shifter = Shifter(
+            self.theatre, self.props,
+            loop=self.loop, **self._services
+        )
+        task = asyncio.Task(
+            shifter(0, 0.3, 0.1, loop=self.loop), loop=self.loop
+        )
+
+        self.loop.run_until_complete(task)
         self.tick = task.result()
         history = ShifterTests._output.getvalue()
         data = "{" + history.rpartition("}{")[-1]
@@ -193,3 +222,20 @@ class TaskTests(unittest.TestCase):
             loop=self.loop,
             timeout=1)
         )
+
+    def test_shifter_collsion(self):
+        theatre = self.theatre.copy()
+        print(theatre)
+        q = asyncio.Queue(loop=self.loop)
+        shifter = Shifter(
+            self.theatre, self.props, q, loop=self.loop
+        )
+
+        listener = shifter._watchers[0]
+        self.assertIsInstance(listener, asyncio.Task)
+        self.assertIs(shifter.inputs[0], q)
+        #self.loop.run_until_complete(asyncio.wait(
+        #    [one_shot(shifter.inputs[0]), listener],
+        #    loop=self.loop,
+        #    timeout=1)
+        #)
