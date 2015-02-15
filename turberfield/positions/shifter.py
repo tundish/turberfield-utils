@@ -44,7 +44,7 @@ class Shifter(Provider):
     def collision(theatre, pending=None):
         pending = defaultdict(int) if pending is None else pending
         while True:
-            stage, impulse, durn = (yield pending)
+            stage, impulse, expires = (yield pending)
             gaps = [
                 (other, (impulse.pos - fix.posn).magnitude, fix.reach)
                 for other, fix in theatre.items()
@@ -52,8 +52,7 @@ class Shifter(Provider):
 
             for other, gap, rad in gaps:
                 if gap < rad:
-                    pending[frozenset((stage, other))] = (
-                        impulse.tBegin + durn)
+                    pending[frozenset((stage, other))] = expires
 
     @staticmethod
     def movement(theatre, start, ts):
@@ -77,6 +76,7 @@ class Shifter(Provider):
     ):
         return OrderedDict([
             ("tick", Provider.Attribute("tick")),
+            ("bridging", Provider.Attribute("bridging")),
             ("page", Provider.Attribute("page")),
             ("positions", Provider.HATEOAS(
                 "positions",
@@ -107,8 +107,11 @@ class Shifter(Provider):
                     "class_": stage.class_,
                     "pos": push.pos[0:2],
                 })
-                bridging = self._events.send((stage, push, 5))
+                bridging = self._events.send((stage, push, ts + 5))
 
+            # TODO: create from a second endpoint: "rte"
+            # provided by a TheatreCompany(Provider)
+            # Web tier consumes, filters, adds to synchronous items.
             page.options.extend([{
                 "label": "{0.label} - {1.label}".format(a, b),
                 "value": expires
@@ -116,8 +119,6 @@ class Shifter(Provider):
 
             tick = Tick(start, stop, step, ts)
             self.provide(locals())
-            # TODO: calculate sum wait time dispatched collisions
-            # TODO: sleep for that time.
 
             ts += step
             yield from asyncio.sleep(max(step, 0.2), loop=loop)

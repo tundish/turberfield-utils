@@ -92,7 +92,7 @@ class ShifterTests(unittest.TestCase):
             self.theatre, self.props,
             loop=self.loop, **self._services
         )
-        self.assertEqual(3, len(shifter._services))
+        self.assertEqual(4, len(shifter._services))
 
     def test_first_instantiation_defines_services(self):
         shifter = Shifter(
@@ -228,7 +228,7 @@ class TaskTests(unittest.TestCase):
         items = list(theatre.items())
         (c, _), (b, fix) = items[-1], items[-2]
         imp = Impulse(
-            0, infinity, vector(0, 0, 0), fix.posn
+            1, infinity, vector(0, 0, 0), fix.posn
         )
         collisions = collider.send((c, imp, 5))
         self.assertEqual(5, collisions[frozenset((b, c))])
