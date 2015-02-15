@@ -38,6 +38,18 @@ from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
 
+def collision(theatre, start, ts):
+    collisions = defaultdict(set) # Persists across calls
+    gaps = [
+        (other, (push.pos - fix.posn).magnitude, fix.reach)
+        for other, fix in theatre.items()
+        if isinstance(fix, Fixed) and stage is not other]
+    [collisions[other].add(stage)
+     for other, gap, rad in gaps if gap < rad]
+
+    # yield collisions items?
+
+
 class ShifterTests(unittest.TestCase):
 
     def create_theatre():
