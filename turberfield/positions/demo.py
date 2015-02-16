@@ -26,8 +26,11 @@ import logging
 from logging.handlers import WatchedFileHandler
 import os
 import os.path
+import random
 import sys
 import uuid
+
+from turberfield.common.inventory import Inventory
 
 from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
@@ -75,6 +78,18 @@ class Simulation:
         (Item(uuid.uuid4().hex, "C", "zone"), point(120, 245, 0), 42),
     ]
 
+    npcs = [Inventory.Character(i, uuid.uuid4().hex, random.random())
+            for i in ["Andy Riley", "Desmond Coyle", "George Byrne",
+            "David Nicholson", "Declan Lynch", "Ken Sweeney",
+            "Neil Hannon", "Keith Cullen", "Ciaran Donnelly",
+            "Mick McEvoy", "Jack White", "Henry Bigbigging",
+            "Hank Tree", "Hiroshima Twinkie" "Stig Bubblecard",
+            "Johnny Hellzapoppin", "Luke Duke", "Billy Ferry",
+            "Chewy Louie", "John Hoop", "Hairycake Liner",
+            "Rebulah Conundrum", "Peewee Stairmaster",
+            "Jemima Racktool", "Jerry Twig", "Spodo Komodo",
+            "Cannabranna Lammer", "Todd Unctious"]
+           ]
 
 def main(args):
     log = logging.getLogger("turberfield.demo.run")
@@ -111,6 +126,8 @@ def main(args):
     kwargs = Shifter.options(parent=args.output)
     # TODO: args = (PipeQueue.pipequeue(path), )
     shifter = Shifter(theatre, props, **kwargs)
+    kwargs = Company.options(parent=args.output)
+    company = Company(actors, **kwargs)
     task = asyncio.Task(shifter(0, decimal.Decimal("Infinity"), 1))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(asyncio.wait(asyncio.Task.all_tasks(loop)))
