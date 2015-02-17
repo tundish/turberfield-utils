@@ -46,28 +46,6 @@ Mobile = namedtuple("Mobile", ["motion", "reach"])
 Tick = namedtuple("Tick", ["start", "stop", "step", "ts"])
 
 
-class Props:
-    """
-    TODO: Move a base class to turberfield.common.inventory
-    """ 
-
-    def __init__(self):
-        if not hasattr(self, "pockets"):
-            self.places = defaultdict(list)
-            self.pockets = defaultdict(Counter)
-
-    def _clear(self):
-        try:
-            del self.places
-        except AttributeError:
-            pass
-
-        try:
-            del self.pockets
-        except AttributeError:
-            pass
-
-
 class TypesEncoder(json.JSONEncoder):
 
     def default(self, obj):

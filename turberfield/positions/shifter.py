@@ -85,10 +85,9 @@ class Shifter(Provider):
             ),
         ])
 
-    def __init__(self, theatre, props, *args, **kwargs):
+    def __init__(self, theatre, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.theatre = theatre
-        self.props = props
         self._events = Shifter.collision(theatre)
 
     @asyncio.coroutine

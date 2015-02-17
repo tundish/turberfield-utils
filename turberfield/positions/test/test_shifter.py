@@ -33,7 +33,6 @@ from turberfield.positions.demo import Simulation
 from turberfield.positions.homogeneous import vector
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
-from turberfield.positions.machina import Props
 from turberfield.positions.machina import Provider
 from turberfield.positions.machina import Tick
 from turberfield.positions.shifter import Shifter
@@ -63,7 +62,6 @@ class ShifterTests(unittest.TestCase):
         
     def setUp(self):
         class_ = self.__class__
-        class_.props = Props()
         class_.theatre = ShifterTests.create_theatre()
 
         self.loop = asyncio.new_event_loop()
@@ -81,7 +79,7 @@ class ShifterTests(unittest.TestCase):
     def test_has_provide(self):
         p = Provider()
         shifter = Shifter(
-            self.theatre, self.props,
+            self.theatre,
             loop=self.loop, **self._services
         )
         self.assertIsInstance(shifter, Provider)
@@ -89,14 +87,14 @@ class ShifterTests(unittest.TestCase):
 
     def test_has_services(self):
         shifter = Shifter(
-            self.theatre, self.props,
+            self.theatre,
             loop=self.loop, **self._services
         )
         self.assertEqual(4, len(shifter._services))
 
     def test_first_instantiation_defines_services(self):
         shifter = Shifter(
-            self.theatre, self.props,
+            self.theatre,
             loop=self.loop, **self._services
         )
         self.assertIsInstance(Shifter.options, Callable)
@@ -112,14 +110,14 @@ class ShifterTests(unittest.TestCase):
             self.assertRaises(
                 UserWarning,
                 Shifter,
-                ShifterTests.theatre, ShifterTests.props,
+                ShifterTests.theatre,
                 loop=self.loop,
                 **Shifter.options()
             )
 
     def test_tick_attribute_service(self):
         shifter = Shifter(
-            self.theatre, self.props,
+            self.theatre,
             loop=self.loop, **self._services
         )
         task = asyncio.Task(
@@ -136,7 +134,7 @@ class ShifterTests(unittest.TestCase):
 
     def test_page_attribute_service(self):
         shifter = Shifter(
-            self.theatre, self.props,
+            self.theatre,
             loop=self.loop, **self._services
         )
         task = asyncio.Task(
@@ -152,7 +150,7 @@ class ShifterTests(unittest.TestCase):
 
     def test_hateoas_attribute_service(self):
         shifter = Shifter(
-            self.theatre, self.props,
+            self.theatre,
             loop=self.loop, **self._services
         )
         task = asyncio.Task(
@@ -174,7 +172,6 @@ class TaskTests(unittest.TestCase):
 
     def setUp(self):
         class_ = self.__class__
-        class_.props = Props()
         class_.theatre = ShifterTests.create_theatre()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(None)
@@ -182,7 +179,7 @@ class TaskTests(unittest.TestCase):
     def test_tasks_for_queues(self):
         q = asyncio.Queue(loop=self.loop)
         shifter = Shifter(
-            self.theatre, self.props, q, loop=self.loop
+            self.theatre, q, loop=self.loop
         )
 
         self.assertEqual(1, len(shifter.inputs))
@@ -206,7 +203,7 @@ class TaskTests(unittest.TestCase):
 
         q = asyncio.Queue(loop=self.loop)
         shifter = Shifter(
-            self.theatre, self.props, q, loop=self.loop
+            self.theatre, q, loop=self.loop
         )
 
         listener = shifter._watchers[0]

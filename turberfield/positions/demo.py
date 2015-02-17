@@ -36,7 +36,6 @@ from turberfield.positions import __version__
 from turberfield.positions.homogeneous import point
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
-from turberfield.positions.machina import Props
 from turberfield.positions.shifter import Shifter
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
@@ -111,7 +110,6 @@ def main(args):
     ch.setFormatter(formatter)
     log.addHandler(ch)
 
-    props = Props()
     theatre = OrderedDict([
             (stage, Mobile(
                 steadypace(trajectory(), routing, timing),
@@ -125,7 +123,7 @@ def main(args):
 
     kwargs = Shifter.options(parent=args.output)
     # TODO: remove props
-    shifter = Shifter(theatre, props, **kwargs)
+    shifter = Shifter(theatre, **kwargs)
     # TODO: args = (PipeQueue.pipequeue(path), )
     #kwargs = Company.options(parent=args.output)
     #company = Company(actors, **kwargs)
