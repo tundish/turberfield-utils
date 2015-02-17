@@ -122,7 +122,6 @@ def main(args):
             for stage, posn, reach in Simulation.static]))
 
     kwargs = Shifter.options(parent=args.output)
-    # TODO: remove props
     shifter = Shifter(theatre, **kwargs)
     # TODO: args = (PipeQueue.pipequeue(path), )
     #kwargs = Company.options(parent=args.output)

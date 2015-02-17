@@ -73,7 +73,7 @@ def simulation_get():
             "title": "Turberfield positions {}".format(__version__),
             "version": __version__
         },
-    #    "items": OrderedDict([(str(id(i)), i) for i in steps]),
+    # TODO: "items": actor RTEs
         
     }
 
