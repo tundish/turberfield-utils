@@ -124,17 +124,3 @@ class Shifter(Provider):
             yield from asyncio.sleep(max(step, 0.2), loop=loop)
 
         return tick
-
-    @asyncio.coroutine
-    def watch(self, q, **kwargs):
-        loop = kwargs.pop("loop", None)
-        msg = object()
-        while msg is not None:
-            msg = yield from q.get()
-            # TODO:
-            # 1. Look up collision by id
-            # 2. Check timeframe acceptable
-            # 3. Check actor is on stage
-            # 4. Check destination valid
-            # 5. Perform move to destination
-
