@@ -36,7 +36,7 @@ import pkg_resources
 
 from turberfield.positions import __version__
 import turberfield.positions.demo
-#import turberfield.project
+import turberfield.web.elements
 
 
 DFLT_LOCN = os.path.expanduser(os.path.join("~", ".turberfield"))
@@ -73,8 +73,11 @@ def simulation_get():
             "title": "Turberfield positions {}".format(__version__),
             "version": __version__
         },
-    # TODO: "items": actor RTEs
-        
+        "items": [
+        ],
+        "options": [
+            turberfield.web.elements.login()
+        ]
     }
 
 @app.route("/css/<filename>")
