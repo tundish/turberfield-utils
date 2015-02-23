@@ -21,6 +21,17 @@
   </li>
 </ul>
 
+<%  
+    opts = enumerate(options)
+ %>
+<ul>
+    %   for n, opt in opts:
+    <li><a href="#{{n}}">
+    {{n}}
+    </a></li>
+    %   end
+</ul>
+
 <script type="text/javascript" src="/js/jquery-2.1.1.js"></script>
 <script type="text/javascript" src="/js/knockout-3.2.0.js"></script>
 <script type="text/javascript">

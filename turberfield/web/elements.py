@@ -28,7 +28,7 @@ Parameter = namedtuple("Parameter", ["name", "required", "regex", "values", "tip
 
 def login():
     return OrderedDict([
-        ("_links", [ 
+        ("_links", [
             Action(
             name="User login",
             rel="login",
