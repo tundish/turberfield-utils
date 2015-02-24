@@ -8,6 +8,9 @@
 <link rel="stylesheet" href="/css/pure/pure-min.css" media="screen" />
 <link rel="stylesheet" href="/css/pure/grids-responsive-min.css" media="screen" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+% if info['refresh']:
+<meta http-equiv="refresh" content="{{info['refresh']}}" />
+% end
 </head>
 <body>
 % include("gainsborough_square.tpl")
