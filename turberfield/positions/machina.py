@@ -137,7 +137,6 @@ class Provider:
             if isinstance(service, Provider.Attribute):
                 kwargs[service.name] = data[service.name]
             elif isinstance(service, Provider.HATEOAS):
-                self.log.debug("Hi")
                 content = data[service.attr]
                 with Provider.endpoint(service.dst) as output:
                     json.dump(

@@ -68,11 +68,18 @@ class ShifterTests(unittest.TestCase):
         asyncio.set_event_loop(None)
         warnings.simplefilter("ignore")
 
-        # Plug in a StringIO object to the positions endpoint
+        # Plug in a StringIO object to the HATEOAS endpoints
         self._services = Shifter.options()
-        class_._output = StringIO()
+        class_._outputs = [StringIO(), StringIO()]
         self._services["positions"] = (
-            self._services["positions"]._replace(dst=class_._output)
+            self._services["positions"]._replace(
+                dst=class_._outputs[0]
+            )
+        )
+        self._services["bridging"] = (
+            self._services["bridging"]._replace(
+                dst=class_._outputs[1]
+            )
         )
         class_.tick = Tick(0, 0.3, 0.1, None)
 
@@ -90,7 +97,7 @@ class ShifterTests(unittest.TestCase):
             self.theatre,
             loop=self.loop, **self._services
         )
-        self.assertEqual(4, len(shifter._services))
+        self.assertEqual(5, len(shifter._services))
 
     def test_first_instantiation_defines_services(self):
         shifter = Shifter(
@@ -143,10 +150,10 @@ class ShifterTests(unittest.TestCase):
 
         self.loop.run_until_complete(task)
         self.tick = task.result()
-        self.assertIn("info", vars(Shifter.public.page))
-        self.assertIn("nav", vars(Shifter.public.page))
-        self.assertIn("items", vars(Shifter.public.page))
-        self.assertIn("options", vars(Shifter.public.page))
+        self.assertIn("info", vars(Shifter.public.movement))
+        self.assertIn("nav", vars(Shifter.public.movement))
+        self.assertIn("items", vars(Shifter.public.movement))
+        self.assertIn("options", vars(Shifter.public.movement))
 
     def test_hateoas_attribute_service(self):
         shifter = Shifter(
@@ -159,7 +166,7 @@ class ShifterTests(unittest.TestCase):
 
         self.loop.run_until_complete(task)
         self.tick = task.result()
-        history = ShifterTests._output.getvalue()
+        history = ShifterTests._outputs[0].getvalue()
         data = "{" + history.rpartition("}{")[-1]
         output = json.loads(data)
         self.assertIn("info", output)
