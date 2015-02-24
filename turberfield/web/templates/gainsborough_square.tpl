@@ -146,7 +146,7 @@
    id="tspan3956"
    style="fill:#000000;stroke:#a9a9a9;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">Gainsborough Square</tspan></textPath></text>
   </g>
-  <g data-bind="foreach: items">
+  <g data-bind="foreach: positions">
     <use xlink:href=""
     data-bind="attr: { 'xlink:href': '#object_'+class_, transform: 'translate('+pos[0]+', '+pos[1]+')', 'class': class_}"/>
   </g>

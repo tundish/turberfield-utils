@@ -76,11 +76,16 @@ class Shifter(Provider):
     ):
         return OrderedDict([
             ("tick", Provider.Attribute("tick")),
-            ("bridging", Provider.Attribute("bridging")),
-            ("page", Provider.Attribute("page")),
+            ("collisions", Provider.Attribute("collisions")),
+            ("movement", Provider.Attribute("movement")),
+            ("bridging", Provider.HATEOAS(
+                "bridging",
+                "collisions",
+                os.path.join(parent, "bridging.json"))
+            ),
             ("positions", Provider.HATEOAS(
                 "positions",
-                "page",
+                "movement",
                 os.path.join(parent, "positions.json"))
             ),
         ])
@@ -95,12 +100,16 @@ class Shifter(Provider):
         ts = start
         self._events.send(None)
         while stop > ts:
-            page = self.page
-            page.info["ts"] = time.time()
+            t = time.time()
+            collisions = self.page
+            collisions.info["ts"] = t
+            movement = self.page
+            movement.info["ts"] = t
+
             for stage, push in Shifter.movement(
                 self.theatre, start, ts
             ):
-                page.items.append({
+                movement.items.append({
                     "uuid": stage.uuid,
                     "label": stage.label,
                     "class_": stage.class_,
@@ -111,7 +120,7 @@ class Shifter(Provider):
             # TODO: create from a second endpoint: "rte"
             # provided by a TheatreCompany(Provider)
             # Web tier consumes, filters, adds to synchronous items.
-            page.options.extend([{
+            collisions.items.extend([{
                 "label": "{0.label} - {1.label}".format(a, b),
                 "value": expires
             } for (a, b), expires in bridging.items()])

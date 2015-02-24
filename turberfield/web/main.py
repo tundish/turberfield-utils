@@ -69,7 +69,7 @@ def simulation_get():
             "args": app.config.get("args"),
             "debug": bottle.debug,
             "interval": 200,
-            "refresh": 5, # TODO: conditional on collisions
+            "refresh": None,
             "time": "{:.1f}".format(time.time()),
             "title": "Turberfield positions {}".format(__version__),
             "version": __version__

@@ -15,7 +15,7 @@
 <body>
 % include("gainsborough_square.tpl")
 
-<ul data-bind="foreach: options">
+<ul data-bind="foreach: bridging">
   <li>
     <dl>
         <dt data-bind="text: label"></dt>
@@ -40,26 +40,31 @@
 <script type="text/javascript">
 
 var viewModel = {
-    debug: ko.observable(false),
-    time: ko.observable(),
-    items: ko.observableArray(),
-    options: ko.observableArray()
+    positions: ko.observableArray(),
+    bridging: ko.observableArray()
 }
 
-var checkStatus = function() {
+var checkPositions = function() {
 
     $.getJSON('/data/positions.json', function(data) {
-        viewModel.debug(data.debug);
-        viewModel.time(data.time);
-        viewModel.items(data.items);
-        viewModel.options(data.options);
+        viewModel.positions(data.items);
+    });
+
+
+};
+
+var checkBridging = function() {
+
+    $.getJSON('/data/bridging.json', function(data) {
+        viewModel.bridging(data.items);
     });
 
 
 };
 
 ko.applyBindings(viewModel);
-setInterval(checkStatus, {{info.get("interval", 500)}});
+setInterval(checkPositions, {{info.get("interval", 500)}});
+setInterval(checkBridging, {{info.get("interval", 500)}});
 
 </script>
 
