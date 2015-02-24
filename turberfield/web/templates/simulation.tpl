@@ -19,7 +19,7 @@
   <li>
     <dl>
         <dt data-bind="text: label"></dt>
-        <dd data-bind="text: value"</dd>
+        <dd data-bind="text: deadline"</dd>
     </dl>
   </li>
 </ul>

@@ -120,10 +120,10 @@ class Shifter(Provider):
             # TODO: create from a second endpoint: "rte"
             # provided by a TheatreCompany(Provider)
             # Web tier consumes, filters, adds to synchronous items.
-            collisions.items.extend([{
+            collisions.items[:] = [{
                 "label": "{0.label} - {1.label}".format(a, b),
-                "value": expires
-            } for (a, b), expires in bridging.items()])
+                "deadline": expires - ts
+            } for (a, b), expires in bridging.items()]
 
             tick = Tick(start, stop, step, ts)
             self.provide(locals())

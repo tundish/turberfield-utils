@@ -89,6 +89,9 @@ def events_get(actor):
     path = os.path.join(app.config["args"].output, "bridging.json")
     with open(path, 'r') as content:
         data = json.load(content)
+        data["items"] = [
+            i for i in data["items"]
+            if i.get("deadline", None) >= 0 ]
         log.debug(data["items"])
         return data
 
