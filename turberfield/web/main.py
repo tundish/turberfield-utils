@@ -68,6 +68,7 @@ def simulation_get():
         "info": {
             "args": app.config.get("args"),
             "debug": bottle.debug,
+            "actor": "guest",
             "interval": 200,
             "refresh": None,
             "time": "{:.1f}".format(time.time()),
@@ -80,6 +81,16 @@ def simulation_get():
             turberfield.web.elements.login()
         ]
     }
+
+@app.route("/events/<actor>", "GET")
+def events_get(actor):
+    log = logging.getLogger("turberfield.web.events")
+    log.debug(actor)
+    path = os.path.join(app.config["args"].output, "bridging.json")
+    with open(path, 'r') as content:
+        data = json.load(content)
+        log.debug(data["items"])
+        return data
 
 @app.route("/css/<filename>")
 def serve_css(filename):
