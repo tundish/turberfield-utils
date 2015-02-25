@@ -132,11 +132,7 @@ class PrototypeCasting(unittest.TestCase):
 
     def test_scene_discovery(self):
         stage = Stage(
-            boundary=(
-                Location(53.0, -3.5),
-                Location(52.0, -3.0),
-                Location(51.0, -3.5),
-                Location(52.0, -4.0)),
+            id=uuid.uuid4().hex,
             scenes=[PayingOff])
 
     def test_playing_the_scene(self):

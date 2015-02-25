@@ -17,6 +17,10 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+from collections import OrderedDict
+import os
+
+from turberfield.positions.machina import Provider
 
 class Company(Provider):
     """
@@ -28,10 +32,23 @@ class Company(Provider):
             # 5. Perform move to destination
     """
 
-    def __init__(self, players, pockets, props, *args, **kwargs):
+    @staticmethod
+    def options(
+        parent=os.path.expanduser(os.path.join("~", ".turberfield"))
+    ):
+        return OrderedDict([
+            ("players", Provider.Attribute("players")),
+            ("company", Provider.HATEOAS(
+                "company",
+                "players",
+                os.path.join(parent, "company.json"))
+            ),
+        ])
+
+    def __init__(self, positions, pockets, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.positions = {} # Actor: turberfield.positions.Stage
-        self.pockets = defaultdict(Counter)  # Actor: (Commodity: n)
+        self._positions = positions # Actor: turberfield.positions.Stage
+        self._pockets = pockets  # Actor: (Commodity: n)
 
     @asyncio.coroutine
     def __call__(self, loop=None):

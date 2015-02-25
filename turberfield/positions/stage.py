@@ -102,9 +102,9 @@ class Stage(MutableMapping):
                 new=Stage.Contact(True, True, False, False),
                 replace=["throw"])
 
-    def __init__(self, boundary=None, scenes=None):
+    def __init__(self, id=None, scenes=None):
         self.placement = Graph()
-        self.boundary = boundary
+        self.id = id
 
     def __len__(self):
         return self.placement.number_of_nodes()

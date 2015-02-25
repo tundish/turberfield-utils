@@ -18,6 +18,8 @@
 
 import argparse
 import asyncio
+from collections import Counter
+from collections import defaultdict
 from collections import namedtuple
 from collections import OrderedDict
 import decimal
@@ -33,10 +35,12 @@ import uuid
 from turberfield.common.inventory import Inventory
 
 from turberfield.positions import __version__
+from turberfield.positions.company import Company
 from turberfield.positions.homogeneous import point
 from turberfield.positions.machina import Fixed
 from turberfield.positions.machina import Mobile
 from turberfield.positions.shifter import Shifter
+from turberfield.positions.stage import Stage
 from turberfield.positions.travel import steadypace
 from turberfield.positions.travel import trajectory
 
@@ -123,9 +127,16 @@ def main(args):
 
     kwargs = Shifter.options(parent=args.output)
     shifter = Shifter(theatre, **kwargs)
+
+    positions = {
+        p: random.choice([Stage(i.uuid) for i in theatre])
+        for p in Simulation.npcs}
+    pockets = defaultdict(Counter)
+
+    kwargs = Company.options(parent=args.output)
     # TODO: args = (PipeQueue.pipequeue(path), )
-    #kwargs = Company.options(parent=args.output)
-    #company = Company(actors, **kwargs)
+    company = Company(positions, pockets, **kwargs)
+
     task = asyncio.Task(shifter(0, decimal.Decimal("Infinity"), 1))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(asyncio.wait(asyncio.Task.all_tasks(loop)))
