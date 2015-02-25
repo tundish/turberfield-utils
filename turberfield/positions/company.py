@@ -30,8 +30,8 @@ class Company(Provider):
 
     def __init__(self, players, pockets, props, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.places = defaultdict(list)
-        self.pockets = defaultdict(Counter)
+        self.positions = {} # Actor: turberfield.positions.Stage
+        self.pockets = defaultdict(Counter)  # Actor: (Commodity: n)
 
     @asyncio.coroutine
     def __call__(self, loop=None):
