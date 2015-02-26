@@ -137,10 +137,14 @@ def main(args):
     # TODO: args = (PipeQueue.pipequeue(path), )
     company = Company(positions, pockets, **kwargs)
 
-    task = asyncio.Task(shifter(0, decimal.Decimal("Infinity"), 1))
     loop = asyncio.get_event_loop()
+    tasks = [
+        asyncio.Task(shifter(
+            0, decimal.Decimal("Infinity"), 1, loop=loop)
+        ),
+        asyncio.Task(company(loop=loop)),
+    ]
     loop.run_until_complete(asyncio.wait(asyncio.Task.all_tasks(loop)))
-    return task.result()
 
 
 def parser(descr=__doc__):
