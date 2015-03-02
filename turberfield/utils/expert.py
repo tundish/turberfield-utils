@@ -37,10 +37,6 @@ __doc__ = """
 Machina places an actor on a stage.
 """
 
-Fixed = namedtuple("Fixed", ["posn", "reach"])
-Mobile = namedtuple("Mobile", ["motion", "reach"])
-Tick = namedtuple("Tick", ["start", "stop", "step", "ts"])
-
 
 class TypesEncoder(json.JSONEncoder):
 
