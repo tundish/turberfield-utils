@@ -37,7 +37,7 @@ Turberfield's mission is to provide a validated Pythonic framework for discrete
 event simulations and turn-based games.
 
 It is developed by a private individual but released to the public under the
-`GNU Affero General Public License`_.
+`GNU General Public License`_.
 
 The API may change significantly as the project proceeds. At this early stage,
 you should only use the latest release, which may not be compatible with
@@ -66,5 +66,5 @@ Run the tests::
 :Copyright: 2014 Thuswise Ltd
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
-.. _GNU Affero General Public License: http://www.gnu.org/licenses/gpl.html
+.. _GNU General Public License: http://www.gnu.org/licenses/gpl.html
 .. _message board: https://www.assembla.com/spaces/turberfield/messages
