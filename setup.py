@@ -46,7 +46,6 @@ setup(
     package_data={
         "turberfield.utils": [
             ],
-        ]
     },
     install_requires=[],
     tests_require=[],
