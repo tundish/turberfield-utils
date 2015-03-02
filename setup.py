@@ -8,26 +8,26 @@ from setuptools import setup
 
 
 try:
-    # Includes bzr revsion number
-    from turberfield.positions.about import version
+    # Includes bzr revision number
+    from turberfield.utils.about import version
 except ImportError:
     try:
         # For setup.py install
-        from turberfield.positions import __version__ as version
+        from turberfield.utils import __version__ as version
     except ImportError:
         # For pip installations
         version = str(ast.literal_eval(
                     open(os.path.join(os.path.dirname(__file__),
-                    "turberfield", "positions", "__init__.py"),
+                    "turberfield", "utils", "__init__.py"),
                     'r').read().split("=")[-1].strip()))
 
 __doc__ = open(os.path.join(os.path.dirname(__file__), "README.txt"),
                'r').read()
 
 setup(
-    name="turberfield-positions",
+    name="turberfield-utils",
     version=version,
-    description="Semantic web-based movement for interactive storytelling.",
+    description="Reusable modules from the Turberfield project.",
     author="D Haynes",
     author_email="tundish@thuswise.org",
     url="https://www.assembla.com/spaces/turberfield/messages",
@@ -35,55 +35,23 @@ setup(
     classifiers=[
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.4",
-        "License :: OSI Approved :: GNU Affero General Public License v3"
-        " or later (AGPLv3+)"
+        "License :: OSI Approved :: GNU General Public License v3"
+        " or later (GPLv3+)"
     ],
     namespace_packages=["turberfield"],
     packages=[
-        "turberfield.positions",
-        "turberfield.positions.test",
-        "turberfield.web",
+        "turberfield.utils",
+        "turberfield.utils.test",
     ],
     package_data={
-        "turberfield.positions": [
-            "doc/*.rst",
-            "doc/_templates/*.css",
-            "doc/html/*.html",
-            "doc/html/*.js",
-            "doc/html/_sources/*",
-            "doc/html/_static/css/*",
-            "doc/html/_static/font/*",
-            "doc/html/_static/js/*",
-            "doc/html/_static/*.css",
-            "doc/html/_static/*.gif",
-            "doc/html/_static/*.js",
-            "doc/html/_static/*.png",
+        "turberfield.utils": [
             ],
-        "turberfield.web": [
-            "static/css/*.css",
-            "static/css/*/*.css",
-            "static/img/*.jpg",
-            "static/img/*.png",
-            "static/js/*.js",
-            "static/rson/*.rson",
-            "templates/*.tpl",
         ]
     },
-    install_requires=[
-        "bottle>=0.12.7",
-        "rson>=0.9",
-        "turberfield-common>=0.015.0",
-        ],
-    tests_require=[
-        ],
+    install_requires=[],
+    tests_require=[],
     entry_points={
-        "console_scripts": [
-            "turberfield-demo = turberfield.web.main:run",
-        ],
-        "turberfield.component.task": [
-        ],
+        "console_scripts": [],
     },
     zip_safe=False
 )
-
-

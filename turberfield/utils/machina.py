@@ -60,7 +60,7 @@ class TypesEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-class Provider:
+class Expert:
 
     Attribute = namedtuple("Attribute", ["name"])
     HATEOAS = namedtuple("HATEOAS", ["name", "attr", "dst"])
@@ -72,7 +72,7 @@ class Provider:
 
     @staticmethod
     @contextlib.contextmanager
-    def endpoint(arg, suffix=".json"):
+    def declaration(arg, suffix=".json"):
         if isinstance(arg, str):
             parent = os.path.dirname(arg)
             fD, fN = tempfile.mkstemp(suffix=suffix, dir=parent)
@@ -90,6 +90,18 @@ class Provider:
     @staticmethod
     def options():
         raise NotImplementedError
+
+    @classmethod
+    def page(cls):
+        return Expert.Page(
+            info = {
+                "title": cls.__name__,
+                "version": __version__
+            },
+            nav = [],
+            items = [],
+            options = []
+        )
 
     def __init__(self, *args, **kwargs):
         class_ = self.__class__
@@ -111,34 +123,22 @@ class Provider:
                     class_.__name__, kwargs))
 
             attributes = [k for k, v in kwargs.items()
-                          if isinstance(v, Provider.Attribute)]
+                          if isinstance(v, Expert.Attribute)]
             self.Interface = namedtuple(
                 class_.__name__ + "Interface", attributes)
 
             class_.public = self.Interface._make(
                 itertools.repeat(None, len(attributes)))
             
-    @property
-    def page(self):
-        return Provider.Page(
-            info = {
-                "title": self.__class__.__name__,
-                "version": __version__
-            },
-            nav = [],
-            items = [],
-            options = []
-        )
-
-    def provide(self, data):
+    def declare(self, data):
         kwargs = defaultdict(None)
         class_ = self.__class__
         for name, service in self._services.items():
-            if isinstance(service, Provider.Attribute):
+            if isinstance(service, Expert.Attribute):
                 kwargs[service.name] = data[service.name]
-            elif isinstance(service, Provider.HATEOAS):
+            elif isinstance(service, Expert.HATEOAS):
                 content = data[service.attr]
-                with Provider.endpoint(service.dst) as output:
+                with Expert.declaration(service.dst) as output:
                     json.dump(
                         vars(content), output,
                         cls=TypesEncoder, indent=4
