@@ -29,8 +29,6 @@ from turberfield.utils.homogeneous import vector
 
 
 Impulse = namedtuple("Impulse", ["tBegin", "tEnd", "accn", "pos"])
-Tick = namedtuple("Tick", ["t", "priority"])
-Stop = namedtuple("Stop", ["t", "priority"])
 
 """
 A Simple
@@ -39,19 +37,6 @@ Integration Method
 Jonathan "lonesock" Dummer
 http://lonesock.net/article/verlet.html
 """
-
-
-def ticks(start, end, interval):
-    """
-    Returns a generator of
-    :py:class:`Ticks <turberfield.dynamics.types.Tick>` which will
-    end with a
-    :py:class:`Stop <turberfield.dynamics.types.Stop>`.
-
-    """
-    return itertools.chain(
-        (Tick(i, 0) for i in range(start, end, interval)),
-        [Stop(end, 0)])
 
 
 def time_correct_verlet(state, t, accn, mass=1):
@@ -85,33 +70,3 @@ def trajectory(limits=None):
         else:
             state = time_correct_verlet(state, imp.tEnd, imp.accn)
         imp = yield state[0]
-
-
-# TODO: Move out of utils to turberfield.machina
-def steadypace(integrator, routing, timing, tol=1):
-    log = logging.getLogger("turberfield.utils.travel.steadypace")
-    accn = vector(0, 0, 0)
-    integrator.send(None)
-    tBegin = yield None
-    tEnd = yield None
-    origin, destn = next(routing)
-    tTransit = next(timing)
-    imp = integrator.send(Impulse(tBegin, tEnd, accn, origin))
-    hop = (destn - origin) * Dl(tEnd - tBegin) / tTransit
-    tBegin, tEnd = tEnd, (yield imp)
-    imp = integrator.send(Impulse(tBegin, tEnd, accn, origin + hop))
-    while True:
-        tBegin, tEnd = tEnd, (yield imp)
-        dist = (destn - imp.pos).magnitude
-        if dist < tol:
-            origin, destn = next(routing)
-            tTransit = next(timing)
-            hop = (destn - origin) * (tEnd - tBegin) / tTransit
-            imp = integrator.send(
-                Impulse(tBegin, tEnd, accn, origin + hop)
-            )
-        else:
-            imp = integrator.send(
-                Impulse(tBegin, tEnd, accn, imp.pos)
-            )
-

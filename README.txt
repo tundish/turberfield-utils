@@ -3,7 +3,7 @@
 
 Turberfield is a *S* ur *PRISE*.
 
-a **Semantic**
+**Semantic**
     Turberfield can be understood by machines or human beings.
 
 **Persistent**
