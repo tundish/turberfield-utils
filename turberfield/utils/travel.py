@@ -21,9 +21,6 @@ from collections import deque
 from collections import namedtuple
 import decimal
 from decimal import Decimal as Dl
-import itertools
-import logging
-import warnings
 
 from turberfield.utils.homogeneous import vector
 

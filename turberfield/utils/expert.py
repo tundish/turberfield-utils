@@ -16,9 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
 import asyncio
-from collections import Counter
 from collections import defaultdict
 from collections import namedtuple
 import contextlib
@@ -29,12 +27,10 @@ import logging
 import os
 import re
 import tempfile
-import time
-import uuid
 import warnings
 
-from turberfield.common.pipes import PipeQueue
 from turberfield.utils import __version__
+from turberfield.utils.pipes import PipeQueue
 from turberfield.utils.travel import Impulse
 
 __doc__ = """
