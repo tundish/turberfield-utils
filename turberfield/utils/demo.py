@@ -34,15 +34,15 @@ import uuid
 
 from turberfield.common.inventory import Inventory
 
-from turberfield.positions import __version__
-from turberfield.positions.company import Company
-from turberfield.positions.homogeneous import point
-from turberfield.positions.machina import Fixed
-from turberfield.positions.machina import Mobile
-from turberfield.positions.shifter import Shifter
-from turberfield.positions.stage import Stage
-from turberfield.positions.travel import steadypace
-from turberfield.positions.travel import trajectory
+from turberfield.utils import __version__
+from turberfield.utils.company import Company
+from turberfield.utils.homogeneous import point
+from turberfield.utils.expert import Fixed
+from turberfield.utils.expert import Mobile
+from turberfield.utils.shifter import Shifter
+from turberfield.utils.stage import Stage
+from turberfield.utils.travel import steadypace
+from turberfield.utils.travel import trajectory
 
 DFLT_LOCN = os.path.expanduser(os.path.join("~", ".turberfield"))
 

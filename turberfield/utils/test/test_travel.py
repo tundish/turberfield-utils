@@ -21,12 +21,12 @@ from decimal import Decimal as Dl
 import itertools
 import unittest
 
-from turberfield.positions.homogeneous import point
-from turberfield.positions.homogeneous import vector
-from turberfield.positions.travel import Impulse
-from turberfield.positions.travel import steadypace
-from turberfield.positions.travel import ticks
-from turberfield.positions.travel import trajectory
+from turberfield.utils.homogeneous import point
+from turberfield.utils.homogeneous import vector
+from turberfield.utils.travel import Impulse
+from turberfield.utils.travel import steadypace
+from turberfield.utils.travel import ticks
+from turberfield.utils.travel import trajectory
 
 
 class ProjectileTrajectoryTests(unittest.TestCase):
@@ -181,6 +181,7 @@ class PolynomialTrajectoryTests(unittest.TestCase):
                 self.assertEqual(x, imp.pos)
 
 
+# TODO: Move out of utils to turberfield.machina
 class SteadypaceTests(unittest.TestCase):
 
     def test_there_and_back_again(self):

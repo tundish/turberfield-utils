@@ -20,9 +20,9 @@ import asyncio
 from collections import OrderedDict
 import os
 
-from turberfield.positions.machina import Provider
+from turberfield.utils.expert import Expert
 
-class Company(Provider):
+class Company(Expert):
     """
             # TODO:
             # 1. Look up collision by id
@@ -37,8 +37,8 @@ class Company(Provider):
         parent=os.path.expanduser(os.path.join("~", ".turberfield"))
     ):
         return OrderedDict([
-            ("players", Provider.Attribute("players")),
-            ("company", Provider.HATEOAS(
+            ("players", Expert.Attribute("players")),
+            ("company", Expert.HATEOAS(
                 "company",
                 "players",
                 os.path.join(parent, "company.json"))
@@ -47,7 +47,7 @@ class Company(Provider):
 
     def __init__(self, positions, pockets, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._positions = positions # Actor: turberfield.positions.Stage
+        self._positions = positions # Actor: turberfield.utils.Stage
         self._pockets = pockets  # Actor: (Commodity: n)
 
     @asyncio.coroutine

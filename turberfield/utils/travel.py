@@ -25,7 +25,7 @@ import itertools
 import logging
 import warnings
 
-from turberfield.positions.homogeneous import vector
+from turberfield.utils.homogeneous import vector
 
 
 Impulse = namedtuple("Impulse", ["tBegin", "tEnd", "accn", "pos"])
@@ -87,8 +87,9 @@ def trajectory(limits=None):
         imp = yield state[0]
 
 
+# TODO: Move out of utils to turberfield.machina
 def steadypace(integrator, routing, timing, tol=1):
-    log = logging.getLogger("turberfield.positions.travel.steadypace")
+    log = logging.getLogger("turberfield.utils.travel.steadypace")
     accn = vector(0, 0, 0)
     integrator.send(None)
     tBegin = yield None

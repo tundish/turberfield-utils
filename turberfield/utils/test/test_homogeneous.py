@@ -34,8 +34,8 @@ except ImportError:
 
 import unittest
 
-from turberfield.positions.homogeneous import *
-from turberfield.positions.homogeneous import Homogeneous
+from turberfield.utils.homogeneous import *
+from turberfield.utils.homogeneous import Homogeneous
 
 
 class FactoryTester(unittest.TestCase):

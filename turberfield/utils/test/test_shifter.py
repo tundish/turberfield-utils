@@ -29,16 +29,16 @@ import unittest
 import uuid
 import warnings
 
-from turberfield.positions.demo import Simulation
-from turberfield.positions.homogeneous import vector
-from turberfield.positions.machina import Fixed
-from turberfield.positions.machina import Mobile
-from turberfield.positions.machina import Provider
-from turberfield.positions.machina import Tick
-from turberfield.positions.shifter import Shifter
-from turberfield.positions.travel import Impulse
-from turberfield.positions.travel import steadypace
-from turberfield.positions.travel import trajectory
+from turberfield.utils.demo import Simulation
+from turberfield.utils.homogeneous import vector
+from turberfield.utils.expert import Fixed
+from turberfield.utils.expert import Mobile
+from turberfield.utils.expert import Expert
+from turberfield.utils.expert import Tick
+from turberfield.utils.shifter import Shifter
+from turberfield.utils.travel import Impulse
+from turberfield.utils.travel import steadypace
+from turberfield.utils.travel import trajectory
 
 
 # Prototyping
@@ -84,13 +84,13 @@ class ShifterTests(unittest.TestCase):
         class_.tick = Tick(0, 0.3, 0.1, None)
 
     def test_has_provide(self):
-        p = Provider()
+        p = Expert()
         shifter = Shifter(
             self.theatre,
             loop=self.loop, **self._services
         )
-        self.assertIsInstance(shifter, Provider)
-        self.assertTrue(hasattr(shifter, "provide"))
+        self.assertIsInstance(shifter, Expert)
+        self.assertTrue(hasattr(shifter, "declare"))
 
     def test_has_services(self):
         shifter = Shifter(

@@ -24,27 +24,27 @@ import os
 import shutil
 import unittest
 
-from turberfield.positions.machina import Provider
+from turberfield.utils.expert import Expert
 
-class EndpointTests(unittest.TestCase):
+class DeclarationTests(unittest.TestCase):
 
     drcty = os.path.expanduser(os.path.join("~", ".turberfield"))
     node = "test.json"
 
     def setUp(self):
         try:
-            os.mkdir(EndpointTests.drcty)
+            os.mkdir(DeclarationTests.drcty)
         except OSError:
             pass
 
     def tearDown(self):
-        shutil.rmtree(EndpointTests.drcty, ignore_errors=True)
+        shutil.rmtree(DeclarationTests.drcty, ignore_errors=True)
 
     def test_content_goes_to_named_file(self):
         fP = os.path.join(
-                EndpointTests.drcty, EndpointTests.node)
+                DeclarationTests.drcty, DeclarationTests.node)
         self.assertFalse(os.path.isfile(fP))
-        with Provider.endpoint(fP) as output:
+        with Expert.declaration(fP) as output:
             json.dump("Test string", output)
 
         self.assertTrue(os.path.isfile(fP))
@@ -53,10 +53,10 @@ class EndpointTests(unittest.TestCase):
 
     def test_content_goes_to_file_object(self):
         fP = os.path.join(
-                EndpointTests.drcty, EndpointTests.node)
+                DeclarationTests.drcty, DeclarationTests.node)
         fObj = StringIO()
         self.assertFalse(os.path.isfile(fP))
-        with Provider.endpoint(fObj) as output:
+        with Expert.declaration(fObj) as output:
             json.dump("Test string", output)
 
         self.assertFalse(os.path.isfile(fP))
@@ -66,20 +66,20 @@ class ProviderTests(unittest.TestCase):
 
     def test_subclassing_provider(self):
 
-        class Subclass(Provider):
+        class Subclass(Expert):
 
             @staticmethod
             def options():
                 return OrderedDict([
-                    ("tick", Provider.Attribute("tick")),
-                    ("page", Provider.Attribute("page")),
+                    ("tick", Expert.Attribute("tick")),
+                    ("page", Expert.Attribute("page")),
                 ])
 
         self.assertTrue(hasattr(Subclass, "public"))
         options = Subclass.options()
         sub = Subclass(**options)
         self.assertTrue(hasattr(sub, "Interface"))
-        self.assertIs(None, Provider.public)
+        self.assertIs(None, Expert.public)
         self.assertIsInstance(Subclass.public, sub.Interface)
 
 
@@ -88,7 +88,7 @@ class TaskTests(unittest.TestCase):
     # TODO: Test PipeQueue, JobQueue
     def test_tasks_for_queues(self):
         q, r = (asyncio.Queue(), asyncio.Queue())
-        p = Provider(q, r)
+        p = Expert(q, r)
 
         self.assertEqual(2, len(p.inputs))
         self.assertTrue(

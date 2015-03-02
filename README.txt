@@ -54,8 +54,8 @@ Installation
 
 Download and unpack the source distribution::
 
-    $ tar -xzvf turberfield-positions-00.001.tar.gz
-    $ cd turberfield-positions-00.001
+    $ tar -xzvf turberfield.utils-00.001.tar.gz
+    $ cd turberfield.utils-00.001
 
 Run the tests::
 
@@ -66,5 +66,5 @@ Run the tests::
 :Copyright: 2014 Thuswise Ltd
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
-.. _GNU Affero General Public License: http://www.gnu.org/licenses/agpl-3.0.html
+.. _GNU Affero General Public License: http://www.gnu.org/licenses/gpl.html
 .. _message board: https://www.assembla.com/spaces/turberfield/messages

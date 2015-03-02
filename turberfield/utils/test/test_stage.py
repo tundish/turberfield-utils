@@ -20,7 +20,7 @@ import unittest
 import uuid
 
 from turberfield.common.schema import Actor
-from turberfield.positions.stage import Stage
+from turberfield.utils.stage import Stage
 
 
 class APIPrototyping(unittest.TestCase):

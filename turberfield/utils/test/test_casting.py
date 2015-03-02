@@ -26,7 +26,7 @@ import uuid
 from turberfield.common.schema import NPC
 from turberfield.common.schema import Player
 
-from turberfield.positions.stage import Stage
+from turberfield.utils.stage import Stage
 
 @enum.unique
 class Commodity(enum.Enum):

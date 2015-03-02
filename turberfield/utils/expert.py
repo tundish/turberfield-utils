@@ -34,8 +34,8 @@ import uuid
 import warnings
 
 from turberfield.common.pipes import PipeQueue
-from turberfield.positions import __version__
-from turberfield.positions.travel import Impulse
+from turberfield.utils import __version__
+from turberfield.utils.travel import Impulse
 
 __doc__ = """
 Machina places an actor on a stage.

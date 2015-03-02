@@ -19,12 +19,12 @@
 from collections import OrderedDict
 import unittest
 
-import turberfield.positions
-from turberfield.positions.demo import Simulation
-from turberfield.positions.shifter import Shifter
-from turberfield.positions.travel import Impulse
-from turberfield.positions.travel import steadypace
-from turberfield.positions.travel import trajectory
+import turberfield.utils
+from turberfield.utils.demo import Simulation
+from turberfield.utils.shifter import Shifter
+from turberfield.utils.travel import Impulse
+from turberfield.utils.travel import steadypace
+from turberfield.utils.travel import trajectory
 
 
 class SimulationTests(unittest.TestCase):

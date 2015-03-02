@@ -26,19 +26,19 @@ import time
 import warnings
 
 
-from turberfield.positions.homogeneous import vector
-from turberfield.positions.machina import Fixed
-from turberfield.positions.machina import Mobile
-from turberfield.positions.machina import Provider
-from turberfield.positions.machina import Tick
-from turberfield.positions.travel import Impulse
+from turberfield.utils.homogeneous import vector
+from turberfield.utils.expert import Fixed
+from turberfield.utils.expert import Mobile
+from turberfield.utils.expert import Expert
+from turberfield.utils.expert import Tick
+from turberfield.utils.travel import Impulse
 
 
 __doc__ = """
 Shifter moves stages around
 """
 
-class Shifter(Provider):
+class Shifter(Expert):
 
     @staticmethod
     def collision(theatre, pending=None):
@@ -75,15 +75,15 @@ class Shifter(Provider):
         parent=os.path.expanduser(os.path.join("~", ".turberfield"))
     ):
         return OrderedDict([
-            ("tick", Provider.Attribute("tick")),
-            ("collisions", Provider.Attribute("collisions")),
-            ("movement", Provider.Attribute("movement")),
-            ("bridging", Provider.HATEOAS(
+            ("tick", Expert.Attribute("tick")),
+            ("collisions", Expert.Attribute("collisions")),
+            ("movement", Expert.Attribute("movement")),
+            ("bridging", Expert.HATEOAS(
                 "bridging",
                 "collisions",
                 os.path.join(parent, "bridging.json"))
             ),
-            ("positions", Provider.HATEOAS(
+            ("positions", Expert.HATEOAS(
                 "positions",
                 "movement",
                 os.path.join(parent, "positions.json"))
@@ -101,9 +101,9 @@ class Shifter(Provider):
         self._events.send(None)
         while stop > ts:
             t = time.time()
-            collisions = self.page
+            collisions = Shifter.page()
             collisions.info["ts"] = t
-            movement = self.page
+            movement = Shifter.page()
             movement.info["ts"] = t
 
             for stage, push in Shifter.movement(
@@ -118,7 +118,7 @@ class Shifter(Provider):
                 bridging = self._events.send((stage, push, ts + 5))
 
             # TODO: create from a second endpoint: "rte"
-            # provided by a TheatreCompany(Provider)
+            # provided by a TheatreCompany(Expert)
             # Web tier consumes, filters, adds to synchronous items.
             collisions.items[:] = [{
                 "label": "{0.label} - {1.label}".format(a, b),
@@ -126,7 +126,7 @@ class Shifter(Provider):
             } for (a, b), expires in bridging.items()]
 
             tick = Tick(start, stop, step, ts)
-            self.provide(locals())
+            self.declare(locals())
 
             ts += step
             yield from asyncio.sleep(max(step, 0.2), loop=loop)
