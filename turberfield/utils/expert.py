@@ -124,6 +124,7 @@ class Expert:
             
     def declare(self, data):
         class_ = self.__class__
+        kwargs = defaultdict(None)
         for name, service in self._services.items():
             if isinstance(service, Expert.Attribute):
                 kwargs[service.name] = data[service.name]
