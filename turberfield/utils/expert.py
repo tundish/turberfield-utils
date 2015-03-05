@@ -97,16 +97,16 @@ class Expert:
 
     def __init__(self, *args, **kwargs):
         class_ = self.__class__
-        self.log = logging.getLogger(class_.__name__)
+        self._log = logging.getLogger(class_.__name__)
         loop = kwargs.pop("loop", None)
-        self.inputs = [
+        inputs = [
             i for i in args
             if isinstance(i, (asyncio.Queue, PipeQueue))
             # TODO: accept JobQueue, via hasattr duck typing?
         ]
         self._watchers = [
             asyncio.Task(self.watch(q, loop=loop), loop=loop)
-            for q in self.inputs
+            for q in inputs
         ]
         self._services = kwargs
         if kwargs:
@@ -123,7 +123,6 @@ class Expert:
                 itertools.repeat(None, len(attributes)))
             
     def declare(self, data):
-        kwargs = defaultdict(None)
         class_ = self.__class__
         for name, service in self._services.items():
             if isinstance(service, Expert.Attribute):

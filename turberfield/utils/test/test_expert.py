@@ -90,11 +90,6 @@ class TaskTests(unittest.TestCase):
         q, r = (asyncio.Queue(), asyncio.Queue())
         p = Expert(q, r)
 
-        self.assertEqual(2, len(p.inputs))
-        self.assertTrue(
-            all(isinstance(i, asyncio.Queue) for i in p.inputs)
-        )
-
         self.assertEqual(2, len(p._watchers))
         self.assertTrue(
             all(isinstance(i, asyncio.Task) for i in p._watchers)
