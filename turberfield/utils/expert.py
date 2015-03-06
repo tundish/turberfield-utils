@@ -55,6 +55,7 @@ class TypesEncoder(json.JSONEncoder):
 class Expert:
 
     Attribute = namedtuple("Attribute", ["name"])
+    Event = namedtuple("Event", ["name"])
     HATEOAS = namedtuple("HATEOAS", ["name", "attr", "dst"])
     JSON = namedtuple("JSON", ["name"])
     Page = namedtuple("Page", ["info", "nav", "items", "options"])
@@ -128,6 +129,11 @@ class Expert:
         for name, service in self._services.items():
             if isinstance(service, Expert.Attribute):
                 kwargs[service.name] = data[service.name]
+            elif isinstance(service, Expert.Event):
+                if data[service.name]:
+                    getattr(class_.public, service.name).set()
+                else:
+                    getattr(class_.public, service.name).clear()
             elif isinstance(service, Expert.HATEOAS):
                 content = data[service.attr]
                 with Expert.declaration(service.dst) as output:
