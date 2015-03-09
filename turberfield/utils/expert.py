@@ -115,25 +115,30 @@ class Expert:
                 warnings.warn("Re-initialisation of {}: {}".format(
                     class_.__name__, kwargs))
 
-            attributes = [k for k, v in kwargs.items()
-                          if isinstance(v, Expert.Attribute)]
+            attributes = [
+                k for k, v in kwargs.items()
+                if isinstance(v, (Expert.Attribute, Expert.Event))
+            ]
             self.Interface = namedtuple(
                 class_.__name__ + "Interface", attributes)
 
             class_.public = self.Interface._make(
                 itertools.repeat(None, len(attributes)))
             
-    def declare(self, data):
+    def declare(self, data, loop=None):
         class_ = self.__class__
         kwargs = defaultdict(None)
         for name, service in self._services.items():
             if isinstance(service, Expert.Attribute):
                 kwargs[service.name] = data[service.name]
             elif isinstance(service, Expert.Event):
+                event = kwargs[service.name] = (
+                    getattr(class_.public, service.name)
+                    or asyncio.Event(loop=loop))
                 if data[service.name]:
-                    getattr(class_.public, service.name).set()
+                    event.set()
                 else:
-                    getattr(class_.public, service.name).clear()
+                    event.clear()
             elif isinstance(service, Expert.HATEOAS):
                 content = data[service.attr]
                 with Expert.declaration(service.dst) as output:
