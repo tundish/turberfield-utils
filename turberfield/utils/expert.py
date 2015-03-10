@@ -140,6 +140,10 @@ class Expert:
                 else:
                     event.clear()
             elif isinstance(service, Expert.HATEOAS):
+                # TODO:
+                # * Create page
+                # * Add info
+                # * Take OrderedDict attr and map to type in page items
                 content = data[service.attr]
                 with Expert.declaration(service.dst) as output:
                     json.dump(
