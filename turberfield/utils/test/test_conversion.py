@@ -32,23 +32,55 @@ def obj2str(obj):
     )
 
 
+# TODO: Goes in machina because of rson dependency
+def rson2objs(text, types):
+    """
+    Read an RSON string and return a sequence of data objects.
+    """
+    which = {i.__name__: i for i in types}
+    things = rson.loads(text)
+    things = things if isinstance(things, list) else [things]
+    return [which.get(i.pop("_type", None), dict)(**i) for i in things]
+        
+
 class AttributeConversionTests(unittest.TestCase):
 
     def test_itemise_single_type(self):
         # attribute
-        Thing = namedtuple("Thing", ["value"])
+        Thing = namedtuple("Thing", ["a", "b", "value"])
+        Thong = namedtuple("Thong", ["colour"])
         data = OrderedDict([
-            (frozenset((1,2)), [Thing(0), Thing(1)]),
-            (frozenset((1,3)), [Thing(2), Thing(5)]),
-            (frozenset((2,3)), [Thing(3), Thing(4)]),
+            (frozenset((1,2)), [0, 1]),
+            (frozenset((1,3)), [2, 5]),
+            (frozenset((2,3)), [3, 4]),
         ])
 
         # filtering
-        output = [
-            dict(_links=[], _type=t.__class__.__name__, **vars(t))
-            for (a, b), things in data.items()
-            for t in things if 2 < t.value < 5]
+        filtered = [
+            Thing(a, b, val)
+            for (a, b), values in data.items()
+            for val in values if 2 < val < 5
+        ]
 
+        static = [Thong("blue")]
+
+        # filtered, static saved as RSON, then loaded into web tier
+        things = [dict(
+            _links=["/{}".format(i.value)],
+            _type=i.__class__.__name__, **vars(i))
+            for i in filtered]
+
+        thongs = [dict(
+            _links=["#"],
+            _type=i.__class__.__name__, **vars(i))
+            for i in static]
+
+        page = {
+            "info": {},
+            "items": things + thongs
+        }
+
+        # check _links lists are not refs to same object
         self.assertEqual(
-            len(output), len({id(i["_links"]) for i in output}))
-        self.fail(output)
+            len(things), len({id(i["_links"]) for i in things}))
+        self.fail(page)
