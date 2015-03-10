@@ -27,6 +27,7 @@ import logging
 import os
 import re
 import tempfile
+import time
 import warnings
 
 from turberfield.utils import __version__
@@ -144,10 +145,17 @@ class Expert:
                 # * Create page
                 # * Add info
                 # * Take OrderedDict attr and map to type in page items
-                content = data[service.attr]
+                page = class_.page()
+                page.info["ts"] = time.time()
+                items = data.get(service.attr, [])
+                page.items[:] = [dict(
+                    _links=[],
+                    _type=i.__class__.__name__, **i)
+                    #_type=i.__class__.__name__, **vars(i))
+                    for i in items]
                 with Expert.declaration(service.dst) as output:
                     json.dump(
-                        vars(content), output,
+                        page, output,
                         cls=TypesEncoder, indent=4
                     )
 

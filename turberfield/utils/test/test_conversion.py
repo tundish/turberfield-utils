@@ -18,6 +18,7 @@
 
 from collections import namedtuple
 from collections import OrderedDict
+import json
 import unittest
 
 
@@ -83,4 +84,4 @@ class AttributeConversionTests(unittest.TestCase):
         # check _links lists are not refs to same object
         self.assertEqual(
             len(things), len({id(i["_links"]) for i in things}))
-        self.fail(page)
+        self.assertTrue(json.dumps(page))
