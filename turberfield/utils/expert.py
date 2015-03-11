@@ -99,7 +99,8 @@ class Expert:
 
     def __init__(self, *args, **kwargs):
         class_ = self.__class__
-        self._log = logging.getLogger(class_.__name__)
+        self._log = logging.getLogger(
+            "turberfield.expert." + class_.__name__.lower())
         loop = kwargs.pop("loop", None)
         inputs = [
             i for i in args
