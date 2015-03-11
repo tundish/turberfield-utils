@@ -60,7 +60,7 @@ class Expert:
     HATEOAS = namedtuple("HATEOAS", ["name", "attr", "dst"])
     JSON = namedtuple("JSON", ["name"])
     Page = namedtuple("Page", ["info", "nav", "items", "options"])
-    RSON = namedtuple("RSON", ["name"])
+    RSON = namedtuple("RSON", ["name", "attr", "dst"])
 
     public = None
 
@@ -141,8 +141,16 @@ class Expert:
                     event.set()
                 else:
                     event.clear()
+            elif isinstance(service, Expert.RSON):
+                with Expert.declaration(service.dst) as output:
+                    output.write(
+                        "\n".join(json.dumps(
+                            dict(_type=type(i).__name__, **vars(i)),
+                            output, cls=TypesEncoder, indent=0
+                            )
+                        for i in data.get(service.attr, []))
+                    )
             elif isinstance(service, Expert.HATEOAS):
-                # TODO: expect a type for each item
                 page = class_.page()
                 page.info["ts"] = time.time()
                 items = data.get(service.attr, [])
