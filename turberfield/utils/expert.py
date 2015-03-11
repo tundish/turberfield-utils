@@ -148,8 +148,7 @@ class Expert:
                 items = data.get(service.attr, [])
                 page.items[:] = [dict(
                     _links=[],
-                    _type=i.__class__.__name__, **i)
-                    #_type=i.__class__.__name__, **vars(i))
+                    _type=i.__class__.__name__, **vars(i))
                     for i in items]
                 with Expert.declaration(service.dst) as output:
                     json.dump(
