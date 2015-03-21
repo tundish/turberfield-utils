@@ -42,7 +42,7 @@ def rson2objs(text, types):
     things = rson.loads(text)
     things = things if isinstance(things, list) else [things]
     return [which.get(i.pop("_type", None), dict)(**i) for i in things]
-        
+
 
 class AttributeConversionTests(unittest.TestCase):
 
@@ -51,9 +51,9 @@ class AttributeConversionTests(unittest.TestCase):
         Thing = namedtuple("Thing", ["a", "b", "value"])
         Thong = namedtuple("Thong", ["colour"])
         data = OrderedDict([
-            (frozenset((1,2)), [0, 1]),
-            (frozenset((1,3)), [2, 5]),
-            (frozenset((2,3)), [3, 4]),
+            (frozenset((1, 2)), [0, 1]),
+            (frozenset((1, 3)), [2, 5]),
+            (frozenset((2, 3)), [3, 4]),
         ])
 
         # filtering

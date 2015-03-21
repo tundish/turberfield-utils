@@ -26,6 +26,7 @@ __doc__ = """
 Provides an interprocess Queue for use with the asyncio event loop.
 """
 
+
 class SimplePipeQueue:
 
     @classmethod

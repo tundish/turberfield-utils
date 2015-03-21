@@ -88,13 +88,13 @@ class Expert:
     @classmethod
     def page(cls):
         return Expert.Page(
-            info = {
+            info={
                 "title": cls.__name__,
                 "version": __version__
             },
-            nav = [],
-            items = [],
-            options = []
+            nav=[],
+            items=[],
+            options=[]
         )
 
     def __init__(self, *args, **kwargs):
@@ -126,7 +126,7 @@ class Expert:
 
             class_.public = self.Interface._make(
                 itertools.repeat(None, len(attributes)))
-            
+
     def declare(self, data, loop=None):
         class_ = self.__class__
         kwargs = defaultdict(None)
@@ -148,7 +148,7 @@ class Expert:
                             dict(_type=type(i).__name__, **vars(i)),
                             output, cls=TypesEncoder, indent=0
                             )
-                        for i in data.get(service.attr, []))
+                            for i in data.get(service.attr, []))
                     )
             elif isinstance(service, Expert.HATEOAS):
                 page = class_.page()
