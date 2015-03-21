@@ -30,6 +30,7 @@ from turberfield.utils.travel import trajectory
 http://lonesock.net/article/verlet.html
 """
 
+
 class ProjectileTrajectoryTests(unittest.TestCase):
 
     def test_scalar_calculation(self):
