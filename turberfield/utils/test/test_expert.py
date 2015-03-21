@@ -26,6 +26,7 @@ import unittest
 
 from turberfield.utils.expert import Expert
 
+
 class DeclarationTests(unittest.TestCase):
 
     drcty = os.path.expanduser(os.path.join("~", ".turberfield"))
@@ -42,7 +43,7 @@ class DeclarationTests(unittest.TestCase):
 
     def test_content_goes_to_named_file(self):
         fP = os.path.join(
-                DeclarationTests.drcty, DeclarationTests.node)
+            DeclarationTests.drcty, DeclarationTests.node)
         self.assertFalse(os.path.isfile(fP))
         with Expert.declaration(fP) as output:
             json.dump("Test string", output)
@@ -53,7 +54,7 @@ class DeclarationTests(unittest.TestCase):
 
     def test_content_goes_to_file_object(self):
         fP = os.path.join(
-                DeclarationTests.drcty, DeclarationTests.node)
+            DeclarationTests.drcty, DeclarationTests.node)
         fObj = StringIO()
         self.assertFalse(os.path.isfile(fP))
         with Expert.declaration(fObj) as output:
@@ -61,6 +62,7 @@ class DeclarationTests(unittest.TestCase):
 
         self.assertFalse(os.path.isfile(fP))
         self.assertEqual('"Test string"', fObj.getvalue())
+
 
 class ProviderTests(unittest.TestCase):
 
