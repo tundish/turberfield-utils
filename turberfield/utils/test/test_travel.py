@@ -87,8 +87,10 @@ class ProjectileTrajectoryTests(unittest.TestCase):
                 imp = proc.send(Impulse(
                     Dl(0), Dl("0.5"), accn, point(0, 0, 0)))
             elif n == 1:
-                p = (point(0, 0, 0) + vel * dt +
-                    Dl("0.5") * accn * dt * dt)
+                p = (
+                    point(0, 0, 0) + vel * dt +
+                    Dl("0.5") * accn * dt * dt
+                )
                 imp = proc.send(Impulse(
                     imp.tEnd, imp.tEnd + dt, accn, p))
             else:
