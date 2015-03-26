@@ -35,7 +35,7 @@ import turberfield.utils
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
-    "alabaster"
+    #"alabaster"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
