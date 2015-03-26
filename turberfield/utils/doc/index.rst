@@ -1,8 +1,8 @@
 ..  Titling
     ##++::==~~--''``
 
-Turberfield Utilities
-=====================
+Turberfield Utility library
+===========================
 
 Turberfield's mission is to provide a validated Pythonic framework for discrete
 event simulations and turn-based games.
@@ -23,12 +23,16 @@ describing your Use Case.
 
 In either event, please leave a message on the project's `message board`_.
 
-:Author: D Haynes
+|
+
+:Author: tundish
 :Copyright: 2015 D Haynes
 :Licence: `GNU General Public License`_
 
-:py:class:`Homogeneous <turberfield.utils.homogeneous.Homogeneous>`
-===================================================================
+|
+
+:py:mod:`homogeneous <turberfield.utils.homogeneous>`
+=====================================================
 
 .. autoclass:: turberfield.utils.homogeneous.Homogeneous
    :members:

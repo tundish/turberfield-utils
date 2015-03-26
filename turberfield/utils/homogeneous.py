@@ -21,7 +21,9 @@
 from math import sqrt
 
 __doc__ = """
-    Objects to support 2D or 3D geometry
+    The module consists of several functions which operate on
+    Homogeneous coordinates to support 2D or 3D geometric
+    calculations.
 
 """
 
@@ -35,7 +37,7 @@ class Homogeneous(tuple):
     """
     This class provides homogeneous coordinates for use in
     graphical applications. The representation supports both points
-    and vectors
+    and vectors.
     """
 
     def __new__(cls, seq, point=None):
@@ -132,14 +134,16 @@ class Homogeneous(tuple):
         """
         Presents the magnitude of a vector (position vector in
         the case of a point).
-        :rtype: float
+
+        :rtype: number
         """
         return sqrt(sum([i ** 2 for i in self[:-1]]))
 
 
 def point(*args):
     """
-    Factory function for homogeneous points
+    Factory function for homogeneous points.
+
     :param args: coordinates for the point
     :returns: a new point object
     :rtype: Homogeneous
@@ -149,7 +153,8 @@ def point(*args):
 
 def vector(*args):
     """
-    Factory function for homogeneous vector
+    Factory function for homogeneous vector.
+
     :param args: coordinates for the vector
     :returns: a new vector object
     :rtype: Homogeneous
@@ -159,7 +164,8 @@ def vector(*args):
 
 def posvector(point):
     """
-    Returns the position vector of a point
+    Returns the position vector of a point.
+
     :param point: a point
     :type point: Homogeneous
     :returns: a new vector object
@@ -170,7 +176,8 @@ def posvector(point):
 
 def normalise(vec):
     """
-    Scales a vector so its magnitude is unity
+    Scales a vector so its magnitude is unity.
+
     :param vec: a vector
     :type vec: Homogeneous
     :returns: a new vector object
@@ -183,13 +190,14 @@ def normalise(vec):
 
 def dot(one, tother):
     """
-    Calculates the dot product of two vectors
+    Calculates the dot product of two vectors.
+
     :param one: a vector
     :type one: Homogeneous
     :param tother: a vector
     :type tother: Homogeneous
     :returns: the scalar product
-    :rtype: float
+    :rtype: number
     """
     return sum((a * b for a, b in zip(one, tother)))
 
@@ -197,6 +205,7 @@ def dot(one, tother):
 def cross(one, tother):
     """
     Calculates the cross product of two vectors. Works in 3D only.
+
     :param one: a vector
     :type one: Homogeneous
     :param tother: a vector
@@ -220,6 +229,7 @@ def premultiply(hom, *rows):
     of the transformation matrix. The matrix must be properly sized to
     match a homogeneous array, ie: to transform a 3D (4-element) point,
     you need four rows each containing four values.
+
     :param hom: a point or vector
     :type hom: Homogeneous
     :param rows: matrix data
@@ -227,7 +237,7 @@ def premultiply(hom, *rows):
     :returns: a point or vector
     :rtype: Homogeneous
     :requires: there must be as many rows as there are elements in hom,
-    and each must be the length of hom
+               and each must be the length of hom
     """
     assert len(hom) == len(rows[0])
     return Homogeneous(
@@ -237,7 +247,8 @@ def premultiply(hom, *rows):
 def maxpick(one, tother):
     """
     Performs elementwise comparison of two points or vectors and keeps
-    the larger of each corresponding element
+    the larger of each corresponding element.
+
     :param one: a point or vector
     :type one: Homogeneous
     :param tother: a point or vector
@@ -252,7 +263,8 @@ def maxpick(one, tother):
 def minpick(one, tother):
     """
     Performs elementwise comparison of two points or vectors and keeps
-    the smaller of each corresponding element
+    the smaller of each corresponding element.
+
     :param one: a point or vector
     :type one: Homogeneous
     :param tother: a point or vector
