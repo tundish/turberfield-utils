@@ -33,7 +33,7 @@ setup(
     url="https://www.assembla.com/spaces/turberfield/messages",
     long_description=__doc__,
     classifiers=[
-        "Operating System :: OS Independent",
+        "Operating System :: POSIX",
         "Programming Language :: Python :: 3.4",
         "License :: OSI Approved :: GNU General Public License v3"
         " or later (GPLv3+)"
@@ -45,6 +45,18 @@ setup(
     ],
     package_data={
         "turberfield.utils": [
+            "doc/*.rst",
+            "doc/_templates/*.css",
+            "doc/html/*.html",
+            "doc/html/*.js",
+            "doc/html/_sources/*",
+            "doc/html/_static/css/*",
+            "doc/html/_static/font/*",
+            "doc/html/_static/js/*",
+            "doc/html/_static/*.css",
+            "doc/html/_static/*.gif",
+            "doc/html/_static/*.js",
+            "doc/html/_static/*.png",
             ],
     },
     install_requires=[],
