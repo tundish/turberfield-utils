@@ -33,8 +33,9 @@ import turberfield.utils
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.todo',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.todo",
+    "alabaster"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -112,17 +113,28 @@ todo_include_todos = True
 
 # -- Options for HTML output ----------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
+# More elaborate themes are commented out
 # on_rtd is whether we are on readthedocs.org
-on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = "sphinx_rtd_theme"
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+#on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 
-#html_theme = 'alabaster'
+#if not on_rtd:  # only import and set the theme if we're building docs locally
+#    import sphinx_rtd_theme
+#    html_theme = "sphinx_rtd_theme"
+#    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+
+#import alabaster
+
+#html_theme_path = [alabaster.get_path()]
+#html_theme = "alabaster"
+#html_sidebars = {
+#    "never": [
+#        "about.html", "navigation.html",
+#        "searchbox.html", "donate.html",
+#    ]
+#}
+
 html_theme = "haiku"
 
 # Theme options are theme-specific and customize the look and feel of a theme

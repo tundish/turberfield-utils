@@ -16,7 +16,6 @@ previous versions.
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
 
 If you've spotted a bug in Turberfield, please let me know so I can fix it.
 If you think Turberfield lacks a feature, you can help drive development by
@@ -24,11 +23,12 @@ describing your Use Case.
 
 In either event, please leave a message on the project's `message board`_.
 
-:Author: tundish
+:Author: D Haynes
 :Copyright: 2015 D Haynes
 :Licence: `GNU General Public License`_
 
-:py:class:`Homogeneous <turberfield.utils.homogeneous.Homogeneous>` is cool.
+:py:class:`Homogeneous <turberfield.utils.homogeneous.Homogeneous>`
+===================================================================
 
 .. autoclass:: turberfield.utils.homogeneous.Homogeneous
    :members:
