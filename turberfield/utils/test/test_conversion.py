@@ -22,31 +22,13 @@ import json
 import unittest
 
 
-def obj2str(obj):
-    """
-    Serialise a single data object to a (JSON) string.
-    """
-    data = vars(obj)
-    data["_type"] = type(obj).__name__
-    return "\n".join(
-        (json.dumps(data, cls=TypeEncoder, indent=0), "")
-    )
-
-
-# TODO: Goes in machina because of rson dependency
-def rson2objs(text, types):
-    """
-    Read an RSON string and return a sequence of data objects.
-    """
-    which = {i.__name__: i for i in types}
-    things = rson.loads(text)
-    things = things if isinstance(things, list) else [things]
-    return [which.get(i.pop("_type", None), dict)(**i) for i in things]
-
-
 class AttributeConversionTests(unittest.TestCase):
 
     def test_itemise_single_type(self):
+        """
+        Not so much a test. Just exploring techniques of
+        type serialisation.
+        """
         # attribute
         Thing = namedtuple("Thing", ["a", "b", "value"])
         Thong = namedtuple("Thong", ["colour"])
