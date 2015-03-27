@@ -54,16 +54,16 @@ Installation
 
 Download and unpack the source distribution::
 
-    $ tar -xzvf turberfield.utils-00.001.tar.gz
-    $ cd turberfield.utils-00.001
+    $ tar -xzvf turberfield-utils-00.001.tar.gz
+    $ cd turberfield-utils-00.001
 
 Run the tests::
 
     $ python3.4 -m unittest discover turberfield
 
 
-:Author: D Haynes
-:Copyright: 2014 Thuswise Ltd
+:Author: tundish
+:Copyright: 2015 D Haynes
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
 .. _GNU General Public License: http://www.gnu.org/licenses/gpl.html
