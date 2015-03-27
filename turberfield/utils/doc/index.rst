@@ -14,14 +14,6 @@ describing your Use Case.
 
 In either event, please leave a message on the project's `message board`_.
 
-.. toctree::
-   :maxdepth: 1
-
-* :ref:`genindex`
-* :ref:`modindex`
-
-|
-
 Turberfield Utility library
 :::::::::::::::::::::::::::
 
@@ -31,15 +23,14 @@ Turberfield Utility library
 
 |
 
-The :py:mod:`homogeneous <turberfield.utils.homogeneous>` module
-================================================================
+.. toctree::
+   :maxdepth: 1
+   :numbered:
 
-.. autoclass:: turberfield.utils.homogeneous.Homogeneous
-   :members:
+   homogeneous
 
-.. automodule:: turberfield.utils.homogeneous
-   :members:
-   :member-order: bysource
+* :ref:`genindex`
+* :ref:`modindex`
 
 .. _GNU General Public License: http://www.gnu.org/licenses/gpl.html
 .. _message board: https://www.assembla.com/spaces/turberfield/messages
