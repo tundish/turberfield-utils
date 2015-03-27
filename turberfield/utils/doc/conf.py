@@ -53,9 +53,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'turberfield-utils'
-copyright = '2015, D Haynes'
-author = 'D Haynes'
+project = "turberfield-utils"
+copyright = "2015, D Haynes"
+author = "D Haynes"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -113,6 +113,8 @@ todo_include_todos = True
 
 # -- Options for HTML output ----------------------------------------------
 
+html_theme = "haiku"
+
 # More elaborate themes are commented out
 # on_rtd is whether we are on readthedocs.org
 
@@ -134,8 +136,6 @@ todo_include_todos = True
 #        "searchbox.html", "donate.html",
 #    ]
 #}
-
-html_theme = "haiku"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
