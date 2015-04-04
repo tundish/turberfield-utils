@@ -28,6 +28,7 @@ Turberfield Utility library
    :numbered:
 
    homogeneous
+   travel
 
 * :ref:`genindex`
 * :ref:`modindex`

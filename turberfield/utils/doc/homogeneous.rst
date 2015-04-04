@@ -5,7 +5,7 @@ The :py:mod:`homogeneous <turberfield.utils.homogeneous>` module
 ================================================================
 
 .. autoclass:: turberfield.utils.homogeneous.Homogeneous
-   :members:
+   :members: __new__, magnitude
 
 .. automodule:: turberfield.utils.homogeneous
    :members:

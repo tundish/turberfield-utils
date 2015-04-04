@@ -35,15 +35,24 @@ __all__ = [
 
 class Homogeneous(tuple):
     """
-    This class provides homogeneous coordinates for use in
-    graphical applications. The representation supports both points
-    and vectors.
+    This class implements homogeneous coordinates. A graphics textbook
+    like `Hill and Kelley`_ will explain how they are used to
+    represent both points and vectors in graphical applications.
+
+    The class acts like a standard Python tuple_. You need not create
+    instances of this class directory; use the factory functions below.
+
+    .. _Hill and Kelley: http://books.google.co.uk/books/about/\
+Computer_graphics.html?id=ffkYAQAAIAAJ
+    .. _tuple: https://docs.python.org/3/library/stdtypes.html#tuple
+
     """
 
     def __new__(cls, seq, point=None):
         """
         Class level constructor. Creates a tuple, but adds the phi
         coordinate if required.
+
         :param seq: contains the data for the array
         :type seq: a sequence
         :param point: should be 0 for a vector, 1 for a point, or
@@ -132,8 +141,8 @@ class Homogeneous(tuple):
     @property
     def magnitude(self):
         """
-        Presents the magnitude of a vector (position vector in
-        the case of a point).
+        A property which gives the magnitude of a Homogeneous vector
+        (position vector in the case of a point).
 
         :rtype: number
         """
