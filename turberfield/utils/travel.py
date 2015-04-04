@@ -26,8 +26,7 @@ from turberfield.utils.homogeneous import vector
 
 
 Impulse = namedtuple("Impulse", ["tBegin", "tEnd", "accn", "pos"])
-
-"""
+Impulse.__doc__ = """
 A Simple
 Time-Corrected Verlet
 Integration Method
@@ -35,8 +34,10 @@ Jonathan "lonesock" Dummer
 http://lonesock.net/article/verlet.html
 """
 
-
 def time_correct_verlet(state, t, accn, mass=1):
+    """
+    Time-corrected Verlet position integration.
+    """
     imp0, imp_1 = state
     dt0, dt_1 = (
         Dl(imp0.tBegin - imp0.tEnd),

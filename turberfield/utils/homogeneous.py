@@ -40,7 +40,8 @@ class Homogeneous(tuple):
     represent both points and vectors in graphical applications.
 
     The class acts like a standard Python tuple_. You need not create
-    instances of this class directory; use the factory functions below.
+    instances of this class directly; use the factory functions below
+    instead.
 
     .. _Hill and Kelley: http://books.google.co.uk/books/about/\
 Computer_graphics.html?id=ffkYAQAAIAAJ
