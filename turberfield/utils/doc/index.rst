@@ -31,7 +31,6 @@ Turberfield Utility library
    travel
 
 * :ref:`genindex`
-* :ref:`modindex`
 
 .. _GNU General Public License: http://www.gnu.org/licenses/gpl.html
 .. _message board: https://www.assembla.com/spaces/turberfield/messages

@@ -54,12 +54,12 @@ Computer_graphics.html?id=ffkYAQAAIAAJ
         Class level constructor. Creates a tuple, but adds the phi
         coordinate if required.
 
-        :param seq: contains the data for the array
+        :param seq: contains the data for the array.
         :type seq: a sequence
         :param point: should be 0 for a vector, 1 for a point, or
-            None to preserve the existing representation
+            None to preserve the existing representation.
         :type point: an optional value
-        :returns: a new object
+        :returns: a new object.
         :rtype: Homogeneous
         """
         if point is None:
@@ -145,7 +145,7 @@ Computer_graphics.html?id=ffkYAQAAIAAJ
         A property which gives the magnitude of a Homogeneous vector
         (position vector in the case of a point).
 
-        :rtype: number
+        :rtype: number.
         """
         return sqrt(sum([i ** 2 for i in self[:-1]]))
 
@@ -154,8 +154,8 @@ def point(*args):
     """
     Use this factory function to create homogeneous points.
 
-    :param args: coordinates for the point
-    :returns: a new point object
+    :param args: coordinates for the point.
+    :returns: a new point object.
     :rtype: Homogeneous
     """
     return Homogeneous(args, point=1)
@@ -165,8 +165,8 @@ def vector(*args):
     """
     Use this factory function to create homogeneous vectors.
 
-    :param args: coordinates for the vector
-    :returns: a new vector object
+    :param args: coordinates for the vector.
+    :returns: a new vector object.
     :rtype: Homogeneous
     """
     return Homogeneous(args, point=0)
@@ -176,9 +176,9 @@ def posvector(point):
     """
     Returns the position vector of a point.
 
-    :param point: a point
+    :param point: a point.
     :type point: Homogeneous
-    :returns: a new vector object
+    :returns: a new vector object.
     :rtype: Homogeneous
     """
     return Homogeneous(point[:-1], point=0)
@@ -188,11 +188,11 @@ def normalise(vec):
     """
     Scales a vector so its magnitude is unity.
 
-    :param vec: a vector
+    :param vec: a vector.
     :type vec: Homogeneous
-    :returns: a new vector object
+    :returns: a new vector object.
     :rtype: Homogeneous
-    :requires: vec to be a vector
+    :requires: vec to be a vector.
     """
     m = vec.magnitude
     return vec / m
@@ -202,12 +202,12 @@ def dot(one, tother):
     """
     Calculates the dot product of two vectors.
 
-    :param one: a vector
+    :param one: a vector.
     :type one: Homogeneous
-    :param tother: a vector
+    :param tother: a vector.
     :type tother: Homogeneous
-    :returns: the scalar product
-    :rtype: number
+    :returns: the scalar product.
+    :rtype: number.
     """
     return sum((a * b for a, b in zip(one, tother)))
 
@@ -216,12 +216,12 @@ def cross(one, tother):
     """
     Calculates the cross product of two vectors. Works in 3D only.
 
-    :param one: a vector
+    :param one: a vector.
     :type one: Homogeneous
-    :param tother: a vector
+    :param tother: a vector.
     :type tother: Homogeneous
-    :returns: a vector
-    :rtype: Homogeneous
+    :returns: a vector.
+    :rtype: Homogeneous.
     """
     try:
         i = one[1] * tother[2] - one[2] * tother[1]
@@ -240,14 +240,14 @@ def premultiply(hom, *rows):
     match a homogeneous array, ie: to transform a 3D (4-element) point,
     you need four rows each containing four values.
 
-    :param hom: a point or vector
+    :param hom: a point or vector.
     :type hom: Homogeneous
-    :param rows: matrix data
+    :param rows: matrix data.
     :type rows: tuples
-    :returns: a point or vector
-    :rtype: Homogeneous
+    :returns: a point or vector.
+    :rtype: Homogeneous.
     :requires: there must be as many rows as there are elements in hom,
-               and each must be the length of hom
+               and each must be the length of hom.
     """
     assert len(hom) == len(rows[0])
     return Homogeneous(
@@ -259,12 +259,12 @@ def maxpick(one, tother):
     Performs elementwise comparison of two points or vectors and keeps
     the larger of each corresponding element.
 
-    :param one: a point or vector
+    :param one: a point or vector.
     :type one: Homogeneous
-    :param tother: a point or vector
+    :param tother: a point or vector.
     :type tother: Homogeneous
-    :returns: a point or vector
-    :rtype: Homogeneous
+    :returns: a point or vector.
+    :rtype: Homogeneous.
     """
     return Homogeneous(
         [max(a, b) for a, b in zip(one, tother)], None)
@@ -275,12 +275,12 @@ def minpick(one, tother):
     Performs elementwise comparison of two points or vectors and keeps
     the smaller of each corresponding element.
 
-    :param one: a point or vector
+    :param one: a point or vector.
     :type one: Homogeneous
-    :param tother: a point or vector
+    :param tother: a point or vector.
     :type tother: Homogeneous
-    :returns: a point or vector
-    :rtype: Homogeneous
+    :returns: a point or vector.
+    :rtype: Homogeneous.
     """
     return Homogeneous(
         [min(a, b) for a, b in zip(one, tother)], None)

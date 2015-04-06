@@ -26,7 +26,7 @@ from turberfield.utils.homogeneous import vector
 
 
 __doc__ = """
-The module defines functions for use in calculating motion using
+The module defines functions for calculating motion using
 :py:class:`Impulses <turberfield.utils.travel.Impulse>`.
 """
 
@@ -41,7 +41,7 @@ of time.
     tEnd
         The end of the time interval.
     accn
-        The second derivative of motion over the time interval.
+        The second derivative of position over the time interval.
     pos
         The position at the start of the time interval.
 """.format(Impulse.__doc__)
@@ -56,11 +56,11 @@ def time_correct_verlet(state, t, accn, mass=1):
     :param state: a 2-tuple of
                 :py:class:`Impulses <turberfield.utils.travel.Impulse>`
                 . Element 0 is the most recent in time.
-    :param t: a time quantity
-    :param accn: an acceleration quantity
-    :returns: a new state 2-tuple
+    :param t: a time quantity.
+    :param accn: an acceleration quantity.
+    :returns: a new state 2-tuple.
     :requires: `acceleration` type to support multiplication over
-            `time` type
+            `time` type.
 
     .. _article on TCV: http://lonesock.net/article/verlet.html
     """
