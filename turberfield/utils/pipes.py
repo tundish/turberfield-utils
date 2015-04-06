@@ -23,11 +23,27 @@ from pprint import pprint
 import sys
 
 __doc__ = """
-Provides an interprocess Queue for use with the asyncio event loop.
+The module provides interprocess Queues. Two variants are available;
+one for use with an asyncio_ event loop, and one for use in
+traditional, blocking-call Python code. In both cases they accept
+the following Python literal structures: strings, bytes, numbers,
+tuples, lists, dicts, sets, booleans, and None.
+
+The Queues are implemented with POSIX named pipes, and so this module
+works only on those operating systems which support them.
+
+.. _asyncio: https://docs.python.org/3/library/asyncio.html#module-asyncio
 """
 
 
 class SimplePipeQueue:
+    """
+    ::
+
+        with SimplePipeQueue("/tmp/pq.fifo") as pq:
+            pq.put((0, "First message."))
+
+    """
 
     @classmethod
     def pipequeue(cls, *args, **kwargs):
@@ -74,6 +90,11 @@ class SimplePipeQueue:
 
 
 class PipeQueue(SimplePipeQueue):
+    """
+    An `asyncio.Queue`_-like class which
+
+    .. _asyncio.Queue: https://docs.python.org/3/library/asyncio-queue.html#queue
+    """
 
     @staticmethod
     def get_when_ready(fObj, q):
