@@ -27,6 +27,7 @@ Turberfield Utility library
    :maxdepth: 1
    :numbered:
 
+   pipes
    homogeneous
    travel
 
