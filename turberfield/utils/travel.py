@@ -25,18 +25,44 @@ from decimal import Decimal as Dl
 from turberfield.utils.homogeneous import vector
 
 
-Impulse = namedtuple("Impulse", ["tBegin", "tEnd", "accn", "pos"])
-Impulse.__doc__ = """
-A Simple
-Time-Corrected Verlet
-Integration Method
-Jonathan "lonesock" Dummer
-http://lonesock.net/article/verlet.html
+__doc__ = """
+The module defines functions for use in calculating motion using
+:py:class:`Impulses <turberfield.utils.travel.Impulse>`.
 """
+
+Impulse = namedtuple("Impulse", ["tBegin", "tEnd", "accn", "pos"])
+Impulse.__doc__ = """`{}`
+
+An Impulse object defines a change in motion over a short interval
+of time.
+
+    tBegin
+        The start of the time interval.
+    tEnd
+        The end of the time interval.
+    accn
+        The second derivative of motion over the time interval.
+    pos
+        The position at the start of the time interval.
+""".format(Impulse.__doc__)
+
 
 def time_correct_verlet(state, t, accn, mass=1):
     """
-    Time-corrected Verlet position integration.
+    This low-level function implements a single step of
+    Time-corrected Verlet position integration. See Jonathan Dummer's
+    `article on TCV`_ for a full description of the algorithm.
+
+    :param state: a 2-tuple of
+                :py:class:`Impulses <turberfield.utils.travel.Impulse>`
+                . Element 0 is the most recent in time.
+    :param t: a time quantity
+    :param accn: an acceleration quantity
+    :returns: a new state 2-tuple
+    :requires: `acceleration` type to support multiplication over
+            `time` type
+
+    .. _article on TCV: http://lonesock.net/article/verlet.html
     """
     imp0, imp_1 = state
     dt0, dt_1 = (
@@ -53,6 +79,44 @@ def time_correct_verlet(state, t, accn, mass=1):
 
 
 def trajectory(limits=None):
+    """
+    A motion engine implemented as a Python generator. Like
+    all generators you must prime it first by sending `None`.
+
+    You operate it by repeatedly sending it
+    :py:class:`Impulses <turberfield.utils.travel.Impulse>`. The first
+    of these establishes the initial position of the body. The
+    second is to initialise the movement of the body. Thereafter, the
+    generator is self-sustaining and need only be fed with its own
+    output to keep it going.
+
+    The generator yields
+    :py:class:`Impulse <turberfield.utils.travel.Impulse>` objects,
+    from which all the instantaneous parameters of motion can be
+    accessed or derived.
+
+    Here is an example of simulating a fall under gravity in one
+    dimension with an initial positive velocity::
+
+        motion = trajectory()
+        motion.send(None)
+
+        zero = decimal.Decimal(0)
+        dt = decimal.Decimal("0.5")
+        v0 = decimal.Decimal("65.0")
+        gravity = decimal.Decimal("-9.806")
+
+        for n in itertools.count():
+            if n == 0:
+                imp = motion.send(Impulse(zero, dt, gravity, zero))
+            elif n == 1:
+                imp = motion.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, gravity,
+                    v0 * dt + 0.5 * gravity * dt * dt))
+            else:
+                imp = motion.send(Impulse(
+                    imp.tEnd, imp.tEnd + dt, gravity, imp.pos))
+    """
     state = deque([], maxlen=2)
     if len(state) == 0:
         imp = yield None

@@ -35,8 +35,8 @@ __all__ = [
 
 class Homogeneous(tuple):
     """
-    This class implements homogeneous coordinates. A graphics textbook
-    like `Hill and Kelley`_ will explain how they are used to
+    This class implements homogeneous coordinates. A good textbook
+    like `Hill and Kelley`_ will explain how these can be used to
     represent both points and vectors in graphical applications.
 
     The class acts like a standard Python tuple_. You need not create
@@ -152,7 +152,7 @@ Computer_graphics.html?id=ffkYAQAAIAAJ
 
 def point(*args):
     """
-    Factory function for homogeneous points.
+    Use this factory function to create homogeneous points.
 
     :param args: coordinates for the point
     :returns: a new point object
@@ -163,7 +163,7 @@ def point(*args):
 
 def vector(*args):
     """
-    Factory function for homogeneous vector.
+    Use this factory function to create homogeneous vectors.
 
     :param args: coordinates for the vector
     :returns: a new vector object
