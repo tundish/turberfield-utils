@@ -41,7 +41,7 @@ Subclassing Expert
 ~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: turberfield.utils.expert.Expert
-   :members: options, watch, Attribute
+   :members: options, watch
    :member-order: bysource
 
 .. _RSON: https://code.google.com/p/rson/

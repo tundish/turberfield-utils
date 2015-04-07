@@ -106,12 +106,12 @@ class Expert:
     * __call__ coroutine
 
     :py:class:`Attribute <turberfield.utils.expert.Expert.Attribute>`.
+    :py:class:`Event <turberfield.utils.expert.Expert.Event>`.
+    :py:class:`RSON <turberfield.utils.expert.Expert.RSON>`.
+    :py:class:`HATEOAS <turberfield.utils.expert.Expert.HATEOAS>`.
     """
 
     Attribute = namedtuple("Attribute", ["name"])
-    Attribute.__doc__ = """`{}`
-    """.format(Attribute.__doc__)
-
     Event = namedtuple("Event", ["name"])
     HATEOAS = namedtuple("HATEOAS", ["name", "attr", "dst"])
     JSON = namedtuple("JSON", ["name"])
