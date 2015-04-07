@@ -15,5 +15,5 @@ messages consisting of simple Python objects.
    :member-order: bysource
 
 .. autoclass:: turberfield.utils.pipes.PipeQueue
-   :members: pipequeue, put_nowait, get, close
+   :members: put, get
 

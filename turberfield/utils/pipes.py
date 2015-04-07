@@ -105,7 +105,7 @@ class SimplePipeQueue:
     def get(self):
         """
         Remove and return an item from the queue. If queue is empty,
-        wait until an item is available.
+        block until an item is available.
         """
         payload = self._out.readline().rstrip("\n")
         return ast.literal_eval(payload)
@@ -120,7 +120,17 @@ class SimplePipeQueue:
 
 class PipeQueue(SimplePipeQueue):
     """
-    An `asyncio.Queue`_-like class which
+    :param path: supplies the path to the underlying POSIX named pipe.
+    :param history: If True, a pipe which already exists will be
+                    reused, and not removed after exiting the Queue.
+
+    This is a subclass of
+    :py:class:`SimplePipeQueue <turberfield.utils.pipes.SimplePipeQueue>`,
+    extended for use like an `asyncio.Queue`_::
+
+        pq = PipeQueue.pipequeue("/tmp/pq.fifo")
+        yield from pq.put((0, "First message."))
+        pq.close()
 
     .. _asyncio.Queue: https://docs.python.org/3/library/asyncio-queue.html#queue
     """
@@ -144,11 +154,27 @@ class PipeQueue(SimplePipeQueue):
 
     @asyncio.coroutine
     def get(self):
+        """
+        Remove and return an item from the queue. If queue is empty,
+        wait until an item is available.
+
+        This method is a coroutine_.
+
+        .. _coroutine: https://docs.python.org/3/library/asyncio-task.html#coroutine
+        """
         rv = yield from self._q.get()
         return rv
 
     @asyncio.coroutine
     def put(self, msg):
+        """
+        Put an item into the queue. If the queue is full, wait until
+        a free slot is available before adding item.
+
+        This method is a coroutine_.
+
+        .. _coroutine: https://docs.python.org/3/library/asyncio-task.html#coroutine
+        """
         future = asyncio.Future()
         self.put_nowait(msg)
         future.set_result(msg)
