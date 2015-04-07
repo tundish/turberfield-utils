@@ -44,11 +44,11 @@ Call it with arguments obtained from your controlling process.
 Typically these will be command line arguments or configuration file
 settings.
 
-Let's suppose an Expert subclass requires a `parent` argument to tell
+Let's suppose an Expert subclass requires a `data` argument to tell
 it where to look for application data files. You'd pass that argument
 to an `options` call::
 
-    options = SomeExpertSubclass.options(parent=args.output)
+    options = SomeExpertSubclass.options(data="/var/experts")
 
 What you get back is a Python dictionary compatible with the keyword
 argument parameters of the Expert subclass.
@@ -72,7 +72,9 @@ pass in to them.
 Invocation
 ----------
 
-::
+Experts are active objects which run in an event loop. So they all
+support Python call semantics. The result of calling an Expert is a
+coroutine you can pass to asyncio for use as a Task::
 
     loop = asyncio.get_event_loop()
     task = asyncio.Task(expert(loop=loop))
@@ -102,9 +104,14 @@ class Expert:
     * define options
     * declare
     * __call__ coroutine
+
+    :py:class:`Attribute <turberfield.utils.expert.Expert.Attribute>`.
     """
 
     Attribute = namedtuple("Attribute", ["name"])
+    Attribute.__doc__ = """`{}`
+    """.format(Attribute.__doc__)
+
     Event = namedtuple("Event", ["name"])
     HATEOAS = namedtuple("HATEOAS", ["name", "attr", "dst"])
     JSON = namedtuple("JSON", ["name"])
