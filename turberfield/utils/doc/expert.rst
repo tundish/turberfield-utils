@@ -25,10 +25,23 @@ module to standardise this pattern. Subclasses of
 :py:class:`Expert <turberfield.utils.expert.Expert>` inherit these
 behaviours.
 
+Using an Expert subclass
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Turberfield defines a three-stage process for setting up Expert objects
+and running them. There are particular conventions around:
+
+* Configuration_
+* Instantiation_
+* Invocation_
+
 .. automodule:: turberfield.utils.expert
 
+Subclassing Expert
+~~~~~~~~~~~~~~~~~~
+
 .. autoclass:: turberfield.utils.expert.Expert
-   :members: declare, interface
+   :members: options, watch
    :member-order: bysource
 
 .. _RSON: https://code.google.com/p/rson/

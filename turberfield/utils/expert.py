@@ -35,7 +35,49 @@ from turberfield.utils.pipes import PipeQueue
 from turberfield.utils.travel import Impulse
 
 __doc__ = """
-Machina places an actor on a stage.
+Configuration
+-------------
+
+All Expert classes have an
+:py:meth:`options <turberfield.utils.expert.Expert.options>` method.
+Call it with arguments obtained from your controlling process.
+Typically these will be command line arguments or configuration file
+settings.
+
+Let's suppose an Expert subclass requires a `parent` argument to tell
+it where to look for application data files. You'd pass that argument
+to an `options` call::
+
+    options = SomeExpertSubclass.options(parent=args.output)
+
+What you get back is a Python dictionary compatible with the keyword
+argument parameters of the Expert subclass.
+
+Instantiation
+-------------
+
+Some Experts will define positional parameters specific to their
+operation. Aside from those, you can also pass unnamed positional
+arguments and keyword arguments.
+
+Unnamed positional arguments must be objects compatible with the
+asyncio.Queue interface. The Expert will watch them for messages you
+pass in to them. 
+
+::
+
+    myQueues = (asyncio.Queue(), PipeQueue.pipequeue("/tmp/pq.fifo"))
+    expert = SomeExpertSubclass(*myQueues, **options)
+
+Invocation
+----------
+
+::
+
+    loop = asyncio.get_event_loop()
+    task = asyncio.Task(expert(loop=loop))
+    loop.run_until_complete(asyncio.wait(asyncio.Task.all_tasks(loop)))
+
 """
 
 
@@ -54,6 +96,13 @@ class TypesEncoder(json.JSONEncoder):
 
 
 class Expert:
+    """
+
+    * By themselves, watch queues.
+    * define options
+    * declare
+    * __call__ coroutine
+    """
 
     Attribute = namedtuple("Attribute", ["name"])
     Event = namedtuple("Event", ["name"])
