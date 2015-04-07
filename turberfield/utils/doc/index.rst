@@ -30,6 +30,7 @@ Turberfield Utility library
    pipes
    homogeneous
    travel
+   expert
 
 * :ref:`genindex`
 

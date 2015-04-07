@@ -1,19 +1,34 @@
 ..  Titling
     ##++::==~~--''``
 
-Interprocess Queues
-===================
+Agent-oriented programming
+==========================
 
-Turberfield provides a :py:mod:`pipes <turberfield.utils.pipes>` module
-for interprocess communication. Your programs can send and receive
-messages consisting of simple Python objects.
+A Turberfield application is made up of cohesive programs called
+`Controllers`. Each controller contains specialised objects which
+run on their own as autonomous agents.
 
-.. automodule:: turberfield.utils.pipes
+When an agent has to share the data it creates, it's known as an
+`Expert`. In Turberfield, experts:
 
-.. autoclass:: turberfield.utils.pipes.SimplePipeQueue
-   :members: pipequeue, put_nowait, get, close
+    * operate autonomously within an event loop
+    * publish certain attributes to other experts within the same
+      controller
+    * publish certain attributes to other controllers via RSON_
+    * listen on a queue for messages from another expert
+    * listen on a queue for messages from another controller
+    * can be configured with global settings like file paths
+      and host names
+
+Turberfield provides the :py:mod:`expert <turberfield.utils.expert>`
+module to standardise this pattern. Subclasses of
+:py:class:`Expert <turberfield.utils.expert.Expert>` inherit these
+behaviours.
+
+.. automodule:: turberfield.utils.expert
+
+.. autoclass:: turberfield.utils.expert.Expert
+   :members: declare, interface
    :member-order: bysource
 
-.. autoclass:: turberfield.utils.pipes.PipeQueue
-   :members: put, get
-
+.. _RSON: https://code.google.com/p/rson/

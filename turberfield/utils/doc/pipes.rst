@@ -1,7 +1,7 @@
 ..  Titling
     ##++::==~~--''``
 
-Interprocess Queues
+Interprocess queues
 ===================
 
 Turberfield provides a :py:mod:`pipes <turberfield.utils.pipes>` module
