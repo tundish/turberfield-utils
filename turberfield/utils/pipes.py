@@ -24,12 +24,12 @@ import sys
 
 __doc__ = """
 The module provides interprocess Queues. Two variants are available;
-one for use with an asyncio_ event loop, and one for use in
-traditional, blocking-call Python code. In both cases they accept
-the following Python literal structures: strings, bytes, numbers,
-tuples, lists, dicts, sets, booleans, and None.
+one for use with an asyncio_ event loop, and one for code written in
+a blocking-call style. Both variants accept the following Python
+structures: strings, bytes, numbers, tuples, lists, dicts, sets,
+booleans, and None.
 
-The Queues are implemented with POSIX named pipes, and so this module
+The Queues are implemented with POSIX named pipes; this module
 works only on those operating systems which support them.
 
 .. _asyncio: https://docs.python.org/3/library/asyncio.html#module-asyncio
@@ -38,15 +38,34 @@ works only on those operating systems which support them.
 
 class SimplePipeQueue:
     """
-    ::
+    :param path: supplies the path to the underlying POSIX named pipe.
+    :param history: If True, a pipe which already exists will be
+                    reused, and not removed after exiting the Queue.
+
+    This class can send messages without blocking your code::
+
+        pq = SimplePipeQueue.pipequeue("/tmp/pq.fifo")
+        pq.put_nowait((0, "First message."))
+        pq.close()
+
+    You can also use this class as a context manager.
+    Don't forget that
+    :py:meth:`get() <turberfield.utils.pipes.SimplePipeQueue.get>`
+    is a blocking operation::
 
         with SimplePipeQueue("/tmp/pq.fifo") as pq:
-            pq.put((0, "First message."))
+            msg = pq.get()
 
     """
 
     @classmethod
     def pipequeue(cls, *args, **kwargs):
+        """
+        This is a factory function which creates and initialises a
+        Queue. Your code should call 
+        :py:meth:`close() <turberfield.utils.pipes.SimplePipeQueue.close>`
+        on the queue when finished.
+        """
         return cls(*args, **kwargs).__enter__()
 
     def __init__(self, path, history=True):
@@ -73,6 +92,9 @@ class SimplePipeQueue:
         return False
 
     def put_nowait(self, msg):
+        """
+        Put an item into the queue without blocking.
+        """
         try:
             pprint(msg, stream=self._in, compact=True, width=sys.maxsize)
         except TypeError:  # 'compact' is new in Python 3.4
@@ -81,10 +103,17 @@ class SimplePipeQueue:
             self._in.flush()
 
     def get(self):
+        """
+        Remove and return an item from the queue. If queue is empty,
+        wait until an item is available.
+        """
         payload = self._out.readline().rstrip("\n")
         return ast.literal_eval(payload)
 
     def close(self):
+        """
+        Completes the use of the queue.
+        """
         self._out.close()
         self._in.close()
 

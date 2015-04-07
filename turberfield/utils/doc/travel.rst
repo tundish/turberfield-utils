@@ -1,10 +1,10 @@
 ..  Titling
     ##++::==~~--''``
 
-The :py:mod:`travel <turberfield.utils.travel>` module
-======================================================
+Calculating Motion
+==================
 
-The travel module implements movement in a functional, Pythonic style.
+The :py:mod:`travel <turberfield.utils.travel>` module implements movement in a functional, Pythonic style.
 
 .. autoclass:: turberfield.utils.travel.Impulse
 

@@ -1,9 +1,19 @@
 ..  Titling
     ##++::==~~--''``
 
-The :py:mod:`pipes <turberfield.utils.pipes>` module
-====================================================
+Interprocess Queues
+===================
+
+Turberfield provides a :py:mod:`pipes <turberfield.utils.pipes>` module
+for interprocess communication. Your programs can send and receive
+messages consisting of simple Python objects.
 
 .. automodule:: turberfield.utils.pipes
-   :members: SimplePipeQueue, PipeQueue
+
+.. autoclass:: turberfield.utils.pipes.SimplePipeQueue
+   :members: pipequeue, put_nowait, get, close
+   :member-order: bysource
+
+.. autoclass:: turberfield.utils.pipes.PipeQueue
+   :members: pipequeue, put_nowait, get, close
 

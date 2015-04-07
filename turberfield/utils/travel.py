@@ -87,7 +87,7 @@ def trajectory(limits=None):
     :py:class:`Impulses <turberfield.utils.travel.Impulse>`. The first
     of these establishes the initial position of the body. The
     second is to initialise the movement of the body. Thereafter, the
-    generator is self-sustaining and need only be fed with its own
+    generator is self-sustaining and need only be fed from its own
     output to keep it going.
 
     The generator yields
