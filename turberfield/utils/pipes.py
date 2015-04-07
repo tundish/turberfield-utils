@@ -132,6 +132,12 @@ class PipeQueue(SimplePipeQueue):
         yield from pq.put((0, "First message."))
         pq.close()
 
+    and::
+
+        pq = PipeQueue.pipequeue("/tmp/pq.fifo")
+        msg = yield from pq.get()
+        pq.close()
+
     .. _asyncio.Queue: https://docs.python.org/3/library/asyncio-queue.html#queue
     """
 
