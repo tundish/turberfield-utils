@@ -51,19 +51,24 @@ to an `options` call::
     options = SomeExpertSubclass.options(data="/var/experts")
 
 What you get back is a Python dictionary compatible with the keyword
-argument parameters of the Expert subclass.
+argument parameters of the Expert subclass. The keys of this dictionary
+are the names of attributes which your object will publish publicly.
+The corresponding value of a key shows the way that attribute will be
+published, as follows:
 
 .. autoattribute:: turberfield.utils.expert.Expert.Attribute
-   :annotation: (name)
+   :annotation: (name). A regular public attribute.
 
 .. autoattribute:: turberfield.utils.expert.Expert.Event
-   :annotation: (name)
+   :annotation: (name). A public attribute which is an asyncio.Event.
 
 .. autoattribute:: turberfield.utils.expert.Expert.HATEOAS
-   :annotation: (name, attr, dst)
+   :annotation: (name, attr, dst). A sequence of items in a
+        JSON-formatted web page, publicly readable as a local file.
 
 .. autoattribute:: turberfield.utils.expert.Expert.RSON
-   :annotation: (name, attr, dst)
+   :annotation: (name, attr, dst). A sequence of items in
+        RSON format, publicly readable as a local file.
 
 Instantiation
 -------------
@@ -95,9 +100,16 @@ coroutine you can pass to asyncio for use as a Task::
 Inspection
 ----------
 
-Experts publish the data they generate to their own *public* attribute.
-Exactly what data can be found there varies by class and can be discovered
-from the :py:meth:`options <turberfield.utils.expert.Expert.options>` call.
+Experts publish the data they generate to the *public* attribute of
+their class. Exactly what data can be found there varies by class and
+can be discovered from the
+:py:meth:`options <turberfield.utils.expert.Expert.options>` call.
+
+For example, should SomeExpertSubclass define an
+:py:class:`Event <turberfield.utils.expert.Expert.Event>` called
+`someEvent`, you'd use it like this::
+
+    yield from SomeExpertSubclass.public.someEvent.wait()
 
 """
 
