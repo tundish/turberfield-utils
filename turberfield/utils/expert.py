@@ -53,6 +53,18 @@ to an `options` call::
 What you get back is a Python dictionary compatible with the keyword
 argument parameters of the Expert subclass.
 
+.. autoattribute:: turberfield.utils.expert.Expert.Attribute
+   :annotation: (name)
+
+.. autoattribute:: turberfield.utils.expert.Expert.Event
+   :annotation: (name)
+
+.. autoattribute:: turberfield.utils.expert.Expert.HATEOAS
+   :annotation: (name, attr, dst)
+
+.. autoattribute:: turberfield.utils.expert.Expert.RSON
+   :annotation: (name, attr, dst)
+
 Instantiation
 -------------
 
@@ -80,6 +92,13 @@ coroutine you can pass to asyncio for use as a Task::
     task = asyncio.Task(expert(loop=loop))
     loop.run_until_complete(asyncio.wait(asyncio.Task.all_tasks(loop)))
 
+Inspection
+----------
+
+Experts publish the data they generate to their own *public* attribute.
+Exactly what data can be found there varies by class and can be discovered
+from the :py:meth:`options <turberfield.utils.expert.Expert.options>` call.
+
 """
 
 
@@ -105,10 +124,6 @@ class Expert:
     * declare
     * __call__ coroutine
 
-    :py:class:`Attribute <turberfield.utils.expert.Expert.Attribute>`.
-    :py:class:`Event <turberfield.utils.expert.Expert.Event>`.
-    :py:class:`RSON <turberfield.utils.expert.Expert.RSON>`.
-    :py:class:`HATEOAS <turberfield.utils.expert.Expert.HATEOAS>`.
     """
 
     Attribute = namedtuple("Attribute", ["name"])
@@ -139,6 +154,25 @@ class Expert:
 
     @staticmethod
     def options():
+        """
+        Subclasses must override the base class implementation.
+
+        The method returns a dictionary. Each key is the name of an attribute
+        available via the <Class>.public interface.
+
+        +-------------------------------------------------------------------+
+        |                                                                   |
+        +===================================================================+
+        | :py:class:`Attribute <turberfield.utils.expert.Expert.Attribute>` |
+        +-------------------------------------------------------------------+
+        | :py:class:`Event <turberfield.utils.expert.Expert.Event>`         |
+        +-------------------------------------------------------------------+
+        | :py:class:`RSON <turberfield.utils.expert.Expert.RSON>`           |
+        +-------------------------------------------------------------------+
+        | :py:class:`HATEOAS <turberfield.utils.expert.Expert.HATEOAS>`     |
+        +-------------------------------------------------------------------+
+
+        """
         raise NotImplementedError
 
     @classmethod
@@ -228,3 +262,7 @@ class Expert:
         msg = object()
         while msg is not None:
             msg = yield from q.get()
+
+
+Expert.Attribute.__doc__ = "Attribute docstring".format(Expert.Attribute.__doc__)
+print(Expert.Attribute.__doc__)

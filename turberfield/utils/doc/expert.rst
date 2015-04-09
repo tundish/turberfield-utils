@@ -28,12 +28,14 @@ behaviours.
 Using an Expert subclass
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Turberfield defines a three-stage process for setting up Expert objects
-and running them. There are particular conventions around:
+Turberfield defines a four-stage process for setting up Expert objects,
+running them, and checking their results. There are particular conventions
+around:
 
 * Configuration_
 * Instantiation_
 * Invocation_
+* Inspection_
 
 .. automodule:: turberfield.utils.expert
 
