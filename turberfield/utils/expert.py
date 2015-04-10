@@ -90,11 +90,14 @@ Invocation
 
 Experts are active objects which run in an event loop. So they all
 support Python call semantics. The result of calling an Expert is a
-coroutine you can pass to asyncio for use as a Task_::
+coroutine you can pass to asyncio for use as a Task_:
 
-    loop = asyncio.get_event_loop()
-    task = asyncio.Task(expert(loop=loop))
-    loop.run_until_complete(asyncio.wait(asyncio.Task.all_tasks(loop)))
+.. code-block:: python
+   :emphasize-lines: 2
+
+   loop = asyncio.get_event_loop()
+   task = asyncio.Task(expert(loop=loop))
+   loop.run_until_complete(asyncio.wait(asyncio.Task.all_tasks(loop)))
 
 Inspection
 ----------
@@ -232,7 +235,7 @@ class Expert:
         Subclasses must override the base class implementation.
 
         This method makes the object callable. It is a coroutine
-        to be launched as an `asyncio.Task`_
+        to be launched as an `asyncio.Task`_.
 
         .. _asyncio.Task: https://docs.python.org/3/library/asyncio-task.html
         """ 
@@ -240,18 +243,27 @@ class Expert:
 
     def declare(self, data, loop=None):
         """
+        :param data: data to be published
+        :type data: a dictionary
 
-        +-------------------------------------------------------------------+
-        |                                                                   |
-        +===================================================================+
-        | :py:class:`Attribute <turberfield.utils.expert.Expert.Attribute>` |
-        +-------------------------------------------------------------------+
-        | :py:class:`Event <turberfield.utils.expert.Expert.Event>`         |
-        +-------------------------------------------------------------------+
-        | :py:class:`RSON <turberfield.utils.expert.Expert.RSON>`           |
-        +-------------------------------------------------------------------+
-        | :py:class:`HATEOAS <turberfield.utils.expert.Expert.HATEOAS>`     |
-        +-------------------------------------------------------------------+
+        Invoke this method from within
+        :py:meth:`__call__ <turberfield.utils.expert.Expert.__call__>`
+        to publish data via the class-defined interface.
+
+        The table shows how the different mechanisms work, depending what
+        options are supplied on Instantiation_:
+
+        +-------------------------------------------------------------------+-------------------------------------------------------------------+
+        | Interface type                                                    | Publishing mechanism                                              |
+        +===================================================================+===================================================================+
+        | :py:class:`Attribute <turberfield.utils.expert.Expert.Attribute>` | ``<Subclass>.public.<name>`` mirrors the data value.              |
+        +-------------------------------------------------------------------+-------------------------------------------------------------------+
+        | :py:class:`Event <turberfield.utils.expert.Expert.Event>`         | ``<Subclass>.public.<name>`` is set or cleared by the data value. |
+        +-------------------------------------------------------------------+-------------------------------------------------------------------+
+        | :py:class:`RSON <turberfield.utils.expert.Expert.RSON>`           | ``RSON.dst`` is the file path to the data in RSON format.         |
+        +-------------------------------------------------------------------+-------------------------------------------------------------------+
+        | :py:class:`HATEOAS <turberfield.utils.expert.Expert.HATEOAS>`     | ``HATEOAS.dst`` is the file path to the data as a JSON web page.  |
+        +-------------------------------------------------------------------+-------------------------------------------------------------------+
         """
         class_ = self.__class__
         kwargs = defaultdict(None)
