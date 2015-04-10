@@ -40,8 +40,8 @@ Configuration
 
 To configure a new Expert of a certain class, first call the
 :py:meth:`options <turberfield.utils.expert.Expert.options>` method of
-that class. Call it with arguments obtained from your controlling
-process. Typically these will be command line arguments or
+that class. Call it with values defined at runtime by your
+controlling process. Typically these will be command line arguments or
 configuration file settings.
 
 Let's suppose an Expert subclass requires a `data` argument to tell
@@ -82,8 +82,8 @@ pass in to them.
 
 ::
 
-    myQueues = (asyncio.Queue(), PipeQueue.pipequeue("/tmp/pq.fifo"))
-    expert = SomeExpertSubclass(*myQueues, **options)
+    wiring = (asyncio.Queue(), PipeQueue.pipequeue("/tmp/pq.fifo"))
+    expert = SomeExpertSubclass(*wiring, **options)
 
 Invocation
 ----------
@@ -99,9 +99,9 @@ coroutine you can pass to asyncio for use as a Task_::
 Inspection
 ----------
 
-Experts publish the data they generate to the *public* attribute of
-their class. Exactly what data can be found there varies by class and
-can be discovered from the
+Experts either publish the data they generate to local file, or to the
+*public* attribute of their class. Exactly what ends up where will
+depend on the class and can be discovered from the
 :py:meth:`options <turberfield.utils.expert.Expert.options>` call.
 
 For example, should SomeExpertSubclass define an
@@ -131,12 +131,7 @@ class TypesEncoder(json.JSONEncoder):
 
 class Expert:
     """
-
-    * By themselves, watch queues.
-    * define options
-    * declare
-    * __call__ coroutine
-
+    A base class for *Information Experts*.
     """
 
     Attribute = namedtuple("Attribute", ["name"])
@@ -170,21 +165,14 @@ class Expert:
         """
         Subclasses must override the base class implementation.
 
-        The method returns a dictionary. Each key is the name of an attribute
-        available via the <Class>.public interface.
+        The method returns an `ordered dictionary`_. Each key is the
+        name of a piece of public data to be managed by the Expert
+        class. The object mapped to that key configures how the data
+        is to be published. See the
+        :py:meth:`declare <turberfield.utils.expert.Expert.declare>`
+        method for details.
 
-        +-------------------------------------------------------------------+
-        |                                                                   |
-        +===================================================================+
-        | :py:class:`Attribute <turberfield.utils.expert.Expert.Attribute>` |
-        +-------------------------------------------------------------------+
-        | :py:class:`Event <turberfield.utils.expert.Expert.Event>`         |
-        +-------------------------------------------------------------------+
-        | :py:class:`RSON <turberfield.utils.expert.Expert.RSON>`           |
-        +-------------------------------------------------------------------+
-        | :py:class:`HATEOAS <turberfield.utils.expert.Expert.HATEOAS>`     |
-        +-------------------------------------------------------------------+
-
+        .. _ordered dictionary: https://docs.python.org/3/library/collections.html#collections.OrderedDict
         """
         raise NotImplementedError
 
@@ -201,6 +189,14 @@ class Expert:
         )
 
     def __init__(self, *args, **kwargs):
+        """
+        ::
+
+            super().__init__(*args, **kwargs)
+
+        Unnamed positional arguments must be compatible with
+        `asyncio.Queue`_.
+        """
         class_ = self.__class__
         self._log = logging.getLogger(
             "turberfield.expert." + class_.__name__.lower())
@@ -230,7 +226,33 @@ class Expert:
             class_.public = self.Interface._make(
                 itertools.repeat(None, len(attributes)))
 
+    @asyncio.coroutine
+    def __call__(self, loop=None):
+        """
+        Subclasses must override the base class implementation.
+
+        This method makes the object callable. It is a coroutine
+        to be launched as an `asyncio.Task`_
+
+        .. _asyncio.Task: https://docs.python.org/3/library/asyncio-task.html
+        """ 
+        raise NotImplementedError
+
     def declare(self, data, loop=None):
+        """
+
+        +-------------------------------------------------------------------+
+        |                                                                   |
+        +===================================================================+
+        | :py:class:`Attribute <turberfield.utils.expert.Expert.Attribute>` |
+        +-------------------------------------------------------------------+
+        | :py:class:`Event <turberfield.utils.expert.Expert.Event>`         |
+        +-------------------------------------------------------------------+
+        | :py:class:`RSON <turberfield.utils.expert.Expert.RSON>`           |
+        +-------------------------------------------------------------------+
+        | :py:class:`HATEOAS <turberfield.utils.expert.Expert.HATEOAS>`     |
+        +-------------------------------------------------------------------+
+        """
         class_ = self.__class__
         kwargs = defaultdict(None)
         for name, service in self._services.items():
@@ -271,6 +293,14 @@ class Expert:
 
     @asyncio.coroutine
     def watch(self, q, **kwargs):
+        """
+        Subclasses may override the base class implementation.
+
+        This method is used to create one coroutine for each queue of
+        input. The job of the method is to watch the queue for messages
+        and dispatch them appropriately.
+
+        """
         loop = kwargs.pop("loop", None)
         msg = object()
         while msg is not None:

@@ -35,8 +35,7 @@ conventions around:
 * Configuration_, where the class helps you build options for
   your new object.
 * Instantiation_, where you connect the object to its inputs.
-* Invocation_, which is designed for compatibility with the `asyncio
-  event loop`_.
+* Invocation_, which is compatible with the `asyncio event loop`_.
 * Inspection_, the mechanism whereby your code can see the outputs
   of Experts in operation.
 
@@ -46,7 +45,7 @@ Subclassing Expert
 ~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: turberfield.utils.expert.Expert
-   :members: options, watch
+   :members: options, __init__, watch, __call__, declare
    :member-order: bysource
 
 .. _RSON: https://code.google.com/p/rson/
