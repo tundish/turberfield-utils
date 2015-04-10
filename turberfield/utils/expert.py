@@ -40,20 +40,21 @@ Configuration
 
 To configure a new Expert of a certain class, first call the
 :py:meth:`options <turberfield.utils.expert.Expert.options>` method of
-that class. Call it with values defined at runtime by your
-controlling process. Typically these will be command line arguments or
-configuration file settings.
+that class.
 
-Let's suppose an Expert subclass requires a `data` argument to tell
-it where to look for application data files::
+Let's suppose an Expert subclass requires an `output` argument to tell
+it where to save application data files. Typically that would be
+known to the controller process as a command line argument or
+configuration file setting::
 
-    options = SomeExpertSubclass.options(data="/var/experts")
+    options = SomeExpertSubclass.options(output="/var/experts")
 
-What you get back is a Python dictionary compatible with the keyword
-argument parameters of the Expert subclass. The keys of this dictionary
-are the names of attributes which your object will publish publicly.
-The corresponding value of a key shows the way that attribute will be
-published, as follows:
+The return value of the
+:py:meth:`options <turberfield.utils.expert.Expert.options>` call
+is a Python dictionary compatible with the keyword argument parameters
+of the Expert subclass. The keys of this dictionary are the names of
+attributes which your object will publish publicly.  The corresponding
+value of a key shows the way the attribute will be published, as follows:
 
 .. autoattribute:: turberfield.utils.expert.Expert.Attribute
    :annotation: (name). A regular public attribute.
@@ -74,11 +75,13 @@ Instantiation
 
 Some Experts will define positional parameters specific to their
 operation. Aside from those, you can also pass unnamed positional
-arguments and keyword arguments.
+arguments and the keyword arguments you got from the configuration_
+step. 
 
 Unnamed positional arguments must be objects compatible with the
-`asyncio.Queue`_ interface. The Expert will watch them for messages you
-pass in to them. 
+`asyncio.Queue`_ interface. The Expert will
+:py:meth:`watch <turberfield.utils.expert.Expert.watch>`
+for messages you pass into them. 
 
 ::
 
@@ -88,9 +91,9 @@ pass in to them.
 Invocation
 ----------
 
-Experts are active objects which run in an event loop. So they all
-support Python call semantics. The result of calling an Expert is a
-coroutine you can pass to asyncio for use as a Task_:
+Experts are active objects which run in an event loop. They support
+Python call semantics. The result of calling an Expert is a
+coroutine you can pass to `asyncio` for use as a Task_:
 
 .. code-block:: python
    :emphasize-lines: 2
@@ -107,7 +110,7 @@ Experts either publish the data they generate to local file, or to the
 depend on the class and can be discovered from the
 :py:meth:`options <turberfield.utils.expert.Expert.options>` call.
 
-For example, should SomeExpertSubclass define an
+For example, should `SomeExpertSubclass` define an
 :py:class:`Event <turberfield.utils.expert.Expert.Event>` called
 `someEvent`, you'd use it like this::
 
@@ -193,12 +196,14 @@ class Expert:
 
     def __init__(self, *args, **kwargs):
         """
-        ::
+        Subclasses must begin by invoking the superclass initialiser::
 
             super().__init__(*args, **kwargs)
 
         Unnamed positional arguments must be compatible with
-        `asyncio.Queue`_.
+        `asyncio.Queue`_. Keyword arguments should have been generated
+        by the :py:meth:`options <turberfield.utils.expert.Expert.options>`
+        method.
         """
         class_ = self.__class__
         self._log = logging.getLogger(
@@ -250,8 +255,10 @@ class Expert:
         :py:meth:`__call__ <turberfield.utils.expert.Expert.__call__>`
         to publish data via the class-defined interface.
 
-        The table shows how the different mechanisms work, depending what
-        options are supplied on Instantiation_:
+        The keyword arguments previously supplied to
+        :py:meth:`__init__ <turberfield.utils.expert.Expert.__init__>`
+        determine what attributes are published, according to the following
+        mechanisms:
 
         +-------------------------------------------------------------------+-------------------------------------------------------------------+
         | Interface type                                                    | Publishing mechanism                                              |

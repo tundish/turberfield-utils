@@ -29,8 +29,8 @@ Using an Expert subclass
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Turberfield defines a four-stage process for setting up Expert objects,
-running them, and checking their results. There are particular
-conventions around:
+running them, and checking their results. There are conventions for each
+of these interactions:
 
 * Configuration_, where the class helps you build options for
   your new object.
