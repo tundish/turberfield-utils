@@ -38,15 +38,14 @@ __doc__ = """
 Configuration
 -------------
 
-All Expert classes have an
-:py:meth:`options <turberfield.utils.expert.Expert.options>` method.
-Call it with arguments obtained from your controlling process.
-Typically these will be command line arguments or configuration file
-settings.
+To configure a new Expert of a certain class, first call the
+:py:meth:`options <turberfield.utils.expert.Expert.options>` method of
+that class. Call it with arguments obtained from your controlling
+process. Typically these will be command line arguments or
+configuration file settings.
 
 Let's suppose an Expert subclass requires a `data` argument to tell
-it where to look for application data files. You'd pass that argument
-to an `options` call::
+it where to look for application data files::
 
     options = SomeExpertSubclass.options(data="/var/experts")
 
@@ -78,7 +77,7 @@ operation. Aside from those, you can also pass unnamed positional
 arguments and keyword arguments.
 
 Unnamed positional arguments must be objects compatible with the
-asyncio.Queue interface. The Expert will watch them for messages you
+`asyncio.Queue`_ interface. The Expert will watch them for messages you
 pass in to them. 
 
 ::
@@ -91,7 +90,7 @@ Invocation
 
 Experts are active objects which run in an event loop. So they all
 support Python call semantics. The result of calling an Expert is a
-coroutine you can pass to asyncio for use as a Task::
+coroutine you can pass to asyncio for use as a Task_::
 
     loop = asyncio.get_event_loop()
     task = asyncio.Task(expert(loop=loop))
@@ -111,6 +110,8 @@ For example, should SomeExpertSubclass define an
 
     yield from SomeExpertSubclass.public.someEvent.wait()
 
+.. _asyncio.Queue: https://docs.python.org/3/library/asyncio-queue.html
+.. _Task: https://docs.python.org/3/library/asyncio-task.html
 """
 
 
