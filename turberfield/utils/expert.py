@@ -38,14 +38,14 @@ __doc__ = """
 Configuration
 -------------
 
-To configure a new Expert of a certain class, first call the
-:py:meth:`options <turberfield.utils.expert.Expert.options>` method of
-that class.
+Suppose for example that a certain Expert subclass requires an `output`
+argument to tell it where to save application data files. Typically that would
+be known to the controller process as a command line argument or configuration
+file setting.
 
-Let's suppose an Expert subclass requires an `output` argument to tell
-it where to save application data files. Typically that would be
-known to the controller process as a command line argument or
-configuration file setting::
+To configure a new object of this Expert class, you would first call the
+:py:meth:`options <turberfield.utils.expert.Expert.options>` method of
+the class::
 
     options = SomeExpertSubclass.options(output="/var/experts")
 
@@ -105,8 +105,8 @@ coroutine you can pass to `asyncio` for use as a Task_:
 Inspection
 ----------
 
-Experts either publish the data they generate to local file, or to the
-*public* attribute of their class. Exactly what ends up where will
+Experts either publish the data they generate to a local file, or to the
+*public* attribute of their class. Exactly what goes where will
 depend on the class and can be discovered from the
 :py:meth:`options <turberfield.utils.expert.Expert.options>` call.
 
