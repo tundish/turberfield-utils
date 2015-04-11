@@ -1,6 +1,48 @@
 ..  Titling
     ##++::==~~--''``
 
+Turberfield is a framework for discrete event simulations and turn-based
+games.
+
+It is developed by a private individual but released to the public under the
+`GNU General Public License`_.
+
+The API may change as the project proceeds. At this early stage you should
+only use the latest release; it may not be compatible with previous
+versions.
+
+Requirements
+::::::::::::
+
+* Turberfield runs on Python 3.4 or later.
+* Some modules require atomic file renaming and named pipes (ie: a POSIX OS).
+
+Usage
+:::::
+
+Download and unpack the source distribution::
+
+    $ tar -xzvf turberfield-utils-0.011.0.tar.gz
+    $ cd turberfield-utils-0.011.0
+
+Run the tests::
+
+    $ python3.4 -m unittest discover turberfield
+
+Consult the documentation::
+
+    $ firefox turberfield/utils/doc/html/index.html
+
+Installation
+::::::::::::
+
+::
+
+    $ pip install turberfield-utils
+
+Roadmap
+:::::::
+
 Turberfield is a *S* ur *PRISE*.
 
 **Semantic**
@@ -30,41 +72,8 @@ What's missing? *UR*!
 
 In either event, please leave a message on the project's `message board`_.
 
-Roadmap
-:::::::
-
-Turberfield's mission is to provide a validated Pythonic framework for discrete
-event simulations and turn-based games.
-
-It is developed by a private individual but released to the public under the
-`GNU General Public License`_.
-
-The API may change significantly as the project proceeds. At this early stage,
-you should only use the latest release, which may not be compatible with
-previous versions.
-
-Requirements
-::::::::::::
-
-Turberfield requires Python 3.4. It uses setuptools_ for installation.
-
-
-Installation
-::::::::::::
-
-Download and unpack the source distribution::
-
-    $ tar -xzvf turberfield-utils-00.001.tar.gz
-    $ cd turberfield-utils-00.001
-
-Run the tests::
-
-    $ python3.4 -m unittest discover turberfield
-
-
 :Author: tundish
 :Copyright: 2015 D Haynes
 
-.. _setuptools: https://pypi.python.org/pypi/setuptools
 .. _GNU General Public License: http://www.gnu.org/licenses/gpl.html
 .. _message board: https://www.assembla.com/spaces/turberfield/messages
