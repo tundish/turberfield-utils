@@ -324,7 +324,3 @@ class Expert:
         msg = object()
         while msg is not None:
             msg = yield from q.get()
-
-
-Expert.Attribute.__doc__ = "Attribute docstring".format(Expert.Attribute.__doc__)
-print(Expert.Attribute.__doc__)
