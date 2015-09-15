@@ -21,7 +21,7 @@ except ImportError:
                     "turberfield", "utils", "__init__.py"),
                     'r').read().split("=")[-1].strip()))
 
-__doc__ = open(os.path.join(os.path.dirname(__file__), "README.txt"),
+__doc__ = open(os.path.join(os.path.dirname(__file__), "README.rst"),
                'r').read()
 
 setup(
