@@ -23,6 +23,7 @@ import unittest
 from turberfield.utils.pipes import PipeQueue
 
 
+@unittest.skipUnless(hasattr(os, "mkfifo"), "Named pipes unavailable here.")
 class PipeQueueTest(unittest.TestCase):
 
     def setUp(self):

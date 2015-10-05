@@ -20,17 +20,16 @@ import asyncio
 from collections import defaultdict
 from collections import namedtuple
 import contextlib
-import decimal
 import itertools
 import json
 import logging
 import os
-import re
 import tempfile
 import time
 import warnings
 
 from turberfield.utils import __version__
+from turberfield.utils.misc import TypesEncoder
 from turberfield.utils.pipes import PipeQueue
 from turberfield.utils.travel import Impulse
 
@@ -119,20 +118,6 @@ For example, should `SomeExpertSubclass` define an
 .. _asyncio.Queue: https://docs.python.org/3/library/asyncio-queue.html
 .. _Task: https://docs.python.org/3/library/asyncio-task.html
 """
-
-
-class TypesEncoder(json.JSONEncoder):
-
-    def default(self, obj):
-        if isinstance(obj, decimal.Decimal):
-            return str(obj)
-        if isinstance(obj, type(re.compile(""))):
-            return obj.pattern
-
-        try:
-            return obj.strftime("%Y-%m-%d %H:%M:%S")
-        except AttributeError:
-            return json.JSONEncoder.default(self, obj)
 
 
 class Expert:
