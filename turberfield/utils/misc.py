@@ -72,3 +72,13 @@ def type_dict(*args):
         dict(inspect.getmembers(i)).get("__module__"),
         i.__name__)
     ): i for i in args}
+
+
+def gather_installed(key):
+    for i in pkg_resources.iter_entry_points(key):
+        try:
+            ep = i.resolve()
+        except Exception as e:
+            continue
+        else:
+            yield (i.name, ep)
