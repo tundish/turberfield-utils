@@ -63,7 +63,10 @@ def obj_to_odict(obj):
             dict(inspect.getmembers(obj)).get("__module__"),
             obj.__class__.__name__))),
     ])
-    rv.update(obj._asdict())
+    try:
+        rv.update(obj._asdict())
+    except AttributeError:
+        rv.update(vars(obj))
     return rv
 
 
