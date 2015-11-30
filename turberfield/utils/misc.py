@@ -21,6 +21,7 @@ import decimal
 import inspect
 import json
 import re
+import warnings
 
 import pkg_resources
 
@@ -59,14 +60,19 @@ class TypesEncoder(json.JSONEncoder):
 
 def obj_to_odict(obj):
     rv = OrderedDict([
-        ("_type", ".".join((
-            dict(inspect.getmembers(obj)).get("__module__"),
-            obj.__class__.__name__))),
+        ("_type", ".".join((dict(inspect.getmembers(obj)).get(
+            "__module__",
+            type(obj).__name__
+        ),
+        obj.__class__.__name__))),
     ])
     try:
         rv.update(obj._asdict())
     except AttributeError:
-        rv.update(vars(obj))
+        try:
+            rv.update(vars(obj))
+        except TypeError:
+            warnings.warn("{} not surviving.".format(obj))
     return rv
 
 
