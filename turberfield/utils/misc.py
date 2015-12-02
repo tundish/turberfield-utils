@@ -76,12 +76,22 @@ def obj_to_odict(obj):
     return rv
 
 
-def type_dict(*args):
-    return { ".".join((
-        dict(inspect.getmembers(i)).get("__module__"),
-        i.__name__)
-    ): i for i in args}
+def type_dict(*args, namespace=None):
+    """
+    Returns a dictionary of types stored by their fully-qualified name. This
+    can be used to de-serialise a stored mapping to its declared type.
 
+    Such types must support call semantics with keyword arguments. If this is
+    not possible (as in the case of Enums), then define a classmethod called `factory`
+    which will be registered instead.
+
+    """
+    tmplt = "{module}.{name}" if namespace is None else "{namespace}.{module}.{name}"
+    return {
+        tmplt.format(
+            namespace=namespace,
+            module=dict(inspect.getmembers(i)).get("__module__"),
+            name=i.__name__): getattr(i, "factory", i) for i in args}
 
 def gather_installed(key):
     for i in pkg_resources.iter_entry_points(key):
