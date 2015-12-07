@@ -50,12 +50,12 @@ class AttributeConversionTests(unittest.TestCase):
         # filtered, static saved as RSON, then loaded into web tier
         things = [dict(
             _links=["/{}".format(i.value)],
-            _type=i.__class__.__name__, **vars(i))
+            _type=i.__class__.__name__, **i._asdict())
             for i in filtered]
 
         thongs = [dict(
             _links=["#"],
-            _type=i.__class__.__name__, **vars(i))
+            _type=i.__class__.__name__, **i._asdict())
             for i in static]
 
         page = {
