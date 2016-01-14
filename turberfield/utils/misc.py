@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
+import collections
 import decimal
 import inspect
 import json
@@ -44,6 +44,27 @@ class SavesAsList:
     def __json__(self):
         return json.dumps(self, indent=0, ensure_ascii=False, sort_keys=False)
 
+class BetterTypesEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        try:
+            return json.JSONEncoder.default(self, obj)
+        except TypeError as e:
+            try:
+                return obj.strftime("%Y-%m-%d %H:%M:%S")
+            except AttributeError:
+                if isinstance(obj, (collections.Counter,)):
+                    return dict(obj)
+                elif isinstance(obj, (collections.deque,)):
+                    return list(obj)
+                elif isinstance(obj, (decimal.Decimal, )):
+                    return str(obj)
+                elif isinstance(obj, type(re.compile(""))):
+                    return obj.pattern
+                else:
+                    raise e
+
+
 class TypesEncoder(json.JSONEncoder):
 
     def default(self, obj):
@@ -59,7 +80,7 @@ class TypesEncoder(json.JSONEncoder):
 
 
 def obj_to_odict(obj):
-    rv = OrderedDict([
+    rv = collections.OrderedDict([
         ("_type", ".".join((dict(inspect.getmembers(obj)).get(
             "__module__",
             type(obj).__name__
