@@ -16,12 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 import enum
 import functools
 import inspect
+import json
 import unittest
 
 from turberfield.utils.misc import type_dict
+from turberfield.utils.misc import TypesEncoder
 
 
 class TShirt(enum.Enum):
@@ -33,6 +36,19 @@ class TShirt(enum.Enum):
     @classmethod
     def factory(cls, name=None, **kwargs):
         return cls[name]
+
+class TestTypesEncoder(unittest.TestCase):
+
+    def test_dumps_datetime(self):
+        obj = datetime.utcnow()
+        text = json.dumps(
+            obj, cls=TypesEncoder, indent=0
+        )
+        rv = obj - datetime.strptime(
+            json.loads(text), "%Y-%m-%d %H:%M:%S"
+        )
+        self.assertEqual(0, rv.days)
+        self.assertEqual(0, rv.seconds)
 
 class TypeDictTester(unittest.TestCase):
 
