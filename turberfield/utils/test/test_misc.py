@@ -74,7 +74,7 @@ class TestTypesEncoder(unittest.TestCase):
         text = json.dumps(
             regex, cls=TypesEncoder, indent=0
         )
-        self.assertEqual(pattern, json.loads(text))
+        self.assertEqual(regex, re.compile(json.loads(text)))
 
 class TypeDictTester(unittest.TestCase):
 
