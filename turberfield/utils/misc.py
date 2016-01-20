@@ -53,9 +53,7 @@ class BetterTypesEncoder(json.JSONEncoder):
             try:
                 return obj.strftime("%Y-%m-%d %H:%M:%S")
             except AttributeError:
-                if isinstance(obj, (collections.Counter,)):
-                    return dict(obj)
-                elif isinstance(obj, (collections.deque,)):
+                if isinstance(obj, (collections.deque,)):
                     return list(obj)
                 elif isinstance(obj, (decimal.Decimal, )):
                     return str(obj)

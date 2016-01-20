@@ -16,11 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import Counter
+from collections import deque
 from datetime import datetime
+from decimal import Decimal
 import enum
 import functools
 import inspect
 import json
+import re
 import unittest
 
 from turberfield.utils.misc import type_dict
@@ -39,6 +43,13 @@ class TShirt(enum.Enum):
 
 class TestTypesEncoder(unittest.TestCase):
 
+    def test_dumps_counter(self):
+        obj = Counter("aspidistra") 
+        text = json.dumps(
+            obj, cls=TypesEncoder, indent=0
+        )
+        self.assertEqual(obj, json.loads(text))
+
     def test_dumps_datetime(self):
         obj = datetime.utcnow()
         text = json.dumps(
@@ -49,6 +60,21 @@ class TestTypesEncoder(unittest.TestCase):
         )
         self.assertEqual(0, rv.days)
         self.assertEqual(0, rv.seconds)
+
+    def test_dumps_decimal(self):
+        obj = Decimal("3.1415269") 
+        text = json.dumps(
+            obj, cls=TypesEncoder, indent=0
+        )
+        self.assertEqual(obj, Decimal(json.loads(text)))
+
+    def test_dumps_regex(self):
+        pattern = "[a-zA-Z0-9]+"
+        regex = re.compile(pattern)
+        text = json.dumps(
+            regex, cls=TypesEncoder, indent=0
+        )
+        self.assertEqual(pattern, json.loads(text))
 
 class TypeDictTester(unittest.TestCase):
 
