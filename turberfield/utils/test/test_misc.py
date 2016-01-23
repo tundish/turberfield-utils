@@ -49,6 +49,8 @@ class TestTypesEncoder(unittest.TestCase):
             obj, cls=TypesEncoder, indent=0
         )
         self.assertEqual(obj, json.loads(text))
+        cntr = Counter(json.loads(text))
+        self.assertEqual(obj, cntr)
 
     def test_dumps_datetime(self):
         obj = datetime.utcnow()
@@ -67,6 +69,14 @@ class TestTypesEncoder(unittest.TestCase):
             obj, cls=TypesEncoder, indent=0
         )
         self.assertEqual(obj, Decimal(json.loads(text)))
+
+    def test_dumps_deque(self):
+        obj = deque("aspidistra") 
+        text = json.dumps(
+            obj, cls=TypesEncoder, indent=0
+        )
+        seq = deque(json.loads(text))
+        self.assertEqual(obj, seq)
 
     def test_dumps_regex(self):
         pattern = "[a-zA-Z0-9]+"

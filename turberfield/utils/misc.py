@@ -44,7 +44,7 @@ class SavesAsList:
     def __json__(self):
         return json.dumps(self, indent=0, ensure_ascii=False, sort_keys=False)
 
-class BetterTypesEncoder(json.JSONEncoder):
+class TypesEncoder(json.JSONEncoder):
 
     def default(self, obj):
         try:
@@ -63,7 +63,7 @@ class BetterTypesEncoder(json.JSONEncoder):
                     raise e
 
 
-class TypesEncoder(json.JSONEncoder):
+class OldTypesEncoder(json.JSONEncoder):
 
     def default(self, obj):
         if isinstance(obj, decimal.Decimal):
