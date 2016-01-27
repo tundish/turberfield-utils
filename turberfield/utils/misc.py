@@ -47,6 +47,7 @@ class SavesAsList:
 class TypesEncoder(json.JSONEncoder):
 
     def default(self, obj):
+        obj = obj._asdict() if hasattr(obj, "_asdict") else obj
         try:
             return json.JSONEncoder.default(self, obj)
         except TypeError as e:
@@ -61,20 +62,6 @@ class TypesEncoder(json.JSONEncoder):
                     return obj.pattern
                 else:
                     raise e
-
-
-class OldTypesEncoder(json.JSONEncoder):
-
-    def default(self, obj):
-        if isinstance(obj, decimal.Decimal):
-            return str(obj)
-        if isinstance(obj, type(re.compile(""))):
-            return obj.pattern
-
-        try:
-            return obj.strftime("%Y-%m-%d %H:%M:%S")
-        except AttributeError:
-            return json.JSONEncoder.default(self, obj)
 
 
 def obj_to_odict(obj):

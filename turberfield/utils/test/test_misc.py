@@ -18,6 +18,7 @@
 
 from collections import Counter
 from collections import deque
+from collections import namedtuple
 from datetime import datetime
 from decimal import Decimal
 import enum
@@ -77,6 +78,15 @@ class TestTypesEncoder(unittest.TestCase):
         )
         seq = deque(json.loads(text))
         self.assertEqual(obj, seq)
+
+    def test_dumps_deque(self):
+        Tyre = namedtuple("Tyre", ["dia", "pressure"])
+        obj = Tyre(70, 90)
+        text = json.dumps(
+            obj, cls=TypesEncoder, indent=0
+        )
+        tyre = Tyre(*json.loads(text))
+        self.assertEqual(obj, tyre)
 
     def test_dumps_regex(self):
         pattern = "[a-zA-Z0-9]+"
