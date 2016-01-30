@@ -96,13 +96,6 @@ class Assembly:
             return obj
 
     @staticmethod
-    def domps(obj, indent=None, separators=None, sort_keys=False):
-        return json.dumps(
-            obj, cls=Assembly.Encoder, indent=indent,
-            separators=separators, sort_keys=sort_keys
-        )
-
-    @staticmethod
     def dumps(
         obj, skipkeys=False, ensure_ascii=True, check_circular=True,
         allow_nan=True, cls=None, indent=None, separators=None,
@@ -210,7 +203,7 @@ class AssemblyTester(unittest.TestCase):
 
     def test_nested_object_dumps(self):
         rv = Assembly.loads(AssemblyTester.data)
-        print(Assembly.dumps(rv, indent=4))
+        print(Assembly.dumps(rv, indent=2))
             
     def test_nested_object_loads(self):
         rv = Assembly.loads(AssemblyTester.data)
