@@ -26,6 +26,7 @@ import textwrap
 import unittest
 
 # prototyping
+from decimal import Decimal
 from inspect import getmembers
 import json
 
@@ -54,7 +55,9 @@ class Assembly:
 
     @staticmethod
     def loads(s):
-        return json.loads(s, object_hook=Assembly.object_hook)
+        return json.loads(
+            s, object_hook=Assembly.object_hook, parse_float=Decimal
+        )
 
 class Wheelbarrow:
 
@@ -151,6 +154,7 @@ class AssemblyTester(unittest.TestCase):
         rv = Assembly.loads(AssemblyTester.data)
         self.assertIsInstance(rv, Wheelbarrow)
         self.assertEqual(45, rv.bucket.capacity)
+        self.assertIsInstance(rv.wheel.rim.dia, Decimal)
         self.assertEqual(30, rv.wheel.tyre.pressure)
         self.assertIsInstance(rv.handles, deque)
         self.assertEqual(2, len(rv.handles))
