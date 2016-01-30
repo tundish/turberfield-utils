@@ -26,32 +26,79 @@ import textwrap
 import unittest
 
 # prototyping
+from collections import OrderedDict
 from decimal import Decimal
+from enum import Enum
 from inspect import getmembers
 import json
+import re
 
 class Assembly:
 
-    decoder = {}
+    decoding = {}
+    encoding = {}
+
+    class Encoder(json.JSONEncoder):
+
+        def default(self, obj):
+            tag = Assembly.encoding.get(type(obj), None)
+            if tag is not None:
+                print(tag)
+                rv = OrderedDict([("_type", tag)])
+                try:
+                    attribs = obj._asdict()
+                except AttributeError:
+                    if isinstance(obj, Enum):
+                        attribs = {"name": obj.name, "value": obj.value}
+                    else:
+                        attribs = vars(obj)
+                rv.update(attribs)
+                return rv
+
+            try:
+                return json.JSONEncoder.default(self, obj)
+            except TypeError as e:
+                try:
+                    return obj.strftime("%Y-%m-%d %H:%M:%S")
+                except AttributeError:
+                    if isinstance(obj, (deque,)):
+                        return list(obj)
+                    elif isinstance(obj, (Decimal, )):
+                        return str(obj)
+                    elif isinstance(obj, type(re.compile(""))):
+                        return obj.pattern
+                    else:
+                        raise e
 
     @staticmethod
     def register(*args, namespace=None):
         tmplt = "{module}.{name}" if namespace is None else "{namespace}.{module}.{name}"
-        Assembly.decoder.update({
-            tmplt.format(
-                namespace=namespace,
-                module=dict(getmembers(i)).get("__module__"),
-                name=i.__name__): i for i in args})
+        for arg in args:
+            module = dict(getmembers(arg)).get("__module__")
+            tag = tmplt.format(
+                    namespace=namespace,
+                    module=module,
+                    name=arg.__name__
+            )
+            Assembly.decoding[tag] = arg
+            Assembly.encoding[arg] = tag
 
     @staticmethod
     def object_hook(obj):
         typ = obj.pop("_type", None)
-        cls = Assembly.decoder.get(typ, None)
+        cls = Assembly.decoding.get(typ, None)
         try:
             factory = getattr(cls, "factory", cls)
             return factory(**obj)
         except TypeError:
             return obj
+
+    @staticmethod
+    def dumps(obj, indent=None, separators=None, sort_keys=False):
+        return json.dumps(
+            obj, cls=Assembly.Encoder, indent=indent,
+            separators=separators, sort_keys=sort_keys
+        )
 
     @staticmethod
     def loads(s):
@@ -148,7 +195,7 @@ class AssemblyTester(unittest.TestCase):
 
     def test_nested_object_dumps(self):
         rv = Assembly.loads(AssemblyTester.data)
-        print(json.dumps(rv))
+        print(Assembly.dumps(rv, indent=4))
             
     def test_nested_object_loads(self):
         rv = Assembly.loads(AssemblyTester.data)
