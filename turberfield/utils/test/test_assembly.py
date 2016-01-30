@@ -33,12 +33,14 @@ from inspect import getmembers
 import json
 import re
 
+from turberfield.utils.encoder import JSONEncoder
+
 class Assembly:
 
     decoding = {}
     encoding = {}
 
-    class Encoder(json.JSONEncoder):
+    class Encoder(JSONEncoder):
 
         def default(self, obj):
             tag = Assembly.encoding.get(type(obj), None)
@@ -56,7 +58,7 @@ class Assembly:
                 return rv
 
             try:
-                return json.JSONEncoder.default(self, obj)
+                return JSONEncoder.default(self, obj)
             except TypeError as e:
                 try:
                     return obj.strftime("%Y-%m-%d %H:%M:%S")
@@ -94,11 +96,24 @@ class Assembly:
             return obj
 
     @staticmethod
-    def dumps(obj, indent=None, separators=None, sort_keys=False):
+    def domps(obj, indent=None, separators=None, sort_keys=False):
         return json.dumps(
             obj, cls=Assembly.Encoder, indent=indent,
             separators=separators, sort_keys=sort_keys
         )
+
+    @staticmethod
+    def dumps(
+        obj, skipkeys=False, ensure_ascii=True, check_circular=True,
+        allow_nan=True, cls=None, indent=None, separators=None,
+        default=None, sort_keys=False, **kwargs
+    ):
+        return Assembly.Encoder(
+            skipkeys=skipkeys, ensure_ascii=ensure_ascii,
+            check_circular=check_circular, allow_nan=allow_nan,
+            indent=indent, separators=separators, default=default,
+            sort_keys=sort_keys, **kwargs
+        ).encode(obj)
 
     @staticmethod
     def loads(s):
