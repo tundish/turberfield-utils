@@ -29,9 +29,8 @@ import time
 import warnings
 
 from turberfield.utils import __version__
-from turberfield.utils.misc import TypesEncoder
+from turberfield.utils.assembly import Assembly
 from turberfield.utils.pipes import PipeQueue
-from turberfield.utils.travel import Impulse
 
 __doc__ = """
 Configuration
@@ -272,26 +271,15 @@ class Expert:
                     event.clear()
             elif isinstance(service, Expert.RSON):
                 with Expert.declaration(service.dst) as output:
-                    output.write(
-                        "\n".join(json.dumps(
-                            dict(_type=type(i).__name__, **vars(i)),
-                            output, cls=TypesEncoder, indent=0
-                            )
-                            for i in data.get(service.attr, []))
-                    )
+                    for i in data.get(service.attr, []):
+                        Assembly.dump(i, output, indent=0)
+                        output.write("\n")
             elif isinstance(service, Expert.HATEOAS):
                 page = class_.page()
                 page.info["ts"] = time.time()
-                items = data.get(service.attr, [])
-                page.items[:] = [dict(
-                    _links=[],
-                    _type=i.__class__.__name__, **vars(i))
-                    for i in items]
+                page.items[:] = data.get(service.attr, [])
                 with Expert.declaration(service.dst) as output:
-                    json.dump(
-                        vars(page), output,
-                        cls=TypesEncoder, indent=4
-                    )
+                    Assembly.dump(vars(page), output, indent=4)
 
         class_.public = class_.public._replace(**kwargs)
 

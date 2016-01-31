@@ -89,6 +89,21 @@ class Assembly:
             return obj
 
     @staticmethod
+    def dump(
+        obj, fp, skipkeys=False, ensure_ascii=True, check_circular=True,
+        allow_nan=True, cls=None, indent=None, separators=None,
+        default=None, sort_keys=False, **kwargs
+    ):
+        dumper = Assembly.Encoder(
+            skipkeys=skipkeys, ensure_ascii=ensure_ascii,
+            check_circular=check_circular, allow_nan=allow_nan,
+            indent=indent, separators=separators, default=default,
+            sort_keys=sort_keys, **kwargs
+        ).iterencode(obj)
+        for chunk in dumper:
+            fp.write(chunk)
+
+    @staticmethod
     def dumps(
         obj, skipkeys=False, ensure_ascii=True, check_circular=True,
         allow_nan=True, cls=None, indent=None, separators=None,
