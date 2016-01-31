@@ -44,60 +44,6 @@ class SavesAsList:
     def __json__(self):
         return json.dumps(self, indent=0, ensure_ascii=False, sort_keys=False)
 
-class TypesEncoder(json.JSONEncoder):
-
-    def default(self, obj):
-        obj = obj._asdict() if hasattr(obj, "_asdict") else obj
-        try:
-            return json.JSONEncoder.default(self, obj)
-        except TypeError as e:
-            try:
-                return obj.strftime("%Y-%m-%d %H:%M:%S")
-            except AttributeError:
-                if isinstance(obj, (collections.deque,)):
-                    return list(obj)
-                elif isinstance(obj, (decimal.Decimal, )):
-                    return str(obj)
-                elif isinstance(obj, type(re.compile(""))):
-                    return obj.pattern
-                else:
-                    raise e
-
-
-def obj_to_odict(obj):
-    rv = collections.OrderedDict([
-        ("_type", ".".join((dict(inspect.getmembers(obj)).get(
-            "__module__",
-            type(obj).__name__
-        ),
-        obj.__class__.__name__))),
-    ])
-    try:
-        rv.update(obj._asdict())
-    except AttributeError:
-        try:
-            rv.update(vars(obj))
-        except TypeError:
-            warnings.warn("{} not surviving.".format(obj))
-    return rv
-
-
-def type_dict(*args, namespace=None):
-    """
-    Returns a dictionary of types stored by their fully-qualified name. This
-    can be used to de-serialise a stored mapping to its declared type.
-
-    Such types must support call semantics with keyword arguments. If this is
-    not possible (as in the case of Enums), then define a classmethod called `factory`
-    which will be registered instead.
-
-    """
-    tmplt = "{module}.{name}" if namespace is None else "{namespace}.{module}.{name}"
-    return {
-        tmplt.format(
-            namespace=namespace,
-            module=dict(inspect.getmembers(i)).get("__module__"),
-            name=i.__name__): getattr(i, "factory", i) for i in args}
 
 def gather_installed(key):
     for i in pkg_resources.iter_entry_points(key):

@@ -65,6 +65,31 @@ class Assembly:
 
     @staticmethod
     def register(*args, namespace=None):
+        """
+        Call this function to register your classes for Assembly.
+
+        Returns a list of the types so far registered.
+
+        In order to create objects from JSON, your types must support
+        construction semantics with keyword arguments
+        (ie: ``MyClass(**kwargs)``).
+
+        If this is not possible (as in the case of Enums), then define
+        a classmethod called `factory` which will be used instead, eg::
+
+            class Colour(enum.Enum):
+                red = (255, 0 , 0)
+                green = (0, 255 , 0)
+                blue = (0, 0 , 255)
+
+                @classmethod
+                def factory(cls, name=None, **kwargs):
+                    return cls[name]
+
+
+            Assembly.register(Colour)
+
+        """
         tmplt = "{module}.{name}" if namespace is None else "{namespace}.{module}.{name}"
         for arg in args:
             module = dict(getmembers(arg)).get("__module__")

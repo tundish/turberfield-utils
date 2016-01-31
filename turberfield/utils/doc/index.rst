@@ -28,6 +28,7 @@ Turberfield Utility library
    :numbered:
 
    pipes
+   assembly
    homogeneous
    travel
    expert

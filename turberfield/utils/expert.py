@@ -21,7 +21,6 @@ from collections import defaultdict
 from collections import namedtuple
 import contextlib
 import itertools
-import json
 import logging
 import os
 import tempfile
