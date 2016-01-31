@@ -20,98 +20,12 @@
 import enum
 from collections import deque
 from collections import namedtuple
-import itertools
-import os.path
+from decimal import Decimal
 import textwrap
 import unittest
 
-# prototyping
-from collections import OrderedDict
-from decimal import Decimal
-from enum import Enum
-from inspect import getmembers
-import json
-import re
+from turberfield.utils.assembly import Assembly
 
-from turberfield.utils.encoder import JSONEncoder
-
-class Assembly:
-
-    decoding = {}
-    encoding = {}
-
-    class Encoder(JSONEncoder):
-
-        def default(self, obj):
-            tag = Assembly.encoding.get(type(obj), None)
-            if tag is not None:
-                rv = OrderedDict([("_type", tag)])
-                try:
-                    attribs = obj._asdict()
-                except AttributeError:
-                    if isinstance(obj, Enum):
-                        attribs = {"name": obj.name, "value": obj.value}
-                    else:
-                        attribs = vars(obj)
-                rv.update(attribs)
-                return rv
-
-            try:
-                return JSONEncoder.default(self, obj)
-            except TypeError as e:
-                try:
-                    return obj.strftime("%Y-%m-%d %H:%M:%S")
-                except AttributeError:
-                    if isinstance(obj, (deque,)):
-                        return list(obj)
-                    elif isinstance(obj, (Decimal, )):
-                        return float(obj)
-                    elif isinstance(obj, type(re.compile(""))):
-                        return obj.pattern
-                    else:
-                        raise e
-
-    @staticmethod
-    def register(*args, namespace=None):
-        tmplt = "{module}.{name}" if namespace is None else "{namespace}.{module}.{name}"
-        for arg in args:
-            module = dict(getmembers(arg)).get("__module__")
-            tag = tmplt.format(
-                    namespace=namespace,
-                    module=module,
-                    name=arg.__name__
-            )
-            Assembly.decoding[tag] = arg
-            Assembly.encoding[arg] = tag
-
-    @staticmethod
-    def object_hook(obj):
-        typ = obj.pop("_type", None)
-        cls = Assembly.decoding.get(typ, None)
-        try:
-            factory = getattr(cls, "factory", cls)
-            return factory(**obj)
-        except TypeError:
-            return obj
-
-    @staticmethod
-    def dumps(
-        obj, skipkeys=False, ensure_ascii=True, check_circular=True,
-        allow_nan=True, cls=None, indent=None, separators=None,
-        default=None, sort_keys=False, **kwargs
-    ):
-        return Assembly.Encoder(
-            skipkeys=skipkeys, ensure_ascii=ensure_ascii,
-            check_circular=check_circular, allow_nan=allow_nan,
-            indent=indent, separators=separators, default=default,
-            sort_keys=sort_keys, **kwargs
-        ).encode(obj)
-
-    @staticmethod
-    def loads(s):
-        return json.loads(
-            s, object_hook=Assembly.object_hook, parse_float=Decimal
-        )
 
 class Wheelbarrow:
 
@@ -201,7 +115,6 @@ class AssemblyTester(unittest.TestCase):
             Wheelbarrow,
             Wheelbarrow.Bucket,
             Wheelbarrow.Colour,
-            Wheelbarrow.Wheel,
             Wheelbarrow.Grip,
             Wheelbarrow.Handle,
             Wheelbarrow.Rim,
@@ -209,11 +122,15 @@ class AssemblyTester(unittest.TestCase):
             Wheelbarrow.Wheel,
             namespace="turberfield"
         )
+        self.assertEqual(8, len(types))
 
     def test_nested_object_dumps(self):
         obj = Assembly.loads(AssemblyTester.data)
-        text = textwrap.dedent(Assembly.dumps(obj, indent=4))
-        self.assertEqual(len(AssemblyTester.data.lstrip()), len(text), text)
+        text = Assembly.dumps(obj, indent=4)
+        self.assertEqual(
+            len(AssemblyTester.data.strip()),
+            len(text.strip())
+        )
             
     def test_nested_object_loads(self):
         rv = Assembly.loads(AssemblyTester.data)
@@ -235,7 +152,12 @@ class AssemblyTester(unittest.TestCase):
                 "length": 15,
                 "colour": {
                     "_type": "turberfield.utils.test.test_assembly.Colour",
-                    "name": "red"
+                    "name": "red",
+                    "value": [
+                        0,
+                        255,
+                        0
+                    ]
                 }
             }
         }
@@ -246,3 +168,11 @@ class AssemblyTester(unittest.TestCase):
         self.assertEqual(2, len(rv.handles))
         self.assertEqual(Wheelbarrow.Colour.green, rv.handles[0].grip.colour)
         self.assertEqual(Wheelbarrow.Colour.red, rv.handles[1].grip.colour)
+
+    def test_nested_object_roundtrip(self):
+        obj = Assembly.loads(AssemblyTester.data)
+        text = textwrap.dedent(Assembly.dumps(obj))
+        rv = Assembly.loads(text)
+        self.assertEqual(obj.bucket, rv.bucket)
+        self.assertEqual(obj.wheel, rv.wheel)
+        self.assertEqual(obj.handles, rv.handles)
