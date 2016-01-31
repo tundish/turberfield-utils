@@ -45,7 +45,6 @@ class Assembly:
         def default(self, obj):
             tag = Assembly.encoding.get(type(obj), None)
             if tag is not None:
-                print(tag)
                 rv = OrderedDict([("_type", tag)])
                 try:
                     attribs = obj._asdict()
@@ -66,7 +65,7 @@ class Assembly:
                     if isinstance(obj, (deque,)):
                         return list(obj)
                     elif isinstance(obj, (Decimal, )):
-                        return str(obj)
+                        return float(obj)
                     elif isinstance(obj, type(re.compile(""))):
                         return obj.pattern
                     else:
@@ -142,48 +141,58 @@ class AssemblyTester(unittest.TestCase):
 
     data = textwrap.dedent("""
     {
-    "_type": "turberfield.utils.test.test_assembly.Wheelbarrow",
-    "bucket": {
-        "_type": "turberfield.utils.test.test_assembly.Bucket",
-        "capacity": 45
+        "_type": "turberfield.utils.test.test_assembly.Wheelbarrow",
+        "bucket": {
+            "_type": "turberfield.utils.test.test_assembly.Bucket",
+            "capacity": 45
         },
-    "wheel": {
-        "_type": "turberfield.utils.test.test_assembly.Wheel",
-        "rim": {
-            "_type": "turberfield.utils.test.test_assembly.Rim",
-            "dia": 22.85
-        },
-        "tyre": {
-            "_type": "turberfield.utils.test.test_assembly.Tyre",
-            "dia": 22.85,
-            "pressure": 30
-        }
-        },
-    "handles": [
-        {
-            "_type": "turberfield.utils.test.test_assembly.Handle",
-            "length": 80,
-            "grip": {
-                "_type": "turberfield.utils.test.test_assembly.Grip",
-                "length": 15,
-                "colour": {
-                    "_type": "turberfield.utils.test.test_assembly.Colour",
-                    "name": "green"
-                }
+        "wheel": {
+            "_type": "turberfield.utils.test.test_assembly.Wheel",
+            "rim": {
+                "_type": "turberfield.utils.test.test_assembly.Rim",
+                "dia": 22.85
+            },
+            "tyre": {
+                "_type": "turberfield.utils.test.test_assembly.Tyre",
+                "dia": 22.85,
+                "pressure": 30
             }
         },
-        {
-            "_type": "turberfield.utils.test.test_assembly.Handle",
-            "length": 80,
-            "grip": {
-                "_type": "turberfield.utils.test.test_assembly.Grip",
-                "length": 15,
-                "colour": {
-                    "_type": "turberfield.utils.test.test_assembly.Colour",
-                    "name": "green"
+        "handles": [
+            {
+                "_type": "turberfield.utils.test.test_assembly.Handle",
+                "length": 80,
+                "grip": {
+                    "_type": "turberfield.utils.test.test_assembly.Grip",
+                    "length": 15,
+                    "colour": {
+                        "_type": "turberfield.utils.test.test_assembly.Colour",
+                        "name": "green",
+                        "value": [
+                            0,
+                            255,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "_type": "turberfield.utils.test.test_assembly.Handle",
+                "length": 80,
+                "grip": {
+                    "_type": "turberfield.utils.test.test_assembly.Grip",
+                    "length": 15,
+                    "colour": {
+                        "_type": "turberfield.utils.test.test_assembly.Colour",
+                        "name": "green",
+                        "value": [
+                            0,
+                            255,
+                            0
+                        ]
+                    }
                 }
             }
-        }
         ]
     }""")
 
@@ -202,8 +211,9 @@ class AssemblyTester(unittest.TestCase):
         )
 
     def test_nested_object_dumps(self):
-        rv = Assembly.loads(AssemblyTester.data)
-        print(Assembly.dumps(rv, indent=2))
+        obj = Assembly.loads(AssemblyTester.data)
+        text = textwrap.dedent(Assembly.dumps(obj, indent=4))
+        self.assertEqual(len(AssemblyTester.data.lstrip()), len(text), text)
             
     def test_nested_object_loads(self):
         rv = Assembly.loads(AssemblyTester.data)
