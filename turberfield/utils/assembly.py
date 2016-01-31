@@ -119,6 +119,14 @@ class Assembly:
         allow_nan=True, cls=None, indent=None, separators=None,
         default=None, sort_keys=False, **kwargs
     ):
+        """
+        Serialize `obj` as a JSON formatted stream to `fp`.
+
+        This function is compatible with `json.dump`_ from Python's
+        standard library, and accepts the same arguments.
+
+        .. _json.dump: https://docs.python.org/3/library/json.html#json.dump
+        """
         dumper = Assembly.Encoder(
             skipkeys=skipkeys, ensure_ascii=ensure_ascii,
             check_circular=check_circular, allow_nan=allow_nan,
@@ -134,6 +142,14 @@ class Assembly:
         allow_nan=True, cls=None, indent=None, separators=None,
         default=None, sort_keys=False, **kwargs
     ):
+        """
+        Serialize `obj` to a JSON formatted string.
+
+        This function is compatible with `json.dumps`_ from Python's
+        standard library, and accepts the same arguments.
+
+        .. _json.dumps: https://docs.python.org/3/library/json.html#json.dumps
+        """
         return Assembly.Encoder(
             skipkeys=skipkeys, ensure_ascii=ensure_ascii,
             check_circular=check_circular, allow_nan=allow_nan,
@@ -143,6 +159,12 @@ class Assembly:
 
     @staticmethod
     def loads(s):
+        """
+        Deserialize a JSON string to Python object(s). Those types you
+        have registered will be recognised and used to create the
+        deserialised objects.
+
+        """
         return json.loads(
             s, object_hook=Assembly.object_hook, parse_float=Decimal
         )

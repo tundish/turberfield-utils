@@ -11,3 +11,4 @@ Python objects.
 
 .. autoclass:: turberfield.utils.assembly.Assembly
    :members: register, dumps, dump, loads
+   :member-order: bysource
