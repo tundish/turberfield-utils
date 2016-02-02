@@ -48,11 +48,11 @@ class Wheelbarrow:
             return cls[name]
 
 
-    def __init__(self, bucket=None, wheel=None, handles=[], contents={}):
+    def __init__(self, bucket=None, wheel=None, handles=[], contents=[]):
         self.bucket = bucket
         self.wheel = wheel
         self.handles = deque(handles, maxlen=2)
-        self.contents = Counter(contents)
+        self.contents = Counter(dict(contents))
 
 class AssemblyTester(unittest.TestCase):
 
@@ -77,14 +77,19 @@ class AssemblyTester(unittest.TestCase):
         },
         "contents": [
             [
-            {
-                "_type": "turberfield.utils.test.test_assembly.Brick",
-                "colour": "red"
-            }, 60],
-            [{
-                "_type": "turberfield.utils.test.test_assembly.Brick",
-                "colour": "yellow"
-            }, 40]
+                {
+                    "_type": "turberfield.utils.test.test_assembly.Brick",
+                    "colour": "red"
+                },
+                60
+            ],
+            [
+                {
+                    "_type": "turberfield.utils.test.test_assembly.Brick",
+                    "colour": "yellow"
+                },
+                40
+            ]
         ],
         "handles": [
             {

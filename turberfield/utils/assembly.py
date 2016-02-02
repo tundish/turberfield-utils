@@ -17,6 +17,7 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from collections import Counter
 from collections import deque
 from collections import OrderedDict
 from decimal import Decimal
@@ -37,7 +38,7 @@ class Assembly:
         def default(self, obj):
             tag = Assembly.encoding.get(type(obj), None)
             if tag is not None:
-                rv = OrderedDict([("_type", tag)])
+                rv = dict(_type=tag)
                 try:
                     attribs = obj._asdict()
                 except AttributeError:
@@ -47,6 +48,9 @@ class Assembly:
                         attribs = vars(obj)
                 rv.update(attribs)
                 return rv
+
+            if isinstance(obj, (Counter, OrderedDict)):
+                return list(obj.items())
 
             try:
                 return JSONEncoder.default(self, obj)
@@ -166,5 +170,8 @@ class Assembly:
 
         """
         return json.loads(
-            s, object_hook=Assembly.object_hook, parse_float=Decimal
+            s,
+            object_hook=Assembly.object_hook,
+            #object_pairs_hook=OrderedDict,
+            parse_float=Decimal
         )

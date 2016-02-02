@@ -317,7 +317,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                     chunks = _iterencode_list(value, _current_indent_level)
                 elif type(value) is tuple:
                     chunks = _iterencode_list(value, _current_indent_level)
-                elif isinstance(value, dict):
+                elif type(value) is dict:
                     chunks = _iterencode_dict(value, _current_indent_level)
                 else:
                     chunks = _iterencode(value, _current_indent_level)
@@ -398,7 +398,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                     chunks = _iterencode_list(value, _current_indent_level)
                 elif type(value) is tuple: #  Turberfield deals with namedtuples
                     chunks = _iterencode_list(value, _current_indent_level)
-                elif isinstance(value, dict):
+                elif type(value) is dict:
                     chunks = _iterencode_dict(value, _current_indent_level)
                 else:
                     chunks = _iterencode(value, _current_indent_level)
@@ -429,7 +429,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             yield from _iterencode_list(o, _current_indent_level)
         elif type(o) is tuple:
             yield from _iterencode_list(o, _current_indent_level)
-        elif isinstance(o, dict):
+        elif type(o) is dict:
             yield from _iterencode_dict(o, _current_indent_level)
         else:
             if markers is not None:
