@@ -18,6 +18,7 @@
 
 
 import enum
+from collections import Counter
 from collections import deque
 from collections import namedtuple
 from decimal import Decimal
@@ -46,10 +47,11 @@ class Wheelbarrow:
             return cls[name]
 
 
-    def __init__(self, bucket=None, wheel=None, handles=[]):
+    def __init__(self, bucket=None, wheel=None, handles=[], contents={}):
         self.bucket = bucket
         self.wheel = wheel
         self.handles = deque(handles, maxlen=2)
+        self.contents = Counter(contents)
 
 class AssemblyTester(unittest.TestCase):
 
@@ -172,6 +174,7 @@ class AssemblyTester(unittest.TestCase):
     def test_nested_object_roundtrip(self):
         obj = Assembly.loads(AssemblyTester.data)
         text = textwrap.dedent(Assembly.dumps(obj))
+        print(text)
         rv = Assembly.loads(text)
         self.assertEqual(obj.bucket, rv.bucket)
         self.assertEqual(obj.wheel, rv.wheel)
