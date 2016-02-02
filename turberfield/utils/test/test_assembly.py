@@ -74,6 +74,7 @@ class AssemblyTester(unittest.TestCase):
                 "pressure": 30
             }
         },
+        "contents": {},
         "handles": [
             {
                 "_type": "turberfield.utils.test.test_assembly.Handle",
@@ -174,7 +175,6 @@ class AssemblyTester(unittest.TestCase):
     def test_nested_object_roundtrip(self):
         obj = Assembly.loads(AssemblyTester.data)
         text = textwrap.dedent(Assembly.dumps(obj))
-        print(text)
         rv = Assembly.loads(text)
         self.assertEqual(obj.bucket, rv.bucket)
         self.assertEqual(obj.wheel, rv.wheel)
