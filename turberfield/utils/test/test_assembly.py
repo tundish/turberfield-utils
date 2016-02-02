@@ -31,6 +31,7 @@ from turberfield.utils.assembly import Assembly
 class Wheelbarrow:
 
     Bucket = namedtuple("Bucket", ["capacity"])
+    Brick = namedtuple("Brick", ["colour"])
     Grip = namedtuple("Grip", ["length", "colour"])
     Handle = namedtuple("Handle", ["length", "grip"])
     Rim = namedtuple("Rim", ["dia"])
@@ -74,7 +75,17 @@ class AssemblyTester(unittest.TestCase):
                 "pressure": 30
             }
         },
-        "contents": {},
+        "contents": [
+            [
+            {
+                "_type": "turberfield.utils.test.test_assembly.Brick",
+                "colour": "red"
+            }, 60],
+            [{
+                "_type": "turberfield.utils.test.test_assembly.Brick",
+                "colour": "yellow"
+            }, 40]
+        ],
         "handles": [
             {
                 "_type": "turberfield.utils.test.test_assembly.Handle",
@@ -116,6 +127,7 @@ class AssemblyTester(unittest.TestCase):
     def setUp(self):
         types = Assembly.register(
             Wheelbarrow,
+            Wheelbarrow.Brick,
             Wheelbarrow.Bucket,
             Wheelbarrow.Colour,
             Wheelbarrow.Grip,
@@ -125,7 +137,7 @@ class AssemblyTester(unittest.TestCase):
             Wheelbarrow.Wheel,
             namespace="turberfield"
         )
-        self.assertEqual(8, len(types))
+        self.assertEqual(9, len(types))
 
     def test_nested_object_dumps(self):
         obj = Assembly.loads(AssemblyTester.data)
