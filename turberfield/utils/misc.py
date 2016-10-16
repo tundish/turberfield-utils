@@ -16,7 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
-import collections
+from collections import defaultdict
+import itertools
 import decimal
 import inspect
 import json
@@ -44,6 +45,10 @@ class SavesAsList:
     def __json__(self):
         return json.dumps(self, indent=0, ensure_ascii=False, sort_keys=False)
 
+def group_by_type(items):
+    return defaultdict(list,
+        {k: list(v) for k, v in itertools.groupby(items, key=type)}
+    )
 
 def gather_installed(key):
     for i in pkg_resources.iter_entry_points(key):
