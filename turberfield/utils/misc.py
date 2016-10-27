@@ -52,12 +52,13 @@ def group_by_type(items):
         {k: list(v) for k, v in itertools.groupby(items, key=type)}
     )
 
-def gather_installed(key):
+def gather_installed(key, log=None):
     for i in pkg_resources.iter_entry_points(key):
         try:
             ep = i.resolve()
         except Exception as e:
-            continue
+            if log is not None:
+                log.warning(getattr(e, "args", e) or e)
         else:
             yield (i.name, ep)
 
