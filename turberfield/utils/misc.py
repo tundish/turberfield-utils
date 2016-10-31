@@ -68,8 +68,8 @@ def log_setup(args, name="turberfield", loop=None):
     log.setLevel(args.log_level)
     logging.getLogger("asyncio").setLevel(args.log_level)
 
-    formatter = logging.Formatter(
-        "%(asctime)s %(levelname)-7s %(name)s|%(message)s")
+    termFormatter = logging.Formatter(
+        "\033[1;30;40m%(asctime)s %(levelname)-7s %(name)s|%(message)s\033[0;37;40m")
     ch = logging.StreamHandler()
 
     if args.log_path is None:
@@ -77,7 +77,9 @@ def log_setup(args, name="turberfield", loop=None):
     else:
         fh = logging.handlers.WatchedFileHandler(args.log_path)
         fh.setLevel(args.log_level)
-        fh.setFormatter(formatter)
+        plainFormatter = logging.Formatter(
+            "%(asctime)s %(levelname)-7s %(name)s|%(message)s")
+        fh.setFormatter(plainFormatter)
         log.addHandler(fh)
         ch.setLevel(logging.WARNING)
 
@@ -88,6 +90,6 @@ def log_setup(args, name="turberfield", loop=None):
             log.info("Upgrade to Python 3.4.2 for asyncio debug mode")
         else:
             log.info("Event loop debug mode is {}".format(loop.get_debug()))
-    ch.setFormatter(formatter)
+    ch.setFormatter(termFormatter)
     log.addHandler(ch)
     return name
