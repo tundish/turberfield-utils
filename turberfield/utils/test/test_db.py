@@ -63,5 +63,6 @@ class OptionTests(NeedsTempDirectory, unittest.TestCase):
 
     def test_ten_db_on_file(self):
         items = list(OptionTests.make_db_files(self.drcty, 10))
-        self.assertEqual(10, len(items)) 
+        paths = glob.glob(os.path.join(self.drcty.name, "*.db"))
+        self.assertEqual(10, len(paths)) 
         OptionTests.close_db_files(*items)
