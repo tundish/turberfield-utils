@@ -43,7 +43,7 @@ class OptionTests(NeedsTempDirectory, unittest.TestCase):
 
     @staticmethod
     def make_db_files(tempdir, n):
-        for i in range(10):
+        for i in range(n):
             fd, path = tempfile.mkstemp(
                 dir=tempdir.name,
                 suffix=".db"
