@@ -23,7 +23,13 @@ import unittest
 import uuid
 
 class Connection:
-
+    """
+    * Find target database files
+    * Select module
+    * Load extensions
+    * Attach databases
+    * Execute pragmas
+    """
     @staticmethod
     def options():
         return {}
