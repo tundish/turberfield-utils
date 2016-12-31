@@ -25,6 +25,11 @@ import unittest
 import uuid
 
 
+@enum.unique
+class Ownershipstate(enum.IntEnum):
+    lost = 0
+    found = 1
+ 
 class Connection:
     """
     * Find target database files
@@ -71,7 +76,7 @@ class Connection:
                 ]
             })
             dbs.update(
-                {i: [Connection.ModeOptions.read] for i in paths[1:]}
+                {i: [Connection.ModeOptions.read] for i in paths}
             )
         return {
             "attach": dbs
@@ -118,7 +123,16 @@ class OptionTests(NeedsTempDirectory, unittest.TestCase):
         for fd, path in items:
             os.close(fd)
 
-    def test_one_db_on_file(self):
+    def test_one_db_in_memory(self):
+        rv = Connection.options()
+        self.assertIsInstance(rv, dict)
+        self.assertEqual(1, len(rv["attach"]))
+        self.assertIn(
+            Connection.ModeOptions.memory,
+            list(rv["attach"].values())[0]
+        )
+
+    def test_one_db_from_file(self):
         fd, path = next(OptionTests.make_db_files(self.drcty, 1))
         paths = glob.glob(os.path.join(self.drcty.name, "*.db"))
         self.assertEqual(1, len(paths)) 
@@ -126,14 +140,23 @@ class OptionTests(NeedsTempDirectory, unittest.TestCase):
         rv = Connection.options(paths=paths)
         self.assertIsInstance(rv, dict)
         self.assertEqual(1, len(rv["attach"]))
-        self.assertTrue(all(Connection.ModeOptions.read in i for i in rv["attach"].values()))
+        self.assertIn(
+            Connection.ModeOptions.read_write_create,
+            list(rv["attach"].values())[0]
+        )
 
-    def test_ten_db_on_file(self):
+    def test_ten_db_from_file(self):
         items = list(OptionTests.make_db_files(self.drcty, 10))
         paths = glob.glob(os.path.join(self.drcty.name, "*.db"))
         self.assertEqual(10, len(paths)) 
         OptionTests.close_db_files(*items)
         rv = Connection.options(paths=paths)
         self.assertIsInstance(rv, dict)
-        self.assertEqual(10, len(rv["attach"]))
-        self.assertTrue(all(Connection.ModeOptions.read in i for i in rv["attach"].values()))
+        self.assertEqual(11, len(rv["attach"]))
+        name, options = rv["attach"].popitem(last=False)
+        self.assertEqual(":memory:", name)
+        self.assertIn(Connection.ModeOptions.memory, options)
+        self.assertTrue(all(
+            Connection.ModeOptions.read in i
+            for i in rv["attach"].values())
+        )
