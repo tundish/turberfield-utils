@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import OrderedDict
 import enum
 import glob
 import os.path
@@ -44,16 +45,51 @@ class Connection:
         mutable = "immutable=0"
 
     class ModeOptions(enum.Enum):
-        readonly = "mode=ro"
-        readwrite = "mode=rw"
-        readwritecreate = "mode=rwc"
+        read = "mode=ro"
+        read_write = "mode=rw"
+        read_write_create = "mode=rwc"
         memory = "mode=memory"
 
     @staticmethod
     def options(paths=[]):
+        if not paths:
+            dbs = {
+                ":memory:": [
+                    Connection.CacheOptions.shared,
+                    Connection.ModeOptions.memory
+                ]
+            }
+        elif len(paths) == 1:
+            dbs = {
+                paths[0]: [Connection.ModeOptions.read_write_create]
+            }
+        else:
+            dbs = OrderedDict({
+                ":memory:": [
+                    Connection.CacheOptions.private,
+                    Connection.ModeOptions.memory
+                ]
+            })
+            dbs.update(
+                {i: [Connection.ModeOptions.read] for i in paths[1:]}
+            )
         return {
-            "attach": {i: [Connection.ModeOptions.readonly] for i in paths}
+            "attach": dbs
         }
+
+    def __init__(self, attach=[]):
+        self.attach = attach
+        self.db = None
+
+    def __enter__(self):
+        self.db = sqlite3.connect(
+            "file:path/to/database?mode=ro",
+            uri=True
+        )
+        return self.db
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
 
 class NeedsTempDirectory:
 
@@ -90,7 +126,7 @@ class OptionTests(NeedsTempDirectory, unittest.TestCase):
         rv = Connection.options(paths=paths)
         self.assertIsInstance(rv, dict)
         self.assertEqual(1, len(rv["attach"]))
-        self.assertTrue(all(Connection.ModeOptions.readonly in i for i in rv["attach"].values()))
+        self.assertTrue(all(Connection.ModeOptions.read in i for i in rv["attach"].values()))
 
     def test_ten_db_on_file(self):
         items = list(OptionTests.make_db_files(self.drcty, 10))
@@ -100,4 +136,4 @@ class OptionTests(NeedsTempDirectory, unittest.TestCase):
         rv = Connection.options(paths=paths)
         self.assertIsInstance(rv, dict)
         self.assertEqual(10, len(rv["attach"]))
-        self.assertTrue(all(Connection.ModeOptions.readonly in i for i in rv["attach"].values()))
+        self.assertTrue(all(Connection.ModeOptions.read in i for i in rv["attach"].values()))
