@@ -20,6 +20,7 @@ from collections import OrderedDict
 import enum
 import glob
 import os.path
+import sqlite3
 import tempfile
 import unittest
 import urllib.parse
@@ -58,19 +59,26 @@ class Connection:
 
     @staticmethod
     def url(conn, options):
-        return "file://{0}?{1}".format(
+        return "file:{0}?{1}".format(
             conn, "&".join(i.value for i in options)
         )
 
     @staticmethod
-    def options(paths=[]):
+    def options(name=None, paths=[]):
         if not paths:
-            dbs = {
-                ":memory:": [
-                    Connection.CacheOptions.shared,
-                    Connection.ModeOptions.memory
-                ]
-            }
+            if name is None:
+                dbs = {
+                    ":memory:": [
+                        Connection.CacheOptions.shared,
+                    ]
+                }
+            else:
+                dbs = {
+                    name: [
+                        Connection.CacheOptions.shared,
+                        Connection.ModeOptions.memory
+                    ]
+                }
         elif len(paths) == 1:
             dbs = {
                 paths[0]: [Connection.ModeOptions.read_write_create]
@@ -96,10 +104,8 @@ class Connection:
             print(Connection.url(conn, options))
 
     def __enter__(self):
-        self.db = sqlite3.connect(
-            "file:path/to/database?mode=ro",
-            uri=True
-        )
+        conn, options = list(self.attach.items())[0]
+        self.db = sqlite3.connect(self.url(conn, options), uri=True)
         return self.db
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -119,8 +125,10 @@ class NeedsTempDirectory:
 class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
 
     def test_one_db_in_memory(self):
-        obj = Connection(**Connection.options())
-        self.assertIsNone(obj.db)
+        con = Connection(**Connection.options())
+        self.assertIsNone(con.db)
+        with con as db:
+            print(db)
 
 class OptionTests(NeedsTempDirectory, unittest.TestCase):
 
@@ -143,7 +151,7 @@ class OptionTests(NeedsTempDirectory, unittest.TestCase):
         self.assertIsInstance(rv, dict)
         self.assertEqual(1, len(rv["attach"]))
         self.assertIn(
-            Connection.ModeOptions.memory,
+            Connection.CacheOptions.shared,
             list(rv["attach"].values())[0]
         )
 
