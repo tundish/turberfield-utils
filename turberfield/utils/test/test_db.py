@@ -107,6 +107,12 @@ class NeedsTempDirectory:
         self.assertFalse(os.path.isdir(self.drcty.name))
         self.drcty = None
 
+class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
+
+    def test_one_db_in_memory(self):
+        obj = Connection(**Connection.options())
+        self.assertIsNone(rv.db)
+
 class OptionTests(NeedsTempDirectory, unittest.TestCase):
 
     @staticmethod
