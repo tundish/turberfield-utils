@@ -22,6 +22,7 @@ import glob
 import os.path
 import tempfile
 import unittest
+import urllib.parse
 import uuid
 
 
@@ -56,6 +57,12 @@ class Connection:
         memory = "mode=memory"
 
     @staticmethod
+    def url(conn, options):
+        return "file://{0}?{1}".format(
+            conn, "&".join(i.value for i in options)
+        )
+
+    @staticmethod
     def options(paths=[]):
         if not paths:
             dbs = {
@@ -85,6 +92,8 @@ class Connection:
     def __init__(self, attach=[]):
         self.attach = attach
         self.db = None
+        for conn, options in self.attach.items():
+            print(Connection.url(conn, options))
 
     def __enter__(self):
         self.db = sqlite3.connect(
@@ -111,7 +120,7 @@ class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
 
     def test_one_db_in_memory(self):
         obj = Connection(**Connection.options())
-        self.assertIsNone(rv.db)
+        self.assertIsNone(obj.db)
 
 class OptionTests(NeedsTempDirectory, unittest.TestCase):
 
