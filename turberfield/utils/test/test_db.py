@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import namedtuple
 from collections import OrderedDict
 import enum
 import glob
@@ -27,10 +28,27 @@ import urllib.parse
 import uuid
 
 
+Column = namedtuple("Column", ["name", "pk", "nullable"])
+
+class Entity:
+    defn = [
+        Column("uuid", False, False),
+    ]
+
+class Persona(Entity):
+    defn = [
+        Column("name", True, False),
+    ]
+
+class Player(Entity):
+    defn = [
+        Column("name", True, False),
+    ]
+
 @enum.unique
 class Ownershipstate(enum.IntEnum):
     lost = 0
-    found = 1
+    acquired = 1
  
 class Connection:
     """
