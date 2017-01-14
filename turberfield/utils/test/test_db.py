@@ -32,16 +32,7 @@ Column = namedtuple("Column", ["name", "pk", "nullable"])
 
 class Entity:
     defn = [
-        Column("uuid", False, False),
-    ]
-
-class Persona(Entity):
-    defn = [
-        Column("name", True, False),
-    ]
-
-class Player(Entity):
-    defn = [
+        Column("uuid", True, False),
         Column("name", True, False),
     ]
 
