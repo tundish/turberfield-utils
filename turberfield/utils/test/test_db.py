@@ -150,8 +150,17 @@ class Connection:
 class SQLTests(unittest.TestCase):
 
     def test_create_entity(self):
-        expected = "create table entity (name, session, primary key (name, session)"
-        self.assertEqual(expected, tables["entity"].creation.lower())
+        expected = (
+            "create table entity ( "
+            "name not none, "
+            "session not none, "
+            "primary key(name, session) )"
+        )
+        check = " ".join(
+            i.strip().lower()
+            for i in tables["entity"].creation.splitlines()
+        ).strip()
+        self.assertEqual(expected, check)
 
 class NeedsTempDirectory:
 
