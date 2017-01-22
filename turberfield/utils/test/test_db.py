@@ -34,27 +34,17 @@ Column = namedtuple("Column", ["name", "pk", "nullable"])
 
 class Table:
 
-    defn = []
-
     def __init__(self, name, defn):
         self.name = name
         self.cols = OrderedDict([(i.name, i) for i in defn])
-
-    def column(self, name):
-        col = self.cols[name]
-        return "{0.name}{1}".format(col, " not none" if not col.nullable else "")
-
-    @property
-    def constraints(self):
-        return ""
 
     @property
     def creation(self):
         lines = ",\n".join(itertools.chain(
             ("{0.name}{1}".format(col, " not none" if not col.nullable else "")
              for col in self.cols.values()),
-            self.constraints)
-        )
+            ("primary key({0})".format(", ".join(i.name for i in self.cols.values() if i.pk)),)
+        ))
         return textwrap.dedent("""
             create table {table.name} (
             {lines}
