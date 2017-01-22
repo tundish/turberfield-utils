@@ -30,11 +30,21 @@ import uuid
 
 Column = namedtuple("Column", ["name", "pk", "nullable"])
 
-class Entity:
-    defn = [
-        Column("uuid", True, False),
+class Table:
+
+    defn = []
+
+    def __init__(self, defn):
+        self.defn = defn
+
+    @property
+    def creation(self):
+        return ""
+
+entity = Table([
         Column("name", True, False),
-    ]
+        Column("session", True, False),
+    ])
 
 @enum.unique
 class Ownershipstate(enum.IntEnum):
@@ -119,6 +129,12 @@ class Connection:
 
     def __exit__(self, exc_type, exc_value, traceback):
         return False
+
+class SQLTests(unittest.TestCase):
+
+    def test_create_entity(self):
+        expected = "create table entity "
+        self.assertEqual(expected, entity.creation.lower())
 
 class NeedsTempDirectory:
 
