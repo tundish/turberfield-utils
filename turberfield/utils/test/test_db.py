@@ -20,9 +20,11 @@ from collections import namedtuple
 from collections import OrderedDict
 import enum
 import glob
+import itertools
 import os.path
 import sqlite3
 import tempfile
+import textwrap
 import unittest
 import urllib.parse
 import uuid
@@ -34,17 +36,42 @@ class Table:
 
     defn = []
 
-    def __init__(self, defn):
-        self.defn = defn
+    def __init__(self, name, defn):
+        self.name = name
+        self.cols = OrderedDict([(i.name, i) for i in defn])
+
+    def column(self, name):
+        col = self.cols[name]
+        return "{0.name}{1}".format(col, " not none" if not col.nullable else "")
+
+    @property
+    def constraints(self):
+        return ""
 
     @property
     def creation(self):
-        return ""
+        lines = ",\n".join(itertools.chain(
+            ("{0.name}{1}".format(col, " not none" if not col.nullable else "")
+             for col in self.cols.values()),
+            self.constraints)
+        )
+        return textwrap.dedent("""
+            create table {table.name} (
+            {lines}
+            )""").format(
+                table=self,
+                lines=lines,
+            )
 
-entity = Table([
-        Column("name", True, False),
-        Column("session", True, False),
-    ])
+tables = OrderedDict([
+        (table.name, table) for table in [
+            Table("entity", [
+                    Column("name", True, False),
+                    Column("session", True, False),
+                ]
+            )
+        ]
+])
 
 @enum.unique
 class Ownershipstate(enum.IntEnum):
@@ -133,8 +160,8 @@ class Connection:
 class SQLTests(unittest.TestCase):
 
     def test_create_entity(self):
-        expected = "create table entity "
-        self.assertEqual(expected, entity.creation.lower())
+        expected = "create table entity (name, session, primary key (name, session)"
+        self.assertEqual(expected, tables["entity"].creation.lower())
 
 class NeedsTempDirectory:
 
