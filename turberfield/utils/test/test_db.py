@@ -18,50 +18,112 @@
 
 from collections import namedtuple
 from collections import OrderedDict
+import datetime
 import enum
 import glob
-import itertools
 import os.path
 import sqlite3
-import tempfile
 import textwrap
+import tempfile
 import unittest
 import urllib.parse
 import uuid
 
 
-Column = namedtuple("Column", ["name", "pk", "nullable"])
-
 class Table:
 
-    def __init__(self, name, defn):
+    Column = namedtuple(
+        "Column",
+        ["name", "type", "isPK", "isNullable", "isUnique", "default", "refs"]
+    )
+
+    @staticmethod
+    def declare_type(col):
+        if isinstance(col.type, str):
+            return "INTEGER" if "int" in col.type.lower() and col.isPK else col.type
+        elif col.type is int:
+            return "INTEGER"
+        elif col.type is str:
+            return "TEXT"
+        elif col.type is bool:
+            return ""
+        elif col.type is bytes:
+            return "BLOB"
+        elif col.type is datetime.date:
+            return "date"
+        elif col.type is datetime.datetime:
+            return "timestamp"
+        elif "__conform__" in dir(col.type):
+            return "BLOB"
+        else:
+            return ""
+
+    def __init__(self, name, cols=[]):
         self.name = name
-        self.cols = OrderedDict([(i.name, i) for i in defn])
+        self.cols=cols
+
+    def sql_lines(self):
+        yield "create table if not exists {0}(".format(self.name)
+        for col in self.cols:
+            yield " ".join((
+                col.name, self.declare_type(col),
+                "PRIMARY KEY" if col.isPK else "",
+                "NOT NULL" if not col.isNullable else "",
+                "UNIQUE" if col.isUnique else "",
+                "DEFAULT {0}".format(col.default) if col.default else "" 
+            )).rstrip() + ("," if col is not self.cols[-1] else "")
+        yield(")")
+
+schema = OrderedDict(
+    (table.name, table) for table in [
+    Table(
+        "responses",
+        cols=[
+          Table.Column("id", int, True, False, None, None, []),
+          Table.Column("ts", datetime.datetime, False, False, None, None, []),
+          Table.Column("valid", bool, False, True, None, None, []),
+          Table.Column("data", str, False, True, None, None, []),
+        ]
+    )
+])
+
+class SQLOperation:
 
     @property
-    def creation(self):
-        lines = ",\n".join(itertools.chain(
-            ("{0.name}{1}".format(col, " not none" if not col.nullable else "")
-             for col in self.cols.values()),
-            ("primary key({0})".format(", ".join(i.name for i in self.cols.values() if i.pk)),)
-        ))
-        return textwrap.dedent("""
-            create table {table.name} (
-            {lines}
-            )""").format(
-                table=self,
-                lines=lines,
-            )
+    def sql(self):
+        raise NotImplementedError
 
-tables = OrderedDict([
-        (table.name, table) for table in [
-            Table("entity", [
-                    Column("name", True, False),
-                    Column("session", True, False),
-                ]
-            )
-        ]
-])
+    def __init__(self, **kwargs):
+        pass
+
+    def run(self, con, log=None):
+        """
+        Execute the SQL defined by this class.
+        Returns the cursor for data extraction.
+
+        """
+        cur = con.cursor()
+        try:
+            cur.execute(self.sql)
+        except sqlite3.ProgrammingError:
+            con.rollback()
+        else:
+            con.commit()
+        return cur
+
+class Creation(SQLOperation):
+
+    @property
+    def sql(self):
+        return ";\n".join("\n".join(table.sql_lines()) for table in self.tables)
+
+    def __init__(self, *args, **kwargs):
+        self.tables = args
+        super().__init__(**kwargs)
+
+    def run(self, con, log=None):
+        cur = super().run(con)
+        cur.close()
 
 @enum.unique
 class Ownershipstate(enum.IntEnum):
@@ -141,7 +203,11 @@ class Connection:
 
     def __enter__(self):
         conn, options = list(self.attach.items())[0]
-        self.db = sqlite3.connect(self.url(conn, options), uri=True)
+        self.db = sqlite3.connect(
+            self.url(conn, options), uri=True,
+            detect_types=sqlite3.PARSE_DECLTYPES
+        )
+        self.db.row_factory = sqlite3.Row
         return self.db
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -156,11 +222,7 @@ class SQLTests(unittest.TestCase):
             "session not none, "
             "primary key(name, session) )"
         )
-        check = " ".join(
-            i.strip().lower()
-            for i in tables["entity"].creation.splitlines()
-        ).strip()
-        self.assertEqual(expected, check)
+        self.assertEqual(expected, schema["entity"].sql)
 
 class NeedsTempDirectory:
 
@@ -180,6 +242,26 @@ class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
         self.assertIsNone(con.db)
         with con as db:
             print(db)
+
+    def test_foreign_keys(self):
+        con = Connection(**Connection.options())
+        self.assertIsNone(con.db)
+        with con as db:
+            rv = Creation(list(schema.values())[0]).run(db)
+            cur = db.cursor()
+            try:
+                cur.execute(
+                    "select count(*) from sqlite_master "
+                    "where type='table' and name='responses'"
+                )
+                self.assertEqual((1,), tuple(cur.fetchone()))
+            finally:
+                cur.close()
+
+class TableTests(unittest.TestCase):
+
+    def test_creation_sql(self):
+        print("\n".join(list(schema.values())[0].sql_lines()))
 
 class OptionTests(NeedsTempDirectory, unittest.TestCase):
 
