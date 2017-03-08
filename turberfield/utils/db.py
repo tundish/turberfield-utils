@@ -31,6 +31,8 @@ class Table:
         ["name", "type", "isPK", "isNullable", "isUnique", "default", "fk"]
     )
 
+    lookup = OrderedDict()
+
     @staticmethod
     def declare_type(col):
         if isinstance(col.type, str):
@@ -55,13 +57,19 @@ class Table:
     def __init__(self, name, cols=[]):
         self.name = name
         self.cols = cols
+        self.__class__.lookup[name] = self
 
     def sql_lines(self):
         yield "create table if not exists {0}(".format(self.name)
-        pks = [i for i in self.cols if i.isPK]
-        uqs = [i for i in self.cols if i.isUnique]
-        clauses = len(pks) >= 2 or len(uqs) >= 2
+        pks = [col for col in self.cols if col.isPK]
+        fks = OrderedDict()
+        uqs = [col for col in self.cols if col.isUnique]
+        constraints = len(pks) >= 2 or len(uqs) >= 2
         for col in self.cols:
+            ref = self.__class__.lookup.get(col.fk)
+            if ref is not None:
+                fks[col] = ref
+                
             yield " ".join((
                 col.name, self.declare_type(col),
                 "PRIMARY KEY" if col.isPK and len(pks) == 1 else "",
@@ -69,13 +77,18 @@ class Table:
                 "UNIQUE" if col.isUnique and len(uqs) == 1 else "",
                 "DEFAULT {0}".format(col.default) if col.default else "" 
             )).rstrip() + (
-                "," if clauses or col is not self.cols[-1]
+                "," if constraints or fks or col is not self.cols[-1]
                 else ""
             )
         if len(pks) >= 2:
             yield "PRIMARY KEY({0})".format(", ".join([i.name for i in pks]))
         if len(uqs) >= 2:
             yield "UNIQUE({0})".format(", ".join([i.name for i in uqs]))
+        for col, refs in fks.items():
+            yield "FOREIGN KEY ({0.name}) REFERENCES {1.name}({2})".format(
+                col, ref, ", ".join([col.name for col in ref.cols if col.isPK])
+            )
+
         yield(")")
 
 schema = OrderedDict(
