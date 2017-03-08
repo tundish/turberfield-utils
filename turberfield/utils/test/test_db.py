@@ -36,9 +36,10 @@ class SQLTests(unittest.TestCase):
     def test_create_entity(self):
         expected = "\n".join((
             "create table if not exists entity(",
-            "name TEXT  NOT NULL,",
+            "id INTEGER PRIMARY KEY NOT NULL,",
             "session TEXT  NOT NULL,",
-            "PRIMARY KEY(name, session)",
+            "name TEXT  NOT NULL,",
+            "UNIQUE(session, name)",
             ")"
         ))
         rv = Creation(schema["entity"]).sql
@@ -47,15 +48,28 @@ class SQLTests(unittest.TestCase):
 
     def test_insert_entity(self):
         expected = (
-            "insert into entity (name, session) values (:name, :session)",
-            {"name": "qwerty", "session": "1234567890"}
+            "insert into entity (session, name) values (:session, :name)",
+            {"session": "1234567890", "name": "qwerty"}
         )
         rv = Insertion(
             schema["entity"],
-            name="qwerty",
             session="1234567890",
+            name="qwerty",
         ).sql
         self.assertEqual(expected, rv)
+
+    def test_create_touch(self):
+        expected = "\n".join((
+            "create table if not exists touch(",
+            "sbjct INTEGER  NOT NULL,",
+            "objct INTEGER,",
+            "FOREIGN KEY (sbjct) REFERENCES entity(id)",
+            "FOREIGN KEY (objct) REFERENCES entity(id)",
+            ")"
+        ))
+        rv = Creation(schema["touch"]).sql
+        self.assertEqual(1, len(rv))
+        self.assertEqual(expected, rv[0])
 
 class DBTests:
 
@@ -119,16 +133,31 @@ class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
                 db
             )
 
+    def test_foreign_keys(self):
+        con = Connection(**Connection.options())
+        with con as db:
+            rv = Creation(schema["touch"]).run(db)
+            session=uuid.uuid4().hex
+            self.assertRaises(
+                sqlite3.IntegrityError,
+                Insertion(
+                    schema["touch"],
+                    sbjct=1,
+                    objct=1
+                ).run,
+                db
+            )
+
 class TableTests(DBTests, unittest.TestCase):
 
     def test_creation_sql(self):
         table = Table(
             "records",
             cols=[
-              Table.Column("id", int, True, False, None, None, []),
-              Table.Column("ts", datetime.datetime, False, False, None, None, []),
-              Table.Column("valid", bool, False, True, None, None, []),
-              Table.Column("data", str, False, True, None, None, []),
+              Table.Column("id", int, True, False, None, None, None),
+              Table.Column("ts", datetime.datetime, False, False, None, None, None),
+              Table.Column("valid", bool, False, True, None, None, None),
+              Table.Column("data", str, False, True, None, None, None),
             ]
         )
         con = Connection(**Connection.options())
