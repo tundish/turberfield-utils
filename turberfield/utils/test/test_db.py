@@ -139,7 +139,7 @@ class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
             rv = Creation(schema["touch"]).run(db)
             session=uuid.uuid4().hex
             self.assertRaises(
-                sqlite3.IntegrityError,
+                sqlite3.OperationalError,
                 Insertion(
                     schema["touch"],
                     sbjct=1,

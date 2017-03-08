@@ -126,15 +126,14 @@ class SQLOperation:
         Returns the cursor for data extraction.
 
         """
-        log = log or logging.getLogger("SQLOperation")
         cur = con.cursor()
         try:
             cur.execute(*self.sql)
-        except sqlite3.OperationalError:
-            log.error(self.sql)
+        except (sqlite3.OperationalError, sqlite3.ProgrammingError) as e:
+            if log is not None:
+                log.error(self.sql)
             con.rollback()
-        except sqlite3.ProgrammingError:
-            con.rollback()
+            raise e
         else:
             con.commit()
         return cur
@@ -263,6 +262,7 @@ class Connection:
             detect_types=sqlite3.PARSE_DECLTYPES
         )
         self.db.row_factory = sqlite3.Row
+        self.db.execute("pragma foreign_keys=ON")
         return self.db
 
     def __exit__(self, exc_type, exc_value, traceback):
