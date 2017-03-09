@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import OrderedDict
 import datetime
 import glob
 import os.path
@@ -44,7 +45,7 @@ class SQLTests(unittest.TestCase):
             ")"
         ))
         rv = Creation(schema["entity"]).sql
-        self.assertEqual(1, len(rv))
+        self.assertEqual(2, len(rv))
         self.assertEqual(expected, rv[0])
 
     def test_insert_entity(self):
@@ -69,7 +70,7 @@ class SQLTests(unittest.TestCase):
             ")"
         ))
         rv = Creation(schema["touch"]).sql
-        self.assertEqual(1, len(rv))
+        self.assertEqual(2, len(rv))
         self.assertEqual(expected, rv[0])
 
 class DBTests:
@@ -79,7 +80,11 @@ class DBTests:
         cur = con.cursor()
         try:
             cur.execute("select * from sqlite_master where type='table'")
-            return cur.fetchall()
+            return [
+                OrderedDict([(k, v)
+                for k, v in zip(i.keys(), i)])
+                for i in cur.fetchall()
+            ]
         finally:
             cur.close()
 
@@ -173,10 +178,7 @@ class TableTests(DBTests, unittest.TestCase):
         with con as db:
             rv = Creation(*schema.values()).run(db)
             tables = self.get_tables(db)
-            self.assertIn("state", tables)
-            for enm in states.values():
-                print(enm)
-
+            self.assertIn("state", [t.get("name") for t in tables])
 
 class OptionTests(NeedsTempDirectory, unittest.TestCase):
 

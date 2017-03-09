@@ -18,6 +18,7 @@
 
 from collections import namedtuple
 from collections import OrderedDict
+from collections.abc import Mapping
 import datetime
 import enum
 import logging
@@ -138,8 +139,17 @@ class SQLOperation:
 
         """
         cur = con.cursor()
+        sql, data = self.sql
         try:
-            cur.execute(*self.sql)
+            if not data:
+                cur.executescript(sql)
+            else:
+                statements = sql.split(";")
+                for s in statements:
+                    if isinstance(data, Mapping):
+                        cur.execute(s, data)
+                    else:
+                        cur.executemany(s, data)
         except (sqlite3.OperationalError, sqlite3.ProgrammingError) as e:
             if log is not None:
                 log.error(self.sql)
@@ -154,7 +164,10 @@ class Creation(SQLOperation):
 
     @property
     def sql(self):
-        return (";\n".join("\n".join(table.sql_lines()) for table in self.tables), )
+        return (
+            ";\n".join("\n".join(table.sql_lines()) for table in self.tables),
+            {}
+        )
 
     def __init__(self, *args, **kwargs):
         self.tables = args
@@ -281,7 +294,6 @@ class Connection:
         self.db.row_factory = sqlite3.Row
         self.db.execute("pragma foreign_keys=ON")
         states = list(gather_installed("turberfield.utils.states"))
-        print(states)
         return self.db
 
     def __exit__(self, exc_type, exc_value, traceback):
