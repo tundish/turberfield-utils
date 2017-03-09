@@ -63,6 +63,9 @@ setup(
     tests_require=[],
     entry_points={
         "console_scripts": [],
+        "turberfield.utils.states": [
+            "visibility = turberfield.utils.db:Visibility",
+        ]
     },
     zip_safe=False
 )

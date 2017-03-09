@@ -23,6 +23,8 @@ import enum
 import logging
 import sqlite3
 
+from turberfield.utils.misc import gather_installed
+
 
 class Table:
 
@@ -99,6 +101,15 @@ schema = OrderedDict(
           Table.Column("id", int, True, False, False, None, None),
           Table.Column("session", str, False, False, True, None, None),
           Table.Column("name", str, False, False, True, None, None),
+        ]
+    ),
+    Table(
+        "state",
+        cols=[
+          Table.Column("id", int, True, False, False, None, None),
+          Table.Column("class", str, False, False, True, None, None),
+          Table.Column("name", str, False, False, True, None, None),
+          Table.Column("value", int, False, False, False, None, None),
         ]
     ),
     Table(
@@ -182,7 +193,13 @@ class Ownershipstate(enum.IntEnum):
     lost = 0
     acquired = 1
 
- 
+
+@enum.unique
+class Visibility(enum.IntEnum):
+    invisible = 0
+    visible = 1
+
+
 class Connection:
     """
     * Find target database files
@@ -263,6 +280,8 @@ class Connection:
         )
         self.db.row_factory = sqlite3.Row
         self.db.execute("pragma foreign_keys=ON")
+        states = list(gather_installed("turberfield.utils.states"))
+        print(states)
         return self.db
 
     def __exit__(self, exc_type, exc_value, traceback):

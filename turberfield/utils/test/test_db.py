@@ -29,6 +29,7 @@ from turberfield.utils.db import Creation
 from turberfield.utils.db import Insertion
 from turberfield.utils.db import Table
 from turberfield.utils.db import schema
+from turberfield.utils.misc import gather_installed
 
 
 class SQLTests(unittest.TestCase):
@@ -165,6 +166,17 @@ class TableTests(DBTests, unittest.TestCase):
             rv = Creation(table).run(db)
             n = len(self.get_tables(db))
             self.assertEqual(1, n)
+
+    def test_state_tables(self):
+        states = dict(gather_installed("turberfield.utils.states"))
+        con = Connection(**Connection.options())
+        with con as db:
+            rv = Creation(*schema.values()).run(db)
+            tables = self.get_tables(db)
+            self.assertIn("state", tables)
+            for enm in states.values():
+                print(enm)
+
 
 class OptionTests(NeedsTempDirectory, unittest.TestCase):
 
