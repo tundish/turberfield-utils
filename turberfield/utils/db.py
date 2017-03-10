@@ -129,8 +129,9 @@ class SQLOperation:
     def sql(self):
         raise NotImplementedError
 
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
+    def __init__(self, *args, data=[]):
+        self.tables = args
+        self.data = data
 
     def run(self, con, log=None):
         """
@@ -169,10 +170,6 @@ class Creation(SQLOperation):
             {}
         )
 
-    def __init__(self, *args, **kwargs):
-        self.tables = args
-        super().__init__(**kwargs)
-
     def run(self, con, log=None):
         cur = super().run(con)
         if cur is not None:
@@ -186,7 +183,7 @@ class Insertion(SQLOperation):
     def sql(self):
         lines = []
         for table in self.tables:
-            params = [i for i in table.cols if i.name in self.kwargs]
+            params = [i for i in table.cols if i.name in self.data]
             lines.append(
                 "insert into {table.name} ({columns}) values ({values})".format(
                     table=table,
@@ -194,11 +191,7 @@ class Insertion(SQLOperation):
                     values=", ".join(":{col.name}".format(col=col) for col in params)
                 )
             )
-        return (";\n".join(lines), self.kwargs)
-
-    def __init__(self, *args, **kwargs):
-        self.tables = args
-        super().__init__(**kwargs)
+        return (";\n".join(lines), self.data)
 
 
 @enum.unique

@@ -55,8 +55,10 @@ class SQLTests(unittest.TestCase):
         )
         rv = Insertion(
             schema["entity"],
-            session="1234567890",
-            name="qwerty",
+            data=dict(
+                session="1234567890",
+                name="qwerty"
+            )
         ).sql
         self.assertEqual(expected, rv)
 
@@ -115,7 +117,9 @@ class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
                 sqlite3.IntegrityError,
                 Insertion(
                     schema["entity"],
-                    session=uuid.uuid4().hex
+                    data=dict(
+                        session=uuid.uuid4().hex
+                    )
                 ).run,
                 db
             )
@@ -127,14 +131,18 @@ class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
             session=uuid.uuid4().hex
             rv = Insertion(
                 schema["entity"],
-                name="test",
-                session=session
+                data=dict(
+                    name="test",
+                    session=session
+                )
             ).run(db)
             self.assertRaises(
                 sqlite3.IntegrityError,
                 Insertion(
                     schema["entity"],
-                    session=session
+                    data=dict(
+                        session=session
+                    )
                 ).run,
                 db
             )
@@ -148,8 +156,10 @@ class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
                 sqlite3.OperationalError,
                 Insertion(
                     schema["touch"],
-                    sbjct=1,
-                    objct=1
+                    data=dict(
+                        sbjct=1,
+                        objct=1
+                    )
                 ).run,
                 db
             )
