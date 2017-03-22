@@ -23,11 +23,18 @@ import inspect
 import json
 import logging
 import logging.handlers
+import os
 import re
 import warnings
 
 import pkg_resources
 
+_recordFactory = logging.getLogRecordFactory()
+
+def record_factory(*args, **kwargs):
+    record = _recordFactory(*args, **kwargs)
+    record.pid = os.getpid()
+    return record
 
 class SavesAsDict:
 
@@ -63,23 +70,23 @@ def gather_installed(key, log=None):
             yield (i.name, ep)
 
 def log_setup(args, name="turberfield", loop=None):
+    logging.setLogRecordFactory(record_factory)
     log = logging.getLogger(name)
 
-    log.setLevel(args.log_level)
+    log.setLevel(int(args.log_level))
     logging.getLogger("asyncio").setLevel(args.log_level)
 
-    termFormatter = logging.Formatter(
-        "\033[1;30;40m%(asctime)s %(levelname)-7s %(name)s|%(message)s\033[0;37;40m")
+    formatter = logging.Formatter(
+        "%(asctime)s %(levelname)-7s|%(pid)s|%(name)s|%(message)s"
+    )
     ch = logging.StreamHandler()
 
     if args.log_path is None:
-        ch.setLevel(args.log_level)
+        ch.setLevel(int(args.log_level))
     else:
         fh = logging.handlers.WatchedFileHandler(args.log_path)
-        fh.setLevel(args.log_level)
-        plainFormatter = logging.Formatter(
-            "%(asctime)s %(levelname)-7s %(name)s|%(message)s")
-        fh.setFormatter(plainFormatter)
+        fh.setLevel(int(args.log_level))
+        fh.setFormatter(formatter)
         log.addHandler(fh)
         ch.setLevel(logging.WARNING)
 
@@ -90,6 +97,6 @@ def log_setup(args, name="turberfield", loop=None):
             log.info("Upgrade to Python 3.4.2 for asyncio debug mode")
         else:
             log.info("Event loop debug mode is {}".format(loop.get_debug()))
-    ch.setFormatter(termFormatter)
+    ch.setFormatter(formatter)
     log.addHandler(ch)
     return name

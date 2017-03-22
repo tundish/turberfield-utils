@@ -65,7 +65,11 @@ class Assembly:
                     elif isinstance(obj, type(re.compile(""))):
                         return obj.pattern
                     else:
-                        raise e
+                        raise Exception(
+                            "{0} not registered with Assembly".format(
+                                type(obj)
+                            )
+                        )
 
     @staticmethod
     def register(*args, namespace=None):
