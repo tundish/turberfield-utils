@@ -194,18 +194,6 @@ class Insertion(SQLOperation):
         return (";\n".join(lines), self.data)
 
 
-@enum.unique
-class Ownershipstate(enum.IntEnum):
-    lost = 0
-    acquired = 1
-
-
-@enum.unique
-class Visibility(enum.IntEnum):
-    invisible = 0
-    visible = 1
-
-
 class Connection:
     """
     * Find target database files
