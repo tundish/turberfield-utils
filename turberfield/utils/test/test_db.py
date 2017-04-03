@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import namedtuple
 from collections import OrderedDict
 import datetime
 import glob
@@ -29,51 +30,36 @@ from turberfield.utils.db import Connection
 from turberfield.utils.db import Creation
 from turberfield.utils.db import Insertion
 from turberfield.utils.db import Table
-from turberfield.utils.db import schema
 from turberfield.utils.misc import gather_installed
 
 
-class SQLTests(unittest.TestCase):
-
-    def test_create_entity(self):
-        expected = "\n".join((
-            "create table if not exists entity(",
-            "id INTEGER PRIMARY KEY NOT NULL,",
-            "session TEXT  NOT NULL,",
-            "name TEXT  NOT NULL,",
-            "UNIQUE(session, name)",
-            ")"
-        ))
-        rv = Creation(schema["entity"]).sql
-        self.assertEqual(2, len(rv))
-        self.assertEqual(expected, rv[0])
-
-    def test_insert_entity(self):
-        expected = (
-            "insert into entity (session, name) values (:session, :name)",
-            {"session": "1234567890", "name": "qwerty"}
-        )
-        rv = Insertion(
-            schema["entity"],
-            data=dict(
-                session="1234567890",
-                name="qwerty"
-            )
-        ).sql
-        self.assertEqual(expected, rv)
-
-    def test_create_touch(self):
-        expected = "\n".join((
-            "create table if not exists touch(",
-            "sbjct INTEGER  NOT NULL,",
-            "objct INTEGER,",
-            "FOREIGN KEY (sbjct) REFERENCES entity(id)",
-            "FOREIGN KEY (objct) REFERENCES entity(id)",
-            ")"
-        ))
-        rv = Creation(schema["touch"]).sql
-        self.assertEqual(2, len(rv))
-        self.assertEqual(expected, rv[0])
+schema = OrderedDict(
+    (table.name, table) for table in [
+    Table(
+        "entity",
+        cols=[
+          Table.Column("id", int, True, False, False, None, None),
+          Table.Column("session", str, False, False, True, None, None),
+          Table.Column("name", str, False, False, True, None, None),
+        ]
+    ),
+    Table(
+        "state",
+        cols=[
+          Table.Column("id", int, True, False, False, None, None),
+          Table.Column("class", str, False, False, True, None, None),
+          Table.Column("name", str, False, False, True, None, None),
+          Table.Column("value", int, False, False, False, None, None),
+        ]
+    ),
+    Table(
+        "touch",
+        cols=[
+          Table.Column("sbjct", int, False, False, False, None, "entity"),
+          Table.Column("objct", int, False, True, False, None, "entity"),
+        ]
+    )
+])
 
 class DBTests:
 
@@ -101,7 +87,7 @@ class NeedsTempDirectory:
         self.assertFalse(os.path.isdir(self.drcty.name))
         self.drcty = None
 
-class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
+class InsertionTests(NeedsTempDirectory, unittest.TestCase):
 
     def test_one_db_in_memory(self):
         con = Connection(**Connection.options())
@@ -163,6 +149,83 @@ class InMemoryTests(NeedsTempDirectory, unittest.TestCase):
                 ).run,
                 db
             )
+
+    def test_insertion_keys(self):
+        con = Connection(**Connection.options())
+        with con as db:
+            rv = Creation(schema["touch"]).run(db)
+            session=uuid.uuid4().hex
+            self.assertRaises(
+                sqlite3.OperationalError,
+                Insertion(
+                    schema["touch"],
+                    data=dict(
+                        sbjct=1,
+                        objct=1
+                    )
+                ).run,
+                db
+            )
+
+    def test_insertion_entity(self):
+        con = Connection(**Connection.options())
+        with con as db:
+            rv = Creation(schema["entity"]).run(db)
+            session=uuid.uuid4().hex
+            Insertion(
+                schema["entity"],
+                data=dict(
+                    session=session,
+                    name="test"
+                )
+            ).run(db)
+            cur = db.cursor()
+            cur.execute("select * from entity")
+            rv = cur.fetchall()
+            self.assertEqual(1, len(rv))
+            print(tuple(rv[0]))
+
+class SQLTests(unittest.TestCase):
+
+    def test_create_entity(self):
+        expected = "\n".join((
+            "create table if not exists entity(",
+            "id INTEGER PRIMARY KEY NOT NULL,",
+            "session TEXT  NOT NULL,",
+            "name TEXT  NOT NULL,",
+            "UNIQUE(session, name)",
+            ")"
+        ))
+        rv = Creation(schema["entity"]).sql
+        self.assertEqual(2, len(rv))
+        self.assertEqual(expected, rv[0])
+
+    def test_insert_entity(self):
+        expected = (
+            "insert into entity (session, name) values (:session, :name)",
+            {"session": "1234567890", "name": "qwerty"}
+        )
+        rv = Insertion(
+            schema["entity"],
+            data=dict(
+                session="1234567890",
+                name="qwerty"
+            )
+        ).sql
+        self.assertEqual(expected, rv)
+
+    def test_create_touch(self):
+        expected = "\n".join((
+            "create table if not exists touch(",
+            "sbjct INTEGER  NOT NULL,",
+            "objct INTEGER,",
+            "FOREIGN KEY (sbjct) REFERENCES entity(id)",
+            "FOREIGN KEY (objct) REFERENCES entity(id)",
+            ")"
+        ))
+        rv = Creation(schema["touch"]).sql
+        self.assertEqual(2, len(rv))
+        self.assertEqual(expected, rv[0])
 
 class TableTests(DBTests, unittest.TestCase):
 

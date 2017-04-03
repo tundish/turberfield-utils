@@ -94,34 +94,6 @@ class Table:
 
         yield(")")
 
-schema = OrderedDict(
-    (table.name, table) for table in [
-    Table(
-        "entity",
-        cols=[
-          Table.Column("id", int, True, False, False, None, None),
-          Table.Column("session", str, False, False, True, None, None),
-          Table.Column("name", str, False, False, True, None, None),
-        ]
-    ),
-    Table(
-        "state",
-        cols=[
-          Table.Column("id", int, True, False, False, None, None),
-          Table.Column("class", str, False, False, True, None, None),
-          Table.Column("name", str, False, False, True, None, None),
-          Table.Column("value", int, False, False, False, None, None),
-        ]
-    ),
-    Table(
-        "touch",
-        cols=[
-          Table.Column("sbjct", int, False, False, False, None, "entity"),
-          Table.Column("objct", int, False, True, False, None, "entity"),
-        ]
-    )
-])
-
 
 class SQLOperation:
 
