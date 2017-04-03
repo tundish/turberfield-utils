@@ -183,7 +183,8 @@ class InsertionTests(NeedsTempDirectory, unittest.TestCase):
             cur.execute("select * from entity")
             rv = cur.fetchall()
             self.assertEqual(1, len(rv))
-            print(tuple(rv[0]))
+            self.assertEqual(rv[0]["id"], 1)
+            self.assertEqual(rv[0]["name"], "test")
 
 class SQLTests(unittest.TestCase):
 
