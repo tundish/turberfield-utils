@@ -29,6 +29,7 @@ import uuid
 from turberfield.utils.db import Connection
 from turberfield.utils.db import Creation
 from turberfield.utils.db import Insertion
+from turberfield.utils.db import SQLOperation
 from turberfield.utils.db import Table
 from turberfield.utils.misc import gather_installed
 
@@ -185,6 +186,31 @@ class InsertionTests(NeedsTempDirectory, unittest.TestCase):
             self.assertEqual(1, len(rv))
             self.assertEqual(rv[0]["id"], 1)
             self.assertEqual(rv[0]["name"], "test")
+
+    def test_selection_entity(self):
+        class Selection(SQLOperation):
+
+            @property
+            def sql(self):
+                return ("select * from {0.name}".format(self.tables[0]) , {})
+
+        con = Connection(**Connection.options())
+        with con as db:
+            rv = Creation(schema["entity"]).run(db)
+            session = uuid.uuid4().hex
+            cur = Insertion(
+                schema["entity"],
+                data=dict(
+                    session=session,
+                    name="test"
+                )
+            ).run(db)
+
+            rv = Selection(schema["entity"]).run(db)
+            rows = rv.fetchall()
+            self.assertEqual(1, len(rows))
+            self.assertEqual(rows[0]["id"], 1)
+            self.assertEqual(rows[0]["name"], "test")
 
 class SQLTests(unittest.TestCase):
 

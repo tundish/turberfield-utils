@@ -114,7 +114,7 @@ class SQLOperation:
         cur = con.cursor()
         sql, data = self.sql
         try:
-            if not data:
+            if data is None:
                 cur.executescript(sql)
             else:
                 statements = sql.split(";")
@@ -139,7 +139,7 @@ class Creation(SQLOperation):
     def sql(self):
         return (
             ";\n".join("\n".join(table.sql_lines()) for table in self.tables),
-            {}
+            None
         )
 
     def run(self, con, log=None):
