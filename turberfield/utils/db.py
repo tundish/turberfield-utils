@@ -89,7 +89,7 @@ class Table:
             yield "UNIQUE({0})".format(", ".join([i.name for i in uqs]))
         for col, refs in fks.items():
             yield "FOREIGN KEY ({0.name}) REFERENCES {1.name}({2})".format(
-                col, ref, ", ".join([col.name for col in ref.cols if col.isPK])
+                col, refs, ", ".join([col.name for col in refs.cols if col.isPK])
             )
 
         yield(")")
