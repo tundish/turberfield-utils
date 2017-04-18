@@ -199,6 +199,7 @@ class Connection:
 
     @staticmethod
     def options(name=None, paths=[]):
+        version = tuple(int(i) for i in sqlite3.sqlite_version.split("."))
         if not paths:
             if name is None:
                 dbs = {
