@@ -200,6 +200,11 @@ class Connection:
     @staticmethod
     def options(name=None, paths=[]):
         version = tuple(int(i) for i in sqlite3.sqlite_version.split("."))
+        if version < (3, 7, 13):
+            raise UserWarning(
+                "Your sqlite3 library is too old. Version 3.7.13 required at least."
+            )
+
         if not paths:
             if name is None:
                 dbs = {
