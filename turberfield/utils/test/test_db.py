@@ -34,7 +34,10 @@ from turberfield.utils.db import Table
 from turberfield.utils.misc import gather_installed
 
 
-schema = OrderedDict(
+schema = OrderedDict([])
+lookup = OrderedDict([])
+
+schema.update(dict(
     (table.name, table) for table in [
     Table(
         "entity",
@@ -42,7 +45,8 @@ schema = OrderedDict(
           Table.Column("id", int, True, False, False, None, None),
           Table.Column("session", str, False, False, True, None, None),
           Table.Column("name", str, False, False, True, None, None),
-        ]
+        ],
+        lookup=lookup
     ),
     Table(
         "state",
@@ -51,16 +55,18 @@ schema = OrderedDict(
           Table.Column("class", str, False, False, True, None, None),
           Table.Column("name", str, False, False, True, None, None),
           Table.Column("value", int, False, False, False, None, None),
-        ]
+        ],
+        lookup=lookup
     ),
     Table(
         "touch",
         cols=[
           Table.Column("sbjct", int, False, False, False, None, "entity"),
           Table.Column("objct", int, False, True, False, None, "entity"),
-        ]
+        ],
+        lookup=lookup
     )
-])
+]))
 
 class DBTests:
 

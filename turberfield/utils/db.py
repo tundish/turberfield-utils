@@ -57,10 +57,12 @@ class Table:
         else:
             return ""
 
-    def __init__(self, name, cols=[]):
+    def __init__(self, name, cols=[], lookup=None):
         self.name = name
         self.cols = cols
-        self.__class__.lookup[name] = self
+        if lookup is not None:
+            self.lookup = lookup
+        self.lookup[name] = self
 
     def sql_lines(self):
         yield "create table if not exists {0}(".format(self.name)
@@ -69,7 +71,7 @@ class Table:
         uqs = [col for col in self.cols if col.isUnique]
         constraints = len(pks) >= 2 or len(uqs) >= 2
         for col in self.cols:
-            ref = self.__class__.lookup.get(col.fk)
+            ref = self.lookup.get(col.fk)
             if ref is not None:
                 fks[col] = ref
                 
