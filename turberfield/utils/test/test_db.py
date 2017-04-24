@@ -193,6 +193,27 @@ class InsertionTests(NeedsTempDirectory, unittest.TestCase):
             self.assertEqual(rv[0]["id"], 1)
             self.assertEqual(rv[0]["name"], "test")
 
+    def test_insertion_entities(self):
+        con = Connection(**Connection.options())
+        session = uuid.uuid4().hex
+        with con as db:
+            rv = Creation(schema["entity"]).run(db)
+            Insertion(
+                schema["entity"],
+                data=[
+                    {"name": "test_one", "session": session},
+                    {"name": "test_two", "session": session}
+                ]
+            ).run(db)
+            cur = db.cursor()
+            cur.execute("select * from entity")
+            rv = cur.fetchall()
+            self.assertEqual(2, len(rv))
+            self.assertEqual(rv[0]["id"], 1)
+            self.assertEqual(rv[0]["name"], "test_one")
+            self.assertEqual(rv[1]["id"], 2)
+            self.assertEqual(rv[1]["name"], "test_two")
+
     def test_selection_entity(self):
         class Selection(SQLOperation):
 

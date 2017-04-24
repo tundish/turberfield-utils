@@ -157,7 +157,10 @@ class Insertion(SQLOperation):
     def sql(self):
         lines = []
         for table in self.tables:
-            params = [i for i in table.cols if i.name in self.data]
+            if isinstance(self.data, Mapping):
+                params = [i for i in table.cols if i.name in self.data]
+            elif self.data:
+                params = [i for i in table.cols if i.name in self.data[0]]
             lines.append(
                 "insert into {table.name} ({columns}) values ({values})".format(
                     table=table,
