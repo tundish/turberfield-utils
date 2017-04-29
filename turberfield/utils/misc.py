@@ -74,7 +74,7 @@ def log_setup(args, name="turberfield", loop=None):
     log = logging.getLogger(name)
 
     log.setLevel(int(args.log_level))
-    logging.getLogger("asyncio").setLevel(args.log_level)
+    logging.getLogger("asyncio").setLevel(int(args.log_level))
 
     formatter = logging.Formatter(
         "%(asctime)s %(levelname)-7s|%(pid)s|%(name)s|%(message)s"
