@@ -17,7 +17,6 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 import io
-import itertools
 import textwrap
 import unittest
 
@@ -31,14 +30,9 @@ class ConfigTests(unittest.TestCase):
         cfg = config_parser(**defaults)
         witness = io.StringIO()
         cfg.write(witness)
-        for n, check, line in zip(
-            itertools.count(),
-            ["[DEFAULT]", "a = 1", "b = two", "c"],
-            witness.getvalue().splitlines()
-        ):
+        for check in ["[DEFAULT]", "a = 1", "b = two", "c"]:
             with self.subTest(check=check):
-                self.assertEqual(check, line)
-        self.assertEqual(3, n)
+                self.assertIn(check, witness.getvalue().splitlines())
 
     def test_section(self):
         section = textwrap.dedent("""
