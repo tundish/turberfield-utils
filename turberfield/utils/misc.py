@@ -17,6 +17,7 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+import configparser
 import itertools
 import decimal
 import inspect
@@ -53,6 +54,17 @@ class SavesAsList:
 
     def __json__(self):
         return json.dumps(self, indent=0, ensure_ascii=False, sort_keys=False)
+
+def config_parser(*sections, **defaults):
+    rv = configparser.ConfigParser(
+        defaults=defaults,
+        allow_no_value=True,
+        interpolation=configparser.ExtendedInterpolation()
+    )
+
+    if sections:
+        rv.read_string("\n".join(sections))
+    return rv
 
 def group_by_type(items):
     return defaultdict(list,
