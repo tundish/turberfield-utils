@@ -25,6 +25,7 @@ import json
 import logging
 import logging.handlers
 import os
+import pathlib
 import re
 import warnings
 
@@ -59,7 +60,8 @@ def config_parser(*sections, **defaults):
     rv = configparser.ConfigParser(
         defaults=defaults,
         allow_no_value=True,
-        interpolation=configparser.ExtendedInterpolation()
+        interpolation=configparser.ExtendedInterpolation(),
+        converters={"path": pathlib.Path}
     )
 
     if sections:
