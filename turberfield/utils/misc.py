@@ -68,6 +68,30 @@ def config_parser(*sections, **defaults):
         rv.read_string("\n".join(sections))
     return rv
 
+def clone_config_section(cfg, name, guid, **kwargs):
+    yield ""
+    yield "[{0}]".format(guid)
+
+    if name in cfg.sections():
+        defaultKeys = set(cfg[cfg.default_section].keys())
+        keys = (i for i in cfg[name] if i not in defaultKeys)
+        yield from (
+            "{key} = ${{{name}:{key}}}".format(name=name, key=key)
+            for key in keys
+        )
+
+    yield from (
+        "{key} = {val}".format(key=key, val=val)
+        for key, val in kwargs.items()
+    )
+
+def reference_config_section(cfg, name, *args, **kwargs):
+    if name in cfg.sections():
+        yield from (
+            "{key} = ${{{name}:{val}}}".format(key=key, name=name, val=val)
+            for key, val in kwargs.items()
+        )
+
 def group_by_type(items):
     return defaultdict(list,
         {k: list(v) for k, v in itertools.groupby(items, key=type)}

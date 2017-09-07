@@ -17,10 +17,14 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 import io
+import itertools
 import textwrap
 import unittest
+import uuid
 
 from turberfield.utils.misc import config_parser
+from turberfield.utils.misc import clone_config_section
+from turberfield.utils.misc import reference_config_section
 
 
 class ConfigTests(unittest.TestCase):
@@ -62,3 +66,71 @@ class ConfigTests(unittest.TestCase):
         ]
         cfg = config_parser(*sections, **defaults)
         self.assertEqual("/home/tmp.two", cfg["section.three"]["path"])
+
+    def test_clone_config_section(self):
+        cfg = config_parser()
+        cfg.read_string(textwrap.dedent(
+        """
+        [DEFAULT]
+        a = 1
+
+        [unittest]
+        b = 2
+        c =
+        listen_addr = 127.0.0.1
+        """
+        ))
+
+        guid = uuid.uuid4().hex
+        expected = textwrap.dedent(
+        """
+        [{guid}]
+        b = ${{unittest:b}}
+        c = ${{unittest:c}}
+        listen_addr = ${{unittest:listen_addr}}
+        listen_port = 8081""").format(guid=guid)
+
+        rv = "\n".join(clone_config_section(cfg, "unittest", guid, listen_port=8081))
+        self.assertEqual(expected, rv)
+        cfg.read_string(rv)
+
+        self.assertEqual("1", cfg[guid]["a"])
+        self.assertEqual("2", cfg[guid]["b"])
+        self.assertEqual("", cfg[guid]["c"])
+        self.assertEqual("127.0.0.1", cfg[guid]["listen_addr"])
+        self.assertEqual("8081", cfg[guid]["listen_port"])
+
+    def test_reference_config_section(self):
+        cfg = config_parser()
+        cfg.read_string(textwrap.dedent(
+        """
+        [DEFAULT]
+        hash = #
+
+        [unittest]
+        listen_addr = 127.0.0.1
+
+        [d6c047b17e9a4bb3b4a658ff0e4029c6]
+        extern_addr = 0.0.0.0
+        extern_port = 8080
+        listen_addr = 127.0.0.1
+        listen_port = 15151
+        """
+        ))
+
+        guid = uuid.uuid4().hex
+        expected = textwrap.dedent(
+        """
+        [{guid}]
+        listen_addr = ${{unittest:listen_addr}}
+        listen_port = 15151
+        parent_addr = ${{d6c047b17e9a4bb3b4a658ff0e4029c6:listen_addr}}
+        parent_port = ${{d6c047b17e9a4bb3b4a658ff0e4029c6:listen_port}}""").format(guid=guid)
+
+        rv = "\n".join(itertools.chain(
+            clone_config_section(cfg, "unittest", guid, listen_port=15151),
+            reference_config_section(
+                cfg, "d6c047b17e9a4bb3b4a658ff0e4029c6", guid,
+                parent_addr="listen_addr", parent_port="listen_port"),
+        ))
+        self.assertEqual(expected, rv)
