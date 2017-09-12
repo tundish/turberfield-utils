@@ -133,4 +133,4 @@ class ConfigTests(unittest.TestCase):
                 cfg, "d6c047b17e9a4bb3b4a658ff0e4029c6", guid,
                 parent_addr="listen_addr", parent_port="listen_port"),
         ))
-        self.assertEqual(expected, rv)
+        self.assertEqual(set(expected.splitlines()), set(rv.splitlines()))
