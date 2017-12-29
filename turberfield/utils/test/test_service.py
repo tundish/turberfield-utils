@@ -19,21 +19,7 @@
 import unittest
 
 from turberfield.utils.misc import config_parser
-
-class Service:
-
-    @classmethod
-    def check_cfg(cls, cfg):
-        """Check the consistency of a mapping object. """
-        return cfg
-
-    def __new__(cls, cfg=None):
-        if getattr(cls, "_instance", None) is None:
-            settings = cls.check_cfg(cfg)
-            if settings is not None:
-                cls._instance = super().__new__(cls)
-                cls._instance.settings = settings
-        return getattr(cls, "_instance", None)
+from turberfield.utils.service import Service
 
 class ServiceTests(unittest.TestCase):
 
