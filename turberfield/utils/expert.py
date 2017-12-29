@@ -73,12 +73,12 @@ Instantiation
 Some Experts will define positional parameters specific to their
 operation. Aside from those, you can also pass unnamed positional
 arguments and the keyword arguments you got from the configuration_
-step. 
+step.
 
 Unnamed positional arguments must be objects compatible with the
 `asyncio.Queue`_ interface. The Expert will
 :py:meth:`watch <turberfield.utils.expert.Expert.watch>`
-for messages you pass into them. 
+for messages you pass into them.
 
 ::
 
@@ -162,7 +162,7 @@ class Expert:
         method for details.
 
         .. _ordered dictionary: https://docs.python.org/3/library/collections.html#collections.OrderedDict
-        """
+        """  # noqa: E501
         raise NotImplementedError
 
     @classmethod
@@ -226,7 +226,7 @@ class Expert:
         to be launched as an `asyncio.Task`_.
 
         .. _asyncio.Task: https://docs.python.org/3/library/asyncio-task.html
-        """ 
+        """
         raise NotImplementedError
 
     def declare(self, data, loop=None):
@@ -254,7 +254,7 @@ class Expert:
         +-------------------------------------------------------------------+-------------------------------------------------------------------+
         | :py:class:`HATEOAS <turberfield.utils.expert.Expert.HATEOAS>`     | ``HATEOAS.dst`` is the file path to the data as a JSON web page.  |
         +-------------------------------------------------------------------+-------------------------------------------------------------------+
-        """
+        """  # noqa: E501
         class_ = self.__class__
         kwargs = defaultdict(None)
         for name, service in self._services.items():
@@ -262,8 +262,9 @@ class Expert:
                 kwargs[service.name] = data[service.name]
             elif isinstance(service, Expert.Event):
                 event = kwargs[service.name] = (
-                    getattr(class_.public, service.name)
-                    or asyncio.Event(loop=loop))
+                    getattr(class_.public, service.name) or
+                    asyncio.Event(loop=loop)
+                )
                 if data[service.name]:
                     event.set()
                 else:
@@ -292,7 +293,7 @@ class Expert:
         and dispatch them appropriately.
 
         """
-        loop = kwargs.pop("loop", None)
+        kwargs.pop("loop", None)
         msg = object()
         while msg is not None:
             msg = yield from q.get()

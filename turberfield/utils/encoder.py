@@ -27,7 +27,7 @@ ESCAPE_DCT = {
 }
 for i in range(0x20):
     ESCAPE_DCT.setdefault(chr(i), '\\u{0:04x}'.format(i))
-    #ESCAPE_DCT.setdefault(chr(i), '\\u%04x' % (i,))
+    # ESCAPE_DCT.setdefault(chr(i), '\\u%04x' % (i,))
 
 INFINITY = float('inf')
 FLOAT_REPR = repr
@@ -56,7 +56,7 @@ def py_encode_basestring_ascii(s):
             n = ord(s)
             if n < 0x10000:
                 return '\\u{0:04x}'.format(n)
-                #return '\\u%04x' % (n,)
+                # return '\\u%04x' % (n,)
             else:
                 # surrogate pair
                 n -= 0x10000
@@ -100,9 +100,12 @@ class JSONEncoder(object):
     """
     item_separator = ', '
     key_separator = ': '
-    def __init__(self, skipkeys=False, ensure_ascii=True,
-            check_circular=True, allow_nan=True, sort_keys=False,
-            indent=None, separators=None, default=None):
+
+    def __init__(
+        self, skipkeys=False, ensure_ascii=True,
+        check_circular=True, allow_nan=True, sort_keys=False,
+        indent=None, separators=None, default=None
+    ):
         """Constructor for JSONEncoder, with sensible defaults.
 
         If skipkeys is false, then it is a TypeError to attempt
@@ -218,8 +221,10 @@ class JSONEncoder(object):
         else:
             _encoder = encode_basestring
 
-        def floatstr(o, allow_nan=self.allow_nan,
-                _repr=FLOAT_REPR, _inf=INFINITY, _neginf=-INFINITY):
+        def floatstr(
+            o, allow_nan=self.allow_nan,
+            _repr=FLOAT_REPR, _inf=INFINITY, _neginf=-INFINITY
+        ):
             # Check for specials.  Note that this type of test is processor
             # and/or platform-specific, so do tests which don't depend on the
             # internals.
@@ -241,8 +246,7 @@ class JSONEncoder(object):
             return text
 
 
-        if (_one_shot and c_make_encoder is not None
-                and self.indent is None):
+        if (_one_shot and c_make_encoder is not None and self.indent is None):
             _iterencode = c_make_encoder(
                 markers, self.default, _encoder, self.indent,
                 self.key_separator, self.item_separator, self.sort_keys,
@@ -254,19 +258,20 @@ class JSONEncoder(object):
                 self.skipkeys, _one_shot)
         return _iterencode(o, 0)
 
-def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
-        _key_separator, _item_separator, _sort_keys, _skipkeys, _one_shot,
-        ## HACK: hand-optimized bytecode; turn globals into locals
-        ValueError=ValueError,
-        dict=dict,
-        float=float,
-        id=id,
-        int=int,
-        isinstance=isinstance,
-        list=list,
-        str=str,
-        tuple=tuple,
-    ):
+def _make_iterencode(
+    markers, _default, _encoder, _indent, _floatstr,
+    _key_separator, _item_separator, _sort_keys, _skipkeys, _one_shot,
+    # HACK: hand-optimized bytecode; turn globals into locals
+    ValueError=ValueError,
+    dict=dict,
+    float=float,
+    id=id,
+    int=int,
+    isinstance=isinstance,
+    list=list,
+    str=str,
+    tuple=tuple,
+):
 
     if _indent is not None and not isinstance(_indent, str):
         _indent = ' ' * _indent
@@ -396,7 +401,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             else:
                 if isinstance(value, list):
                     chunks = _iterencode_list(value, _current_indent_level)
-                elif type(value) is tuple: #  Turberfield deals with namedtuples
+                elif type(value) is tuple:  # Turberfield deals with namedtuples
                     chunks = _iterencode_list(value, _current_indent_level)
                 elif type(value) is dict:
                     chunks = _iterencode_dict(value, _current_indent_level)

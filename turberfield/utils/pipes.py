@@ -62,7 +62,7 @@ class SimplePipeQueue:
     def pipequeue(cls, *args, **kwargs):
         """
         This is a factory function which creates and initialises a
-        Queue. Your code should call 
+        Queue. Your code should call
         :py:meth:`close() <turberfield.utils.pipes.SimplePipeQueue.close>`
         on the queue when finished.
         """

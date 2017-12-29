@@ -16,10 +16,9 @@ except ImportError:
         from turberfield.utils import __version__ as version
     except ImportError:
         # For pip installations
-        version = str(ast.literal_eval(
-                    open(os.path.join(os.path.dirname(__file__),
-                    "turberfield", "utils", "__init__.py"),
-                    'r').read().split("=")[-1].strip()))
+        version = str(ast.literal_eval(open(os.path.join(
+            os.path.dirname(__file__), "turberfield", "utils", "__init__.py"
+        ), 'r').read().split("=")[-1].strip()))
 
 __doc__ = open(os.path.join(os.path.dirname(__file__), "README.rst"),
                'r').read()
@@ -57,7 +56,7 @@ setup(
             "doc/html/_static/*.gif",
             "doc/html/_static/*.js",
             "doc/html/_static/*.png",
-            ],
+        ],
     },
     install_requires=[],
     tests_require=[],

@@ -24,8 +24,6 @@ import enum
 import logging
 import sqlite3
 
-from turberfield.utils.misc import gather_installed
-
 
 class Table:
 
@@ -74,13 +72,13 @@ class Table:
             ref = self.lookup.get(col.fk)
             if ref is not None:
                 fks[col] = ref
-                
+
             yield " ".join((
                 col.name, self.declare_type(col),
                 "PRIMARY KEY" if col.isPK and len(pks) == 1 else "",
                 "NOT NULL" if not col.isNullable else "",
                 "UNIQUE" if col.isUnique and len(uqs) == 1 else "",
-                "DEFAULT {0}".format(col.default) if col.default else "" 
+                "DEFAULT {0}".format(col.default) if col.default else ""
             )).rstrip() + (
                 "," if constraints or fks or col is not self.cols[-1]
                 else ""
@@ -257,7 +255,7 @@ class Connection:
         )
         self.db.row_factory = sqlite3.Row
         self.db.execute("pragma foreign_keys=ON")
-        states = list(gather_installed("turberfield.utils.states"))
+        # states = list(gather_installed("turberfield.utils.states"))
         return self.db
 
     def __exit__(self, exc_type, exc_value, traceback):

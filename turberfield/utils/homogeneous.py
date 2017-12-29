@@ -77,26 +77,26 @@ Computer_graphics.html?id=ffkYAQAAIAAJ
     def __gt__(self, other):
         """ Performs comparison tournament """
         return (
-            max([a > b for a, b in zip(self, other)])
-            and not max([b > a for a, b in zip(self, other)]))
+            max([a > b for a, b in zip(self, other)]) and not
+            max([b > a for a, b in zip(self, other)]))
 
     def __gte__(self, other):
         """ Performs comparison tournament """
         return (
-            max([a >= b for a, b in zip(self, other)])
-            and not max([b > a for a, b in zip(self, other)]))
+            max([a >= b for a, b in zip(self, other)]) and not
+            max([b > a for a, b in zip(self, other)]))
 
     def __lt__(self, other):
         """ Performs comparison tournament"""
         return (
-            max([a < b for a, b in zip(self, other)])
-            and not max([b < a for a, b in zip(self, other)]))
+            max([a < b for a, b in zip(self, other)]) and not
+            max([b < a for a, b in zip(self, other)]))
 
     def __lte__(self, other):
         """ Performs comparison tournament"""
         return (
-            max([a <= b for a, b in zip(self, other)])
-            and not max([b < a for a, b in zip(self, other)]))
+            max([a <= b for a, b in zip(self, other)]) and not
+            max([b < a for a, b in zip(self, other)]))
 
     def __sub__(self, other):
         """ Performs comparison tournament"""

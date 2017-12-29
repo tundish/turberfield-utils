@@ -19,15 +19,11 @@
 from collections import defaultdict
 import configparser
 import itertools
-import decimal
-import inspect
 import json
 import logging
 import logging.handlers
 import os
 import pathlib
-import re
-import warnings
 
 import pkg_resources
 
@@ -46,7 +42,7 @@ class SavesAsDict:
 
     def __json__(self):
         return json.dumps(vars(self), indent=0, ensure_ascii=False, sort_keys=False)
- 
+
 class SavesAsList:
 
     @classmethod
@@ -93,7 +89,8 @@ def reference_config_section(cfg, name, *args, **kwargs):
         )
 
 def group_by_type(items):
-    return defaultdict(list,
+    return defaultdict(
+        list,
         {k: list(v) for k, v in itertools.groupby(items, key=type)}
     )
 

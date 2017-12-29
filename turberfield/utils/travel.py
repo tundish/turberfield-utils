@@ -22,8 +22,6 @@ from collections import namedtuple
 import decimal
 from decimal import Decimal as Dl
 
-from turberfield.utils.homogeneous import vector
-
 
 __doc__ = """
 The module defines functions for calculating motion using

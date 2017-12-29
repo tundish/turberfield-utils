@@ -102,9 +102,9 @@ class Assembly:
         for arg in args:
             module = dict(getmembers(arg)).get("__module__")
             tag = tmplt.format(
-                    namespace=namespace,
-                    module=module,
-                    name=arg.__name__
+                namespace=namespace,
+                module=module,
+                name=arg.__name__
             )
             Assembly.decoding[tag] = arg
             Assembly.encoding[arg] = tag
@@ -176,6 +176,6 @@ class Assembly:
         return json.loads(
             s,
             object_hook=Assembly.object_hook,
-            #object_pairs_hook=OrderedDict,
+            # object_pairs_hook=OrderedDict,
             parse_float=Decimal
         )
