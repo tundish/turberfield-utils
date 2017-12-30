@@ -28,8 +28,8 @@ class ServiceTests(unittest.TestCase):
         Service._instance = None
 
     def test_singleton(self):
-        a = Service(config_parser())
-        b = Service(config_parser())
+        a = Service(cfg=config_parser())
+        b = Service.instance()
         self.assertIs(b, a)
 
     def test_settings_bad(self):
