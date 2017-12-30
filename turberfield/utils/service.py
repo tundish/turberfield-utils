@@ -24,7 +24,7 @@ class Service:
         """Check the consistency of a mapping object. """
         return cfg
 
-    def __new__(cls, cfg=None):
+    def __new__(cls, cfg=None, **kwargs):
         if getattr(cls, "_instance", None) is None:
             settings = cls.check_cfg(cfg)
             if settings is not None:
