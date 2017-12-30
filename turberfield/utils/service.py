@@ -17,17 +17,24 @@
 # along with Turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class Service:
+class ConfiguredSettings:
 
     @classmethod
     def check_cfg(cls, cfg):
         """Check the consistency of a mapping object. """
         return cfg
 
-    def __new__(cls, cfg=None, **kwargs):
-        if getattr(cls, "_instance", None) is None:
-            settings = cls.check_cfg(cfg)
-            if settings is not None:
-                cls._instance = super().__new__(cls)
-                cls._instance.settings = settings
+    def __init__(self, *args, **kwargs):
+        self.settings = self.check_cfg(kwargs.pop("cfg"))
+        super().__init__(*args, **kwargs)
+
+class Service:
+
+    @classmethod
+    def instance(cls):
         return getattr(cls, "_instance", None)
+
+    def __new__(cls, *args, **kwargs):
+        if getattr(cls, "_instance", None) is None:
+            cls._instance = super().__new__(cls)
+        return cls.instance()
