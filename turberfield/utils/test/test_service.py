@@ -39,9 +39,8 @@ class ServiceTests(unittest.TestCase):
             def check_cfg(cls, cfg):
                 return None
 
-        cfg = config_parser()
-        rv = Invalid(cfg)
-        self.assertIsNone(rv)
+        rv = Invalid(cfg=config_parser())
+        self.assertIsNone(rv.settings)
 
     def test_settings_good(self):
         cfg = config_parser()
@@ -69,5 +68,5 @@ class ServiceTests(unittest.TestCase):
         a.advance()
         self.assertGreater(a.val, start)
 
-        b = Clock()
+        b = Clock.instance()
         self.assertGreater(b.val, start)

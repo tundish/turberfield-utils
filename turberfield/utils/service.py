@@ -28,13 +28,16 @@ class ConfiguredSettings:
         self.settings = self.check_cfg(kwargs.pop("cfg"))
         super().__init__(*args, **kwargs)
 
-class Service:
+class Singleton:
 
     @classmethod
     def instance(cls):
         return getattr(cls, "_instance", None)
 
     def __new__(cls, *args, **kwargs):
-        if getattr(cls, "_instance", None) is None:
+        if cls.instance() is None:
             cls._instance = super().__new__(cls)
         return cls.instance()
+
+class Service(Singleton, ConfiguredSettings):
+    pass
