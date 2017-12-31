@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import io
 import itertools
 import textwrap
@@ -23,8 +24,10 @@ import unittest
 import uuid
 
 from turberfield.utils.misc import config_parser
+from turberfield.utils.misc import ConfiguredSettings
 from turberfield.utils.misc import clone_config_section
 from turberfield.utils.misc import reference_config_section
+from turberfield.utils.misc import Singleton
 
 
 class ConfigTests(unittest.TestCase):
@@ -134,3 +137,55 @@ class ConfigTests(unittest.TestCase):
                 parent_addr="listen_addr", parent_port="listen_port"),
         ))
         self.assertEqual(set(expected.splitlines()), set(rv.splitlines()))
+
+class MixinTests(unittest.TestCase):
+
+    class Expert(Singleton, ConfiguredSettings):
+        pass
+
+    def tearDown(self):
+        MixinTests.Expert._instance = None
+
+    def test_singleton(self):
+        a = MixinTests.Expert(cfg=ConfiguredSettings.config_parser())
+        b = MixinTests.Expert.instance()
+        self.assertIs(b, a)
+
+    def test_settings_bad(self):
+
+        class Invalid(MixinTests.Expert):
+            @classmethod
+            def check_config(cls, cfg):
+                return None
+
+        rv = Invalid(cfg=Invalid.config_parser())
+        self.assertIsNone(rv.settings)
+
+    def test_settings_good(self):
+        cfg = MixinTests.Expert.config_parser()
+        rv = MixinTests.Expert(cfg=cfg)
+        self.assertTrue(hasattr(rv, "settings"))
+        self.assertIs(cfg, rv.settings)
+
+    def test_events(self):
+
+        class Clock(MixinTests.Expert):
+
+            @property
+            @classmethod
+            def value(cls):
+                return cls._instance.val
+
+            def __init__(self, *args, start=None, **kwargs):
+                self.val = start
+
+            def advance(self):
+                self.val += datetime.timedelta(seconds=30)
+
+        a = Clock(start=datetime.datetime.now(), cfg=Clock.config_parser())
+        start = a.val
+        a.advance()
+        self.assertGreater(a.val, start)
+
+        b = Clock.instance()
+        self.assertGreater(b.val, start)

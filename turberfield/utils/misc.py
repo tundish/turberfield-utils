@@ -135,3 +135,29 @@ def log_setup(args, name="turberfield", loop=None):
     ch.setFormatter(formatter)
     log.addHandler(ch)
     return name
+
+class ConfiguredSettings:
+
+    config_parser = staticmethod(config_parser)
+    clone_config_section = staticmethod(clone_config_section)
+    reference_config_section = staticmethod(reference_config_section)
+
+    @classmethod
+    def check_config(cls, cfg):
+        """Check the consistency of a mapping object. """
+        return cfg
+
+    def __init__(self, *args, **kwargs):
+        self.settings = self.check_config(kwargs.pop("cfg"))
+        super().__init__(*args, **kwargs)
+
+class Singleton:
+
+    @classmethod
+    def instance(cls):
+        return getattr(cls, "_instance", None)
+
+    def __new__(cls, *args, **kwargs):
+        if cls.instance() is None:
+            cls._instance = super().__new__(cls)
+        return cls.instance()
