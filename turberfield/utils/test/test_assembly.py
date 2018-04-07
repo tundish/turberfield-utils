@@ -17,6 +17,7 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import decimal
 import enum
 from collections import Counter
 from collections import deque
@@ -143,6 +144,17 @@ class AssemblyTester(unittest.TestCase):
             namespace="turberfield"
         )
         self.assertEqual(9, len(types))
+
+    def test_numeric_types(self):
+        val = decimal.Decimal("3.14")
+        rv = Assembly.dumps(val)
+        self.assertEqual("3.14", rv)
+        self.assertEqual(val, Assembly.loads(rv))
+
+        val = complex("3+14j")
+        rv = Assembly.dumps(val)
+        self.assertEqual('"(3+14j)"', rv)
+        self.assertEqual(val, complex(Assembly.loads(rv).replace('"', "")))
 
     def test_nested_object_dumps(self):
         obj = Assembly.loads(AssemblyTester.data)

@@ -58,7 +58,9 @@ class Assembly:
                 try:
                     return obj.strftime("%Y-%m-%d %H:%M:%S")
                 except AttributeError:
-                    if isinstance(obj, (deque,)):
+                    if isinstance(obj, (complex, )):
+                        return str(obj)
+                    elif isinstance(obj, (deque,)):
                         return list(obj)
                     elif isinstance(obj, (Decimal, )):
                         return float(obj)
