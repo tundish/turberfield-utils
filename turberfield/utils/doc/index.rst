@@ -18,7 +18,7 @@ Turberfield Utility library
 :::::::::::::::::::::::::::
 
 :Author: tundish
-:Copyright: 2015 D Haynes
+:Copyright: 2019 D Haynes
 :Licence: `GNU General Public License`_
 
 |
@@ -27,6 +27,7 @@ Turberfield Utility library
    :maxdepth: 1
    :numbered:
 
+   orders
    pipes
    assembly
    homogeneous

@@ -23,6 +23,10 @@ class Orders:
 
     @classmethod
     def register(cls):
+        """
+        Use this decorator to register a function for ordered execution.
+
+        """
         def decorator(method):
             method.n = Orders.registry.setdefault(
                 method.__name__, len(Orders.registry)
@@ -32,6 +36,13 @@ class Orders:
 
     @property
     def methods(self):
+        """
+        Return a 2-tuple of name, method.
+
+        This property gives you all its registered methods in the order
+        they were defined.
+
+        """
         return [
             (name, obj)
             for name, obj in [
