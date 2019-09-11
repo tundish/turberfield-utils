@@ -37,9 +37,9 @@ class Orders:
     @property
     def methods(self):
         """
-        Return a 2-tuple of name, method.
+        Return a sequence of 2-tuples; (name, method).
 
-        This property gives you all its registered methods in the order
+        This property gives you all the object's registered methods in the order
         they were defined.
 
         """
@@ -54,4 +54,5 @@ class Orders:
         ]
 
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.sequence = sorted([(obj.n, name) for name, obj in self.methods])

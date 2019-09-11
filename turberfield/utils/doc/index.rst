@@ -28,8 +28,8 @@ Turberfield Utility library
    :numbered:
 
    orders
-   pipes
    assembly
+   pipes
    homogeneous
    travel
    expert
