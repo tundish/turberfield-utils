@@ -25,6 +25,7 @@ from enum import Enum
 from inspect import getmembers
 import json
 import re
+from uuid import UUID
 
 from turberfield.utils.encoder import JSONEncoder
 
@@ -44,6 +45,8 @@ class Assembly:
                 except AttributeError:
                     if isinstance(obj, Enum):
                         attribs = {"name": obj.name, "value": obj.value}
+                    elif isinstance(obj, UUID):
+                        attribs = {"int": obj.int}
                     else:
                         attribs = vars(obj)
                 rv.update(attribs)

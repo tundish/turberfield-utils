@@ -24,6 +24,7 @@ from collections import deque
 from collections import namedtuple
 from decimal import Decimal
 import textwrap
+import uuid
 import unittest
 
 from turberfield.utils.assembly import Assembly
@@ -144,6 +145,16 @@ class AssemblyTester(unittest.TestCase):
             namespace="turberfield"
         )
         self.assertEqual(9, len(types))
+
+    def test_uuid(self):
+        # From Python 3.8 a UUID object has no __dict__
+        self.assertNotIn(uuid.UUID, Assembly.encoding)
+        self.assertNotIn(uuid.UUID, Assembly.decoding)
+        Assembly.register(uuid.UUID)
+        obj = uuid.uuid4()
+        rv = Assembly.dumps(obj)
+        self.assertIn(uuid.UUID, Assembly.encoding)
+        self.assertIn("uuid.UUID", Assembly.decoding)
 
     def test_numeric_types(self):
         val = decimal.Decimal("3.14")
