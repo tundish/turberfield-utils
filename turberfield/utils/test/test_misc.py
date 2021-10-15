@@ -26,8 +26,19 @@ import uuid
 from turberfield.utils.misc import config_parser
 from turberfield.utils.misc import ConfiguredSettings
 from turberfield.utils.misc import clone_config_section
+from turberfield.utils.misc import group_by_type
 from turberfield.utils.misc import reference_config_section
 from turberfield.utils.misc import Singleton
+
+
+class HelperTests(unittest.TestCase):
+
+    def test_group_by_type(self):
+        items = [1, 0, "b", 0.8, "a", 0.3, 4]
+        rv = group_by_type(items)
+        self.assertEqual([1, 0, 4], rv[int])
+        self.assertEqual(["b", "a"], rv[str])
+        self.assertEqual([0.8, 0.3], rv[float])
 
 
 class ConfigTests(unittest.TestCase):

@@ -89,10 +89,11 @@ def reference_config_section(cfg, name, *args, **kwargs):
         )
 
 def group_by_type(items):
-    return defaultdict(
-        list,
-        {k: list(v) for k, v in itertools.groupby(items, key=type)}
-    )
+    typed = {i: type(i) for i in items}
+    rv = defaultdict(list)
+    for k, v in typed.items():
+        rv[v].append(k)
+    return rv
 
 def gather_installed(key, log=None):
     for i in pkg_resources.iter_entry_points(key):
