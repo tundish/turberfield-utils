@@ -89,10 +89,9 @@ def reference_config_section(cfg, name, *args, **kwargs):
         )
 
 def group_by_type(items):
-    typed = {i: type(i) for i in items}
     rv = defaultdict(list)
-    for k, v in typed.items():
-        rv[v].append(k)
+    for i in items:
+        rv[type(i)].append(i)
     return rv
 
 def gather_installed(key, log=None):
