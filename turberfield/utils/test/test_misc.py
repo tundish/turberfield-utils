@@ -16,9 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 import datetime
 import io
 import itertools
+import logging
 import textwrap
 import unittest
 import uuid
@@ -27,8 +29,19 @@ from turberfield.utils.misc import config_parser
 from turberfield.utils.misc import ConfiguredSettings
 from turberfield.utils.misc import clone_config_section
 from turberfield.utils.misc import group_by_type
+from turberfield.utils.misc import log_setup
 from turberfield.utils.misc import reference_config_section
 from turberfield.utils.misc import Singleton
+
+
+class LoggerTests(unittest.TestCase):
+
+    def test_log_setup(self):
+        args = argparse.Namespace(
+            log_level=logging.DEBUG,
+            log_path=None,
+        )
+        log_setup(args)
 
 
 class HelperTests(unittest.TestCase):
