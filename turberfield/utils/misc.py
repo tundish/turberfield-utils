@@ -17,6 +17,7 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+from collections import namedtuple
 import configparser
 import itertools
 import json
@@ -29,7 +30,25 @@ import pkg_resources
 
 _recordFactory = logging.getLogRecordFactory()
 
+Reference = namedtuple(
+    "Reference", ("path", "line"), defaults=(None, None)
+)
+"""
+class x:
+    def makeRecord
+
+manager.setLoggerClass(x)
+"""
+
+class ScriptLogger(logging.Logger):
+
+    pass
+
 def record_factory(*args, **kwargs):
+    extras = kwargs.setdefault("extra", {})
+    if "reference" not in extras:
+        extras["reference"] = Reference()
+    print(kwargs)
     record = _recordFactory(*args, **kwargs)
     record.pid = os.getpid()
     return record
@@ -112,7 +131,8 @@ def log_setup(args, name="turberfield", loop=None):
     logging.getLogger("asyncio").setLevel(int(args.log_level))
 
     formatter = logging.Formatter(
-        "{asctime}|{levelname:>8}|{pid}|{name}|{message}",
+        "{asctime}|{levelname:>8}|{pid}|{name}|{message}|"
+        "{reference.path}|{reference.line}|",
         style="{",
     )
     ch = logging.StreamHandler()

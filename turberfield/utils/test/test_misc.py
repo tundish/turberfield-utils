@@ -30,18 +30,33 @@ from turberfield.utils.misc import ConfiguredSettings
 from turberfield.utils.misc import clone_config_section
 from turberfield.utils.misc import group_by_type
 from turberfield.utils.misc import log_setup
+from turberfield.utils.misc import Reference
 from turberfield.utils.misc import reference_config_section
+from turberfield.utils.misc import ScriptLogger
 from turberfield.utils.misc import Singleton
 
 
 class LoggerTests(unittest.TestCase):
 
-    def test_log_setup(self):
+    def setUp(self):
         args = argparse.Namespace(
             log_level=logging.DEBUG,
             log_path=None,
         )
-        log_setup(args)
+        self.assertIs(logging.Logger.manager.loggerClass, None)
+        self.log_name = log_setup(args)
+        self.assertIs(logging.Logger.manager.loggerClass, logging.Logger)
+
+    def tearDown(self):
+        logging.Logger.manager.loggerClass = None
+
+    def test_log_setup(self):
+        log = logging.getLogger(self.log_name)
+        log.info("Testing.")
+
+    def test_log_reference(self):
+        log = logging.getLogger(self.log_name)
+        log.info("Testing.", extra={"reference": Reference()})
 
 
 class HelperTests(unittest.TestCase):
