@@ -30,19 +30,30 @@ import pkg_resources
 
 _recordFactory = logging.getLogRecordFactory()
 
-Reference = namedtuple(
-    "Reference", ("path", "line"), defaults=(None, None)
-)
-"""
-class x:
-    def makeRecord
 
-manager.setLoggerClass(x)
-"""
+class SyntaxLogger(logging.Logger):
 
-class ScriptLogger(logging.Logger):
+    Reference = namedtuple(
+        "Reference", ("path", "line"), defaults=(None, None)
+    )
 
-    pass
+    def makeRecord(
+        self, name, level, fn, lno, msg, args, exc_info,
+        func=None, extra=None, sinfo=None
+    ):
+        rv = logging.LogRecord(
+            name, level, fn, lno, msg, args, exc_info, func, sinfo
+        )
+        extras = {
+            k: v for k, v in (extra or {}).items()
+            if k not in vars(rv)
+            and k not in ("message", "asctime")
+        }
+        extras.setdefault("reference", self.Reference())
+        rv.__dict__.update(extras)
+        rv.pid = os.getpid()
+        return rv
+
 
 def record_factory(*args, **kwargs):
     extras = kwargs.setdefault("extra", {})
@@ -124,7 +135,7 @@ def gather_installed(key, log=None):
             yield (i.name, ep)
 
 def log_setup(args, name="turberfield", loop=None):
-    logging.setLogRecordFactory(record_factory)
+    logging.Logger.manager.setLoggerClass(SyntaxLogger)
     log = logging.getLogger(name)
 
     log.setLevel(int(args.log_level))
