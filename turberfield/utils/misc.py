@@ -55,15 +55,6 @@ class SyntaxLogger(logging.Logger):
         return rv
 
 
-def record_factory(*args, **kwargs):
-    extras = kwargs.setdefault("extra", {})
-    if "reference" not in extras:
-        extras["reference"] = Reference()
-    print(kwargs)
-    record = _recordFactory(*args, **kwargs)
-    record.pid = os.getpid()
-    return record
-
 class SavesAsDict:
 
     @classmethod
@@ -142,8 +133,8 @@ def log_setup(args, name="turberfield", loop=None):
     logging.getLogger("asyncio").setLevel(int(args.log_level))
 
     formatter = logging.Formatter(
-        "{asctime}|{levelname:>8}|{pid}|{name}|{message}|"
-        "{reference.path}|{reference.line}|",
+        "{asctime}|{levelname:>8}|{pid}|{name}| {message} |"
+        " {reference.path} | {reference.line} |",
         style="{",
     )
     ch = logging.StreamHandler()
