@@ -34,8 +34,9 @@ class Logger:
         ]]
     )
 
-    def __init__(self, name):
+    def __init__(self, name, manager):
         self.name = name
+        self.manager = manager
         self.templates = [
             "{now}", "{level.name:>8}", "{logger.name}", " {0}"
         ]
@@ -63,7 +64,13 @@ class Logger:
         return self.Entry(level, text, metadata)
         
     def log(self, level, *args, **kwargs):
-        print(self.entry(level, *args, **kwargs))
+        entry = self.entry(level, *args, **kwargs)
+        try:
+            self.manager.queue.put_nowait(entry)
+        except asyncio.QueueFull:
+            pass
+        finally:
+            self.manager.notify(self)
 
 
 class LogEndpoint:
@@ -77,8 +84,9 @@ class LogManager:
     Route = namedtuple("Route", ("level", "endpoint"))
 
     def __init__(
-        self, loop=None, executor=None, timeout=None, **kwargs
+        self, queue=None, loop=None, executor=None, timeout=None, **kwargs
     ):
+        self.queue = queue or asyncio.Queue()
         self.loop = loop
         self.timeout = timeout
         self.executor = executor
@@ -105,7 +113,18 @@ class LogManager:
             return func(*args, **kwargs)
 
     def get_logger(self, name, factory=Logger, **kwargs):
-        return self.registry.setdefault(name, factory(name, **kwargs))
+        return self.registry.setdefault(name, factory(name, self, **kwargs))
+
+    def notify(self, client):
+        rv = self.queue.qsize()
+        while self.queue.qsize():
+            entry = self.queue.get_nowait()
+            try:
+                print(entry)
+            finally:
+                self.queue.task_done()
+
+        return rv
 
 
 class LogLocation(LogManager):

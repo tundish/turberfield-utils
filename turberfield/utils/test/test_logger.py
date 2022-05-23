@@ -18,6 +18,7 @@
 
 import asyncio
 import logging
+import os
 import pathlib
 from tempfile import TemporaryDirectory
 import unittest
@@ -60,8 +61,8 @@ class LocationSyncTests(LocationTests, unittest.TestCase):
 
     def test_stat_empty_location(self):
         l = LogLocation(self.locn.name)
-        print(l.stat)
         self.assertIsInstance(l.path, pathlib.Path)
+        self.assertIsInstance(l.stat, os.stat_result)
 
 
 class LocationAsyncTests(LocationTests, unittest.TestCase):
@@ -71,4 +72,4 @@ class LocationAsyncTests(LocationTests, unittest.TestCase):
         l = LogLocation(self.locn.name, loop=loop)
         with l:
             self.assertIs(l.loop, loop)
-            print(l.stat)
+            self.assertIsInstance(l.stat, os.stat_result)
