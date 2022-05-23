@@ -23,6 +23,7 @@ import os
 import pathlib
 from tempfile import TemporaryDirectory
 import unittest
+import uuid
 
 from turberfield.utils.logger import Logger
 from turberfield.utils.logger import LogAdapter
@@ -30,7 +31,7 @@ from turberfield.utils.logger import LogLocation
 from turberfield.utils.logger import LogManager
 
 
-class LogTests(unittest.TestCase):
+class LogStreamTests(unittest.TestCase):
 
     def setUp(self):
         self.stream = io.StringIO()
@@ -71,6 +72,29 @@ class LocationTests:
 
     def tearDown(self):
         self.locn.__exit__(None, None, None)
+
+
+class LogPathTests(LocationTests, unittest.TestCase):
+
+    def setUp(self):
+        super().setUp()
+        uid = uuid.uuid4()
+        self.path = pathlib.Path(self.locn.name, f"{uid.hex}.log")
+        print(self.path)
+        self.manager = LogManager(
+            defaults=[LogManager.Route(Logger.Level.INFO, LogAdapter(), self.path)]
+        )
+
+    def tearDown(self):
+        super().tearDown()
+        self.manager.routings.clear()
+
+    def test_log_blocked(self):
+        logger = self.manager.get_logger("unit.test.log")
+        self.assertIn(logger, self.manager.loggers)
+        logger.log(logger.Level.DEBUG, "Debug message")
+        self.assertTrue(self.path.exists())
+
 
 
 class LocationSyncTests(LocationTests, unittest.TestCase):
