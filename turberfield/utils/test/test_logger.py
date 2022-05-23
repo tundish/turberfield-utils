@@ -25,6 +25,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from turberfield.utils.logger import Logger
+from turberfield.utils.logger import LogAdapter
 from turberfield.utils.logger import LogLocation
 from turberfield.utils.logger import LogManager
 
@@ -34,7 +35,7 @@ class LogTests(unittest.TestCase):
     def setUp(self):
         self.stream = io.StringIO()
         self.manager = LogManager(
-            defaults=[LogManager.Route(Logger.Level.INFO, self.stream)]
+            defaults=[LogManager.Route(Logger.Level.INFO, LogAdapter(), self.stream)]
         )
 
     def tearDown(self):
@@ -52,6 +53,14 @@ class LogTests(unittest.TestCase):
         self.assertIn(logger, self.manager.loggers)
         logger.log(logger.Level.INFO, "Info message")
         self.assertIn("Info message", self.stream.getvalue())
+
+    def test_log_newlines(self):
+        logger = self.manager.get_logger("unit.test.log")
+        self.assertIn(logger, self.manager.loggers)
+        logger.log(logger.Level.INFO, "Message")
+        logger.log(logger.Level.INFO, "Message")
+        lines = self.stream.getvalue().splitlines()
+        self.assertEqual(2, len(lines))
 
 
 class LocationTests:

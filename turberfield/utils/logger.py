@@ -84,12 +84,12 @@ class LogManager:
     registry = {}
     routings = defaultdict(set)
 
-    Route = namedtuple("Route", ("level", "endpoint"))
+    Route = namedtuple("Route", ("level", "adapter", "endpoint"))
 
     def __init__(
         self, defaults: list=None, queue=None, loop=None, executor=None, timeout=None, **kwargs
     ):
-        self.defaults = defaults or [self.Route(Logger.Level.INFO, sys.stderr)]
+        self.defaults = defaults or [self.Route(Logger.Level.INFO, LogAdapter(), sys.stderr)]
         self.queue = queue or asyncio.Queue()
         self.loop = loop
         self.timeout = timeout
@@ -128,15 +128,19 @@ class LogManager:
             entry = self.queue.get_nowait()
             try:
                 for route in self.routings[entry.origin.name]:
-                    self.emit(entry, route)
+                    route.adapter.emit(entry, route)
             finally:
                 self.queue.task_done()
 
         return rv
 
+
+class LogAdapter:
+
     def emit(self, entry, route):
         if entry.level.value >= route.level.value:
             route.endpoint.write(entry.text)
+            route.endpoint.write("\n")
 
 
 class LogLocation(LogManager):
