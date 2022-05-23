@@ -18,6 +18,7 @@
 
 import asyncio
 import logging
+import io
 import os
 import pathlib
 from tempfile import TemporaryDirectory
@@ -31,12 +32,26 @@ from turberfield.utils.logger import LogManager
 class LogTests(unittest.TestCase):
 
     def setUp(self):
-        self.manager = LogManager()
+        self.stream = io.StringIO()
+        self.manager = LogManager(
+            defaults=[LogManager.Route(Logger.Level.INFO, self.stream)]
+        )
 
-    def test_get_logger(self):
+    def tearDown(self):
+        self.stream.close()
+        self.manager.routings.clear()
+
+    def test_log_blocked(self):
         logger = self.manager.get_logger("unit.test.log")
-        logger.log(logger.Level.DEBUG, "Simple message")
         self.assertIn(logger, self.manager.loggers)
+        logger.log(logger.Level.DEBUG, "Debug message")
+        self.assertFalse(self.stream.getvalue())
+
+    def test_log_printed(self):
+        logger = self.manager.get_logger("unit.test.log")
+        self.assertIn(logger, self.manager.loggers)
+        logger.log(logger.Level.INFO, "Info message")
+        self.assertIn("Info message", self.stream.getvalue())
 
 
 class LocationTests:

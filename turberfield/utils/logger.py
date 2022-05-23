@@ -17,16 +17,18 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+from collections import defaultdict
 from collections import namedtuple
 import datetime
 import enum
 import logging
 import pathlib
+import sys
 
 
 class Logger:
 
-    Entry = namedtuple("Entry", ("level", "text", "metadata")) 
+    Entry = namedtuple("Entry", ("origin", "level", "text", "metadata"))
     Level = enum.Enum(
         "Level",
         [(label, getattr(logging, label, 15)) for label in [
@@ -61,7 +63,7 @@ class Logger:
     def entry(self, level, *args, **kwargs):
         metadata = dict(self.metadata, level=level, **kwargs)
         text = self.render(self.format(*args, **metadata))
-        return self.Entry(level, text, metadata)
+        return self.Entry(self, level, text, metadata)
         
     def log(self, level, *args, **kwargs):
         entry = self.entry(level, *args, **kwargs)
@@ -80,12 +82,14 @@ class LogEndpoint:
 class LogManager:
 
     registry = {}
+    routings = defaultdict(set)
 
     Route = namedtuple("Route", ("level", "endpoint"))
 
     def __init__(
-        self, queue=None, loop=None, executor=None, timeout=None, **kwargs
+        self, defaults: list=None, queue=None, loop=None, executor=None, timeout=None, **kwargs
     ):
+        self.defaults = defaults or [self.Route(Logger.Level.INFO, sys.stderr)]
         self.queue = queue or asyncio.Queue()
         self.loop = loop
         self.timeout = timeout
@@ -113,6 +117,9 @@ class LogManager:
             return func(*args, **kwargs)
 
     def get_logger(self, name, factory=Logger, **kwargs):
+        if name not in self.routings:
+            self.routings[name].update(self.defaults)
+
         return self.registry.setdefault(name, factory(name, self, **kwargs))
 
     def notify(self, client):
@@ -120,11 +127,16 @@ class LogManager:
         while self.queue.qsize():
             entry = self.queue.get_nowait()
             try:
-                print(entry)
+                for route in self.routings[entry.origin.name]:
+                    self.emit(entry, route)
             finally:
                 self.queue.task_done()
 
         return rv
+
+    def emit(self, entry, route):
+        if entry.level.value >= route.level.value:
+            route.endpoint.write(entry.text)
 
 
 class LogLocation(LogManager):
