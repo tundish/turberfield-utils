@@ -35,9 +35,11 @@ class LogStreamTests(unittest.TestCase):
 
     def setUp(self):
         self.stream = io.StringIO()
+        self.stream.name = "test stream"
         self.manager = LogManager(
-            defaults=[LogManager.Route(Logger.Level.INFO, LogAdapter(), self.stream)]
+            defaults=[LogManager.Route(Logger.Level.INFO, LogAdapter(), self.stream.name)]
         )
+        self.manager.registry[self.stream.name] = self.stream
 
     def tearDown(self):
         self.stream.close()
@@ -80,7 +82,6 @@ class LogPathTests(LocationTests, unittest.TestCase):
         super().setUp()
         uid = uuid.uuid4()
         self.path = pathlib.Path(self.locn.name, f"{uid.hex}.log")
-        print(self.path)
         self.manager = LogManager(
             defaults=[LogManager.Route(Logger.Level.INFO, LogAdapter(), self.path)]
         )
@@ -89,12 +90,11 @@ class LogPathTests(LocationTests, unittest.TestCase):
         super().tearDown()
         self.manager.routings.clear()
 
-    def test_log_blocked(self):
+    def test_log_written(self):
         logger = self.manager.get_logger("unit.test.log")
         self.assertIn(logger, self.manager.loggers)
-        logger.log(logger.Level.DEBUG, "Debug message")
+        logger.log(logger.Level.INFO, "Debug message")
         self.assertTrue(self.path.exists())
-
 
 
 class LocationSyncTests(LocationTests, unittest.TestCase):
