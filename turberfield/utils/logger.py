@@ -76,10 +76,6 @@ class Logger:
             self.manager.notify(self)
 
 
-class LogEndpoint:
-    pass
-
-
 class LogManager:
 
     registry = defaultdict(set)
@@ -97,25 +93,46 @@ class LogManager:
         self.timeout = timeout
         self.executor = executor
 
+        self.register_endpoint(sys.stderr)
+        for route in self.defaults:
+            self.register_endpoint(route.endpoint)
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        for i in self.registry.values():
+            if not isinstance(i, set) and i is not sys.stderr:
+                try:
+                    self.wait_for(i.close)
+                except Exception as e:
+                    sys.stderr.write("Error on exit: ")
+                    sys.stderr.write(repr(e))
+                    sys.stderr.write("\n")
         return False
 
     @property
-    def loggers(self):
-        return [i for i in self.registry.values() if isinstance(i, Logger)]
+    def pairings(self):
+        return [(k, v) for k, v in self.registry.items() if isinstance(k, self.Pair)]
 
-    def register_endpoint(self, descriptor, registry=None):
+    def register_endpoint(self, obj, registry=None):
         registry = registry if registry is not None else self.registry
-        if isinstance(descriptor, io.TextIOBase):
-            # id
-            registry[descriptor.name] = descriptor
-        elif isinstance(descriptor, str):
-            descriptor = pathlib.Path(descriptor)
+        if isinstance(obj, io.TextIOBase):
+            try:
+                registry[obj.name] = obj
+            except AttributeError:
+                obj.name = id(obj)
+                registry[obj.name] = obj
+            finally:
+                return obj
 
-        return registry.get(descriptor, None)
+        elif isinstance(obj, str):
+            obj = pathlib.Path(obj)
+
+        if isinstance(obj, pathlib.Path):
+            f = obj.open(mode="at", buffering=1)
+            registry[obj] = f
+            return obj
 
     def wait_for(self, func, *args, **kwargs):
         if self.loop:
@@ -131,12 +148,24 @@ class LogManager:
     def get_logger(self, name, factory=Logger, **kwargs):
         logger = factory(name, self, **kwargs)
 
-        if not any(pair.logger_name == name for pair in self.registry):
+        if not any(pair.logger_name == name for pair, _ in self.pairings):
             for route in self.defaults:
-                self.registry[self.Pair(name, route.endpoint.name)].add(route._replace(logger=logger))
+                try:
+                    self.add_route(logger, route.level, route.adapter, route.endpoint)
+                except Exception:
+                    sys.stderr.write(f"Failed to add {route} to {logger}\n")
 
         return logger
 
+    def add_route(self, logger, level, adapter, endpoint):
+        endpoint = self.register_endpoint(endpoint)
+        try:
+            pair = self.Pair(logger.name, endpoint.resolve())
+        except AttributeError:
+            pair = self.Pair(logger.name, endpoint.name)
+        route = self.Route(logger, level, adapter, endpoint)
+        self.registry[pair].add(route)
+        return route
 
     def notify(self, client):
         rv = self.queue.qsize()
@@ -144,7 +173,7 @@ class LogManager:
             entry = self.queue.get_nowait()
             try:
                 routes = (
-                    r for k, v in self.registry.items()
+                    r for k, v in self.pairings
                     for r in v
                     if k.logger_name == entry.origin.name
                 )
@@ -170,8 +199,9 @@ class LogAdapter:
             allow = False
 
         if allow:
-            route.endpoint.write(entry.text)
-            route.endpoint.write("\n")
+            endpoint = entry.origin.manager.registry.get(route.endpoint, route.endpoint)
+            endpoint.write(entry.text)
+            endpoint.write("\n")
 
 
 class LogLocation(LogManager):
