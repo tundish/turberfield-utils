@@ -230,7 +230,11 @@ if __name__ == "__main__":
     class Alarmist(LogAdapter):
 
         patterns = [
-           (re.compile("WARNING"), (234, 255, 0)),
+            (re.compile("NOTE"), (0, 255, 255)),
+            (re.compile("INFO"), (255, 106, 0)),
+            (re.compile("WARNING"), (234, 255, 0)),
+            (re.compile("ERROR"), (234, 0, 255)),
+            (re.compile("CRITICAL"), (255, 0, 106)),
         ]
 
         def colour_levels(self, template, word):
@@ -250,15 +254,5 @@ if __name__ == "__main__":
     with LogManager() as log_manager:
         logger = log_manager.get_logger("main")
         rv = log_manager.add_route(logger, logger.Level.DEBUG, Alarmist(), sys.stderr)
-        logger.log(logger.Level.WARNING, "Hello, World!")
-"""
-        if self._is_show_color_in_console:
-            return (
-                Log._Style.RESET
-                + style
-                + str(text)
-                + Log._Style.RESET
-                + Log.__TEMP_STYLE
-            )
-        return str(text)
-"""
+        logger.log(logger.Level.INFO, "Hello, World!")
+        logger.log(logger.Level.WARNING, "Stay safe out there!")
