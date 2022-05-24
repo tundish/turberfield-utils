@@ -231,8 +231,8 @@ if __name__ == "__main__":
 
         patterns = [
             (re.compile("NOTE"), (0, 255, 255)),
-            (re.compile("INFO"), (255, 106, 0)),
-            (re.compile("WARNING"), (234, 255, 0)),
+            (re.compile("INFO"), (234, 255, 0)),
+            (re.compile("WARNING"), (255, 106, 0)),
             (re.compile("ERROR"), (234, 0, 255)),
             (re.compile("CRITICAL"), (255, 0, 106)),
         ]
@@ -248,7 +248,10 @@ if __name__ == "__main__":
                 return word
 
         def render(self, entry):
-            return " ".join(self.colour_levels(t, w) for t, w in zip(entry.origin.templates, entry.tokens))
+            return "|".join(
+                self.colour_levels(t, w)
+                for t, w in zip(entry.origin.templates, entry.tokens)
+            )
 
         
     with LogManager() as log_manager:
@@ -256,3 +259,5 @@ if __name__ == "__main__":
         rv = log_manager.add_route(logger, logger.Level.DEBUG, Alarmist(), sys.stderr)
         logger.log(logger.Level.INFO, "Hello, World!")
         logger.log(logger.Level.WARNING, "Stay safe out there!")
+        logger.log(logger.Level.NOTE, "Whistle a happy tune!")
+        logger.log(logger.Level.CRITICAL, "We've run out of disk space!")
