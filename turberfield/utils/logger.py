@@ -21,6 +21,7 @@ from collections import defaultdict
 from collections import namedtuple
 import datetime
 import enum
+import io
 import logging
 import pathlib
 import sys
@@ -81,19 +82,16 @@ class LogEndpoint:
 
 class LogManager:
 
-    # TODO: Populate registry with file stream from Path
-    registry = {
-        sys.stderr.name: sys.stderr,
-        sys.stdout.name: sys.stdout,
-    }
-    routings = defaultdict(set)
+    registry = defaultdict(set)
 
-    Route = namedtuple("Route", ("level", "adapter", "endpoint"))
+    Pair = namedtuple("Pair", ("logger_name", "endpoint_name"))
+    Route = namedtuple("Route", ("logger", "level", "adapter", "endpoint"))
 
     def __init__(
-        self, defaults: list=None, queue=None, loop=None, executor=None, timeout=None, **kwargs
+        self, *args,
+        defaults: list=None, queue=None, loop=None, executor=None, timeout=None, **kwargs
     ):
-        self.defaults = defaults or [self.Route(Logger.Level.INFO, LogAdapter(), sys.stderr.name)]
+        self.defaults = defaults or [self.Route(None, Logger.Level.INFO, LogAdapter(), sys.stderr)]
         self.queue = queue or asyncio.Queue()
         self.loop = loop
         self.timeout = timeout
@@ -109,6 +107,16 @@ class LogManager:
     def loggers(self):
         return [i for i in self.registry.values() if isinstance(i, Logger)]
 
+    def register_endpoint(self, descriptor, registry=None):
+        registry = registry if registry is not None else self.registry
+        if isinstance(descriptor, io.TextIOBase):
+            # id
+            registry[descriptor.name] = descriptor
+        elif isinstance(descriptor, str):
+            descriptor = pathlib.Path(descriptor)
+
+        return registry.get(descriptor, None)
+
     def wait_for(self, func, *args, **kwargs):
         if self.loop:
             return self.loop.run_until_complete(
@@ -121,20 +129,32 @@ class LogManager:
             return func(*args, **kwargs)
 
     def get_logger(self, name, factory=Logger, **kwargs):
-        if name not in self.routings:
-            self.routings[name].update(self.defaults)
+        logger = factory(name, self, **kwargs)
 
-        return self.registry.setdefault(name, factory(name, self, **kwargs))
+        if not any(pair.logger_name == name for pair in self.registry):
+            for route in self.defaults:
+                self.registry[self.Pair(name, route.endpoint.name)].add(route._replace(logger=logger))
+
+        return logger
+
 
     def notify(self, client):
         rv = self.queue.qsize()
         while self.queue.qsize():
             entry = self.queue.get_nowait()
             try:
-                for route in self.routings[entry.origin.name]:
-                    if route.endpoint in self.registry:
-                        route = route._replace(endpoint=self.registry[route.endpoint])
+                routes = (
+                    r for k, v in self.registry.items()
+                    for r in v
+                    if k.logger_name == entry.origin.name
+                )
+                for route in routes:
+                    try:
                         route.adapter.emit(entry, route)
+                    except Exception as e:
+                        sys.stderr.write("Error in emit: ")
+                        sys.stderr.write(repr(e))
+                        sys.stderr.write("\n")
             finally:
                 self.queue.task_done()
 
@@ -144,8 +164,12 @@ class LogManager:
 class LogAdapter:
 
     def emit(self, entry, route):
-        print(entry.origin.manager)
-        if entry.level.value >= route.level.value:
+        try:
+            allow = entry.level.value >= route.level.value
+        except AttributeError:
+            allow = False
+
+        if allow:
             route.endpoint.write(entry.text)
             route.endpoint.write("\n")
 

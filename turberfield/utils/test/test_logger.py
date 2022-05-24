@@ -21,6 +21,7 @@ import logging
 import io
 import os
 import pathlib
+import sys
 from tempfile import TemporaryDirectory
 import unittest
 import uuid
@@ -31,19 +32,39 @@ from turberfield.utils.logger import LogLocation
 from turberfield.utils.logger import LogManager
 
 
+class EndpointRegistrationTests(unittest.TestCase):
+
+    def setUp(self):
+        self.manager = LogManager()
+        self.assertIn(sys.stderr, self.manager.registry.values())
+
+    def tearDown(self):
+        self.manager.registry.clear()
+
+    def test_register_stderr(self):
+        d = {}
+        rv = self.manager.register_endpoint(sys.stderr, registry=d)
+        self.assertEqual(d, {sys.stderr: sys.stderr})
+
+    def test_register_stream(self):
+        stream = io.StringIO()
+        d = {}
+        rv = self.manager.register_endpoint(stream, registry=d)
+        self.assertEqual(d, {sys.stderr: sys.stderr})
+
+
 class LogStreamTests(unittest.TestCase):
 
     def setUp(self):
         self.stream = io.StringIO()
         self.stream.name = "test stream"
         self.manager = LogManager(
-            defaults=[LogManager.Route(Logger.Level.INFO, LogAdapter(), self.stream.name)]
+            defaults=[LogManager.Route(None, Logger.Level.INFO, LogAdapter(), self.stream)]
         )
-        self.manager.registry[self.stream.name] = self.stream
 
     def tearDown(self):
         self.stream.close()
-        self.manager.routings.clear()
+        self.manager.registry.clear()
 
     def test_log_blocked(self):
         logger = self.manager.get_logger("unit.test.log")
@@ -65,6 +86,30 @@ class LogStreamTests(unittest.TestCase):
         lines = self.stream.getvalue().splitlines()
         self.assertEqual(2, len(lines))
 
+    def test_bad_default_level(self):
+        manager = LogManager(
+            defaults=[LogManager.Route(None, None, LogAdapter(), self.stream)]
+        )
+        logger = manager.get_logger("unit.test.log")
+        logger.log(logger.Level.INFO, "Info message")
+        self.assertFalse(self.stream.getvalue())
+
+    def test_bad_adapter(self):
+        manager = LogManager(
+            defaults=[LogManager.Route(None, Logger.Level.INFO, None, self.stream)]
+        )
+        logger = manager.get_logger("unit.test.log")
+        logger.log(logger.Level.INFO, "Info message")
+        self.assertFalse(self.stream.getvalue())
+
+    def test_endpoint_not_in_registry(self):
+        manager = LogManager(
+            defaults=[LogManager.Route(None, Logger.Level.INFO, LogAdapter(), None)]
+        )
+        logger = manager.get_logger("unit.test.log")
+        logger.log(logger.Level.INFO, "Info message")
+        self.assertFalse(self.stream.getvalue())
+
 
 class LocationTests:
 
@@ -83,18 +128,20 @@ class LogPathTests(LocationTests, unittest.TestCase):
         uid = uuid.uuid4()
         self.path = pathlib.Path(self.locn.name, f"{uid.hex}.log")
         self.manager = LogManager(
-            defaults=[LogManager.Route(Logger.Level.INFO, LogAdapter(), self.path)]
+            defaults=[LogManager.Route(None, Logger.Level.INFO, LogAdapter(), self.path)]
         )
 
     def tearDown(self):
         super().tearDown()
-        self.manager.routings.clear()
+        self.manager.registry.clear()
 
     def test_log_written(self):
         logger = self.manager.get_logger("unit.test.log")
         self.assertIn(logger, self.manager.loggers)
-        logger.log(logger.Level.INFO, "Debug message")
+        logger.log(logger.Level.INFO, "Info message")
+        self.assertIn(self.path, self.manager.registry)
         self.assertTrue(self.path.exists())
+        self.assertIn("Info message", self.path.read_text())
 
 
 class LocationSyncTests(LocationTests, unittest.TestCase):
