@@ -148,13 +148,13 @@ class LogManager:
         if not any(pair.logger_name == name for pair, _ in self.pairings):
             for route in self.defaults:
                 try:
-                    self.add_route(logger, route.level, route.adapter, route.endpoint)
+                    self.set_route(logger, route.level, route.adapter, route.endpoint)
                 except Exception:
-                    sys.stderr.write(f"Failed to add {route} to {logger}\n")
+                    sys.stderr.write(f"Failed to set {route} to {logger}\n")
 
         return logger
 
-    def add_route(self, logger, level, adapter, endpoint, replace=True):
+    def set_route(self, logger, level, adapter, endpoint, replace=True):
         endpoint = self.register_endpoint(endpoint)
         try:
             pair = self.Pair(logger.name, endpoint.resolve())
@@ -256,7 +256,7 @@ if __name__ == "__main__":
         
     with LogManager() as log_manager:
         logger = log_manager.get_logger("main")
-        rv = log_manager.add_route(logger, logger.Level.DEBUG, Alarmist(), sys.stderr)
+        rv = log_manager.set_route(logger, logger.Level.DEBUG, Alarmist(), sys.stderr)
         logger.log(logger.Level.INFO, "Hello, World!")
         logger.log(logger.Level.WARNING, "Stay safe out there!")
         logger.log(logger.Level.NOTE, "Whistle a happy tune!")
