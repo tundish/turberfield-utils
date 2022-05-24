@@ -154,13 +154,17 @@ class LogManager:
 
         return logger
 
-    def add_route(self, logger, level, adapter, endpoint):
+    def add_route(self, logger, level, adapter, endpoint, replace=True):
         endpoint = self.register_endpoint(endpoint)
         try:
             pair = self.Pair(logger.name, endpoint.resolve())
         except AttributeError:
             pair = self.Pair(logger.name, endpoint.name)
         route = self.Route(logger, level, adapter, endpoint)
+
+        if replace:
+            self.registry[pair].clear()
+
         self.registry[pair].add(route)
         return route
 
@@ -218,11 +222,7 @@ class LogLocation(LogManager):
 
 if __name__ == "__main__":
     import re
-    """
-    \033[38;2;<r>;<g>;<b>m     #Select RGB foreground color
-    \033[48;2;<r>;<g>;<b>m     #Select RGB background color
-    """
-    print("\033[31;1;4mHello\033[0m")
+
     with LogManager() as log_manager:
         logger = log_manager.get_logger("root")
         logger.log(logger.Level.INFO, "Hello, World!")
