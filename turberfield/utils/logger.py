@@ -221,11 +221,14 @@ class LogLocation(LogManager):
 
 
 if __name__ == "__main__":
+    import http
     import re
 
     with LogManager() as log_manager:
         logger = log_manager.get_logger("root")
+        logger.templates += ["{status.name}"]
         logger.log(logger.Level.INFO, "Hello, World!")
+        logger.log(logger.Level.INFO, "Situation report", status=http.HTTPStatus.OK)
 
     class Alarmist(LogAdapter):
 
