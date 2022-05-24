@@ -29,7 +29,7 @@ import sys
 
 class Logger:
 
-    Entry = namedtuple("Entry", ("origin", "level", "text", "metadata"))
+    Entry = namedtuple("Entry", ("origin", "level", "tokens", "metadata"))
     Level = enum.Enum(
         "Level",
         [(label, getattr(logging, label, 15)) for label in [
@@ -58,13 +58,10 @@ class Logger:
             except (KeyError, IndexError):
                 yield ""
 
-    def render(self, words):
-        return "|".join(words)
-
     def entry(self, level, *args, **kwargs):
         metadata = dict(self.metadata, level=level, **kwargs)
-        text = self.render(self.format(*args, **metadata))
-        return self.Entry(self, level, text, metadata)
+        tokens = tuple(self.format(*args, **metadata))
+        return self.Entry(self, level, tokens, metadata)
         
     def log(self, level, *args, **kwargs):
         entry = self.entry(level, *args, **kwargs)
@@ -192,6 +189,9 @@ class LogManager:
 
 class LogAdapter:
 
+    def render(self, entry):
+        return "|".join(entry.tokens)
+
     def emit(self, entry, route):
         try:
             allow = entry.level.value >= route.level.value
@@ -200,7 +200,8 @@ class LogAdapter:
 
         if allow:
             endpoint = entry.origin.manager.registry.get(route.endpoint, route.endpoint)
-            endpoint.write(entry.text)
+            text = self.render(entry)
+            endpoint.write(text)
             endpoint.write("\n")
 
 
@@ -213,3 +214,51 @@ class LogLocation(LogManager):
     @property
     def stat(self):
         return self.wait_for(self.path.stat)
+
+
+if __name__ == "__main__":
+    import re
+    """
+    \033[38;2;<r>;<g>;<b>m     #Select RGB foreground color
+    \033[48;2;<r>;<g>;<b>m     #Select RGB background color
+    """
+    print("\033[31;1;4mHello\033[0m")
+    with LogManager() as log_manager:
+        logger = log_manager.get_logger("root")
+        logger.log(logger.Level.INFO, "Hello, World!")
+
+    class Alarmist(LogAdapter):
+
+        patterns = [
+           (re.compile("WARNING"), (234, 255, 0)),
+        ]
+
+        def colour_levels(self, template, word):
+            if "level" in template:
+                r, g, b = next(
+                    (c for r, c in self.patterns if r.search(word)),
+                    (200, 200, 200)
+                )
+                return f"\033[38;2;{r};{g};{b}m{word}\033[0m"
+            else:
+                return word
+
+        def render(self, entry):
+            return " ".join(self.colour_levels(t, w) for t, w in zip(entry.origin.templates, entry.tokens))
+
+        
+    with LogManager() as log_manager:
+        logger = log_manager.get_logger("main")
+        rv = log_manager.add_route(logger, logger.Level.DEBUG, Alarmist(), sys.stderr)
+        logger.log(logger.Level.WARNING, "Hello, World!")
+"""
+        if self._is_show_color_in_console:
+            return (
+                Log._Style.RESET
+                + style
+                + str(text)
+                + Log._Style.RESET
+                + Log.__TEMP_STYLE
+            )
+        return str(text)
+"""
