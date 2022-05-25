@@ -40,7 +40,7 @@ class Logger:
     def __init__(self, name, manager):
         self.name = name
         self.manager = manager
-        self.templates = [
+        self.frame = [
             "{now}", "{level.name:>8}", "{logger.name}", " {0}"
         ]
 
@@ -52,7 +52,7 @@ class Logger:
         }
 
     def format(self, *args, **kwargs):
-        for field in self.templates:
+        for field in self.frame:
             try:
                 yield field.format(*args, **kwargs)
             except (KeyError, IndexError):
@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
     with LogManager() as log_manager:
         logger = log_manager.get_logger("root")
-        logger.templates += ["{status.name}"]
+        logger.frame += ["{status.name}"]
         logger.log(logger.Level.INFO, "Hello, World!")
         logger.log(logger.Level.INFO, "Situation report", status=http.HTTPStatus.OK)
 
@@ -240,8 +240,8 @@ if __name__ == "__main__":
             (re.compile("CRITICAL"), (255, 0, 106)),
         ]
 
-        def colour_levels(self, template, word):
-            if "level" in template:
+        def colour_levels(self, field, word):
+            if "level" in field:
                 r, g, b = next(
                     (c for r, c in self.patterns if r.search(word)),
                     (200, 200, 200)
@@ -252,8 +252,8 @@ if __name__ == "__main__":
 
         def render(self, entry):
             return "|".join(
-                self.colour_levels(t, w)
-                for t, w in zip(entry.origin.templates, entry.tokens)
+                self.colour_levels(f, w)
+                for f, w in zip(entry.origin.frame, entry.tokens)
             )
 
         
