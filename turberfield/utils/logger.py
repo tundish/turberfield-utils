@@ -25,6 +25,7 @@ import io
 import logging
 import pathlib
 import sys
+from weakref import WeakValueDictionary
 
 
 class Logger:
@@ -37,10 +38,10 @@ class Logger:
         ]]
     )
 
-    def __init__(self, name, manager):
+    def __init__(self, name, manager, frame=None):
         self.name = name
         self.manager = manager
-        self.frame = [
+        self.frame = frame or [
             "{now}", "{level.name:>8}", "{logger.name}", " {0}"
         ]
 
@@ -75,7 +76,9 @@ class Logger:
 
 class LogManager:
 
-    registry = defaultdict(set)
+    loggers = {}
+    routing = defaultdict(set)
+    outputs = WeakValueDictionary()
 
     Pair = namedtuple("Pair", ("logger_name", "endpoint_name"))
     Route = namedtuple("Route", ("logger", "level", "adapter", "endpoint"))
@@ -98,7 +101,7 @@ class LogManager:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        for i in self.registry.values():
+        for i in self.outputs.values():
             if not isinstance(i, set) and i is not sys.stderr:
                 try:
                     self.wait_for(i.close)
@@ -110,10 +113,10 @@ class LogManager:
 
     @property
     def pairings(self):
-        return [(k, v) for k, v in self.registry.items() if isinstance(k, self.Pair)]
+        return [(k, v) for k, v in self.routing.items() if isinstance(k, self.Pair)]
 
     def register_endpoint(self, obj, registry=None):
-        registry = registry if registry is not None else self.registry
+        registry = registry if registry is not None else self.outputs
         if isinstance(obj, io.TextIOBase):
             try:
                 registry[obj.name] = obj
@@ -142,11 +145,18 @@ class LogManager:
         else:
             return func(*args, **kwargs)
 
-    def get_logger(self, name, factory=Logger, **kwargs):
-        logger = factory(name, self, **kwargs)
+    def get_logger(self, name, factory=Logger, frame=None, routing=None, registry=None, **kwargs):
+        routing = routing or self.defaults
+        registry = registry if registry is not None else self.loggers
+        
+        if name in registry:
+            return registry[name]
+
+        logger = factory(name, self, frame=frame, **kwargs)
+        registry[name] = logger
 
         if not any(pair.logger_name == name for pair, _ in self.pairings):
-            for route in self.defaults:
+            for route in routing:
                 try:
                     self.set_route(logger, route.level, route.adapter, route.endpoint)
                 except Exception:
@@ -154,7 +164,16 @@ class LogManager:
 
         return logger
 
-    def set_route(self, logger, level, adapter, endpoint, replace=True):
+    def clone(self, logger, name, **kwargs):
+        routes = (
+            r for k, v in self.pairings
+            for r in v
+            if k.logger_name == logger.name
+        )
+        return self.get_logger("main", factory=type(logger), frame=logger.frame, routing=routes)
+
+    def set_route(self, logger, level, adapter, endpoint, replace=True, registry=None):
+        registry = registry if registry is not None else self.routing
         endpoint = self.register_endpoint(endpoint)
         try:
             pair = self.Pair(logger.name, endpoint.resolve())
@@ -163,9 +182,9 @@ class LogManager:
         route = self.Route(logger, level, adapter, endpoint)
 
         if replace:
-            self.registry[pair].clear()
+            registry[pair].clear()
 
-        self.registry[pair].add(route)
+        registry[pair].add(route)
         return route
 
     def notify(self, client):
@@ -203,7 +222,7 @@ class LogAdapter:
             allow = False
 
         if allow:
-            endpoint = entry.origin.manager.registry.get(route.endpoint, route.endpoint)
+            endpoint = entry.origin.manager.outputs.get(route.endpoint, route.endpoint)
             text = self.render(entry)
             endpoint.write(text)
             endpoint.write("\n")
@@ -258,9 +277,12 @@ if __name__ == "__main__":
 
         
     with LogManager() as log_manager:
-        logger = log_manager.get_logger("main")
+        logger = log_manager.clone(log_manager.get_logger("root"), "main")
         rv = log_manager.set_route(logger, logger.Level.DEBUG, Alarmist(), sys.stderr)
         logger.log(logger.Level.INFO, "Hello, World!")
         logger.log(logger.Level.WARNING, "Stay safe out there!")
         logger.log(logger.Level.NOTE, "Whistle a happy tune!")
-        logger.log(logger.Level.CRITICAL, "We've run out of disk space!")
+        logger.log(
+            logger.Level.CRITICAL, "We've run out of disk space!",
+            status=http.HTTPStatus.INSUFFICIENT_STORAGE
+        )

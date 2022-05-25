@@ -36,10 +36,12 @@ class EndpointRegistrationTests(unittest.TestCase):
 
     def setUp(self):
         self.manager = LogManager()
-        self.assertIn(sys.stderr, self.manager.registry.values())
+        self.assertIn(sys.stderr, self.manager.outputs.values())
 
     def tearDown(self):
-        self.manager.registry.clear()
+        self.manager.loggers.clear()
+        self.manager.routing.clear()
+        self.manager.outputs.clear()
 
     def test_register_stderr(self):
         d = {}
@@ -64,7 +66,9 @@ class LogStreamTests(unittest.TestCase):
 
     def tearDown(self):
         self.stream.close()
-        self.manager.registry.clear()
+        self.manager.loggers.clear()
+        self.manager.routing.clear()
+        self.manager.outputs.clear()
 
     def test_log_blocked(self):
         logger = self.manager.get_logger("unit.test.log")
@@ -108,6 +112,18 @@ class LogStreamTests(unittest.TestCase):
         self.assertFalse(self.stream.getvalue())
 
 
+class CloneTests(unittest.TestCase):
+
+    def test_frame(self):
+        manager = LogManager()
+        a = manager.get_logger("a")
+        a.frame += ["extra"]
+        self.assertIn("extra", a.frame)
+
+        b = manager.get_logger("a")
+        self.assertIs(a, b)
+
+
 class LocationTests:
 
     def setUp(self):
@@ -137,7 +153,7 @@ class LogPathTests(LocationTests, unittest.TestCase):
     def test_log_written(self):
         logger = self.manager.get_logger("unit.test.log")
         logger.log(logger.Level.INFO, "Info message")
-        self.assertIn(self.path, self.manager.registry)
+        self.assertIn(self.path, self.manager.loggers)
         self.assertTrue(self.path.exists())
         self.assertIn("Info message", self.path.read_text())
         self.assertTrue(any(
