@@ -16,6 +16,46 @@
 # You should have received a copy of the GNU General Public License
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+.. code-block:: python
+
+    from turberfield.utils.logger import LogManager
+
+    logger = LogManager().get_logger("root")
+    logger.info("Hello, World!")
+
+.. code-block:: shell
+
+    2022-05-25 18:40:00.766978|    INFO|root| Hello, World!
+
+The main feature of these Loggers is that you can set them to format any
+arbitrary data you might want to send them.
+
+A logger has a frame which is a list of the formats of all the fields
+it can present to a LogAdapter.
+
+.. code-block:: python
+
+    print(logger.frame)
+
+.. code-block:: shell
+
+    ['{now}', '{level.name:>8}', '{logger.name}', ' {0}']
+
+This frame can be modified at run time to add extra fields to the log.
+Unlike the standard logging module, it doesn't matter if that data is missing:
+
+.. code-block:: python
+
+    logger.frame += ["{status.name}"]
+    logger.info("Situation report", status=http.HTTPStatus.OK)
+
+.. code-block:: shell
+
+    2022-05-25 18:53:51.767937|    INFO|root| Situation report|OK
+
+"""
+
 import asyncio
 from collections import defaultdict
 from collections import namedtuple
@@ -25,6 +65,7 @@ import functools
 import io
 import logging
 import pathlib
+import platform
 import sys
 from weakref import WeakValueDictionary
 
@@ -260,11 +301,12 @@ if __name__ == "__main__":
 
     Unlike the standard logging module, ~They don't mind if that data is missing.
     """
-    with LogManager() as log_manager:
-        logger = log_manager.get_logger("root")
-        logger.frame += ["{status.name}"]
-        logger.info("Hello, World!")
-        logger.info("Situation report", status=http.HTTPStatus.OK)
+    logger = LogManager().get_logger("root")
+    logger.info("Hello, World!")
+
+    print(logger.frame)
+    logger.frame += ["{status.name}"]
+    logger.info("Situation report", status=http.HTTPStatus.OK)
 
     """
     You can supply a customised LogAdapter to perform filtering or reformatting
@@ -281,7 +323,7 @@ if __name__ == "__main__":
             (re.compile("CRITICAL"), (255, 0, 106)),
         ]
 
-        def colour_levels(self, field, word):
+        def colour_field(self, field, word):
             if "level" in field:
                 r, g, b = next(
                     (c for r, c in self.patterns if r.search(word)),
@@ -292,8 +334,11 @@ if __name__ == "__main__":
                 return word
 
         def render(self, entry):
+            if platform.system().lower() == "windows":
+                return super().render(entry)
+
             return "|".join(
-                self.colour_levels(f, w)
+                self.colour_field(f, w)
                 for f, w in zip(entry.origin.frame, entry.tokens)
             )
 

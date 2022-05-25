@@ -12,7 +12,7 @@ If you've spotted a bug in Turberfield, please let me know so I can fix it.
 If you think Turberfield lacks a feature, you can help drive development by
 describing your Use Case.
 
-In either event, please leave a message on the project's `message board`_.
+In either event, please leave a message on the project's `issue tracker`_.
 
 Turberfield Utility library
 :::::::::::::::::::::::::::
@@ -27,7 +27,7 @@ Turberfield Utility library
    :maxdepth: 1
    :numbered:
 
-   orders
+   logger
    assembly
    pipes
    homogeneous
@@ -37,4 +37,4 @@ Turberfield Utility library
 * :ref:`genindex`
 
 .. _GNU General Public License: http://www.gnu.org/licenses/gpl.html
-.. _message board: https://www.assembla.com/spaces/turberfield/messages
+.. _issue tracker: https://github.com/tundish/turberfield-utils/issues
