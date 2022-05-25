@@ -47,6 +47,8 @@ Unlike the standard logging module, it doesn't matter if that data is missing:
 
 .. code-block:: python
 
+    import http
+
     logger.frame += ["{status.name}"]
     logger.info("Situation report", status=http.HTTPStatus.OK)
 
@@ -54,7 +56,83 @@ Unlike the standard logging module, it doesn't matter if that data is missing:
 
     2022-05-25 18:53:51.767937|    INFO|root| Situation report|OK
 
+You can supply a customised LogAdapter to perform filtering or reformatting
+on an endpoint-specific basis.
+
+.. code-block:: python
+
+    import re
+    import platform
+
+    from turberfield.utils.logger import LogAdapter
+
+    class Alarmist(LogAdapter):
+
+        patterns = [
+            (re.compile("NOTE"), (234, 0, 255)),
+            (re.compile("INFO"), (0, 255, 255)),
+            (re.compile("ERROR"), (234, 255, 0)),
+            (re.compile("WARNING"), (255, 106, 0)),
+            (re.compile("CRITICAL"), (255, 0, 106)),
+        ]
+
+        def colour_field(self, field, word):
+            if "level" in field:
+                r, g, b = next(
+                    (c for r, c in self.patterns if r.search(word)),
+                    (200, 200, 200)
+                )
+                return f"\033[38;2;{r};{g};{b}m{word}\033[0m"
+            else:
+                return word
+
+        def render(self, entry):
+            if platform.system().lower() == "windows":
+                return super().render(entry)
+
+            return "|".join(
+                self.colour_field(f, w)
+                for f, w in zip(entry.origin.frame, entry.tokens)
+            )
+
+Once you have configured a logger, you can clone it as the basis of another.
+
+.. code-block:: python
+
+    root_logger = log_manager.get_logger("root")
+    logger = log_manager.clone(root_logger, "main")
+    log_manager.set_route(logger, logger.Level.INFO, Alarmist(), sys.stderr)
+
+    logger.info("Hello, World!")
+    logger.warning("Stay safe out there!")
+
+This example is included in the module. Run ``python -m turberfield.utils.logger`` to see
+that these log entries are now in colour on the terminal.
+
+By default, logging goes to sys.stderr.
+You can log to a file by passing the necessary path.
+
+.. code-block:: python
+
+    log_manager.set_route(logger, logger.Level.DEBUG, LogAdapter(), pathlib.Path("logger.log"))
+    logger.error("I didn't mean that.")
+    logger.debug("It doesn't hurt to check.")
+    logger.note("Whistle a happy tune!")
+    logger.critical(
+        "We've run out of disk space!",
+        status=http.HTTPStatus.INSUFFICIENT_STORAGE
+    )
+
+::
+
+    $ cat logger.log
+    2022-05-25 19:11:55.260938|   ERROR|main| I didn't mean that.|
+    2022-05-25 19:11:55.261088|   DEBUG|main| It doesn't hurt to check.|
+    2022-05-25 19:11:55.261178|    NOTE|main| Whistle a happy tune!|
+    2022-05-25 19:11:55.261241|CRITICAL|main| We've run out of disk space!|INSUFFICIENT_STORAGE
+
 """
+
 
 import asyncio
 from collections import defaultdict
@@ -65,7 +143,6 @@ import functools
 import io
 import logging
 import pathlib
-import platform
 import sys
 from weakref import WeakValueDictionary
 
@@ -293,26 +370,15 @@ class LogLocation(LogManager):
 
 if __name__ == "__main__":
     import http
+    import platform
     import re
 
-    """
-    The main feature of these Loggers is that you can set them to format any
-    related data which you send them.
-
-    Unlike the standard logging module, ~They don't mind if that data is missing.
-    """
     logger = LogManager().get_logger("root")
     logger.info("Hello, World!")
 
-    print(logger.frame)
     logger.frame += ["{status.name}"]
     logger.info("Situation report", status=http.HTTPStatus.OK)
 
-    """
-    You can supply a customised LogAdapter to perform filtering or reformatting
-    on an endpoint-specific basis.
-
-    """
     class Alarmist(LogAdapter):
 
         patterns = [
