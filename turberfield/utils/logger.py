@@ -21,6 +21,7 @@ from collections import defaultdict
 from collections import namedtuple
 import datetime
 import enum
+import functools
 import io
 import logging
 import pathlib
@@ -73,12 +74,19 @@ class Logger:
         finally:
             self.manager.notify(self)
 
+    debug = functools.partialmethod(log, Level.DEBUG)
+    note = functools.partialmethod(log, Level.NOTE)
+    info = functools.partialmethod(log, Level.INFO)
+    warning = functools.partialmethod(log, Level.WARNING)
+    error = functools.partialmethod(log, Level.ERROR)
+    critical = functools.partialmethod(log, Level.CRITICAL)
+
 
 class LogManager:
 
+    endings = {}
     loggers = {}
     routing = defaultdict(set)
-    outputs = WeakValueDictionary()
 
     Pair = namedtuple("Pair", ("logger_name", "endpoint_name"))
     Route = namedtuple("Route", ("logger", "level", "adapter", "endpoint"))
@@ -93,6 +101,8 @@ class LogManager:
         self.timeout = timeout
         self.executor = executor
 
+        self.endpoints = [self.register_endpoint(i) for i in args]
+
         self.register_endpoint(sys.stderr)
         for route in self.defaults:
             self.register_endpoint(route.endpoint)
@@ -101,8 +111,9 @@ class LogManager:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        for i in self.outputs.values():
-            if not isinstance(i, set) and i is not sys.stderr:
+        to_close = filter(None, (self.endings.get(i, None) for i in self.endpoints))
+        for i in to_close:
+            if i is not sys.stderr:
                 try:
                     self.wait_for(i.close)
                 except Exception as e:
@@ -116,7 +127,7 @@ class LogManager:
         return [(k, v) for k, v in self.routing.items() if isinstance(k, self.Pair)]
 
     def register_endpoint(self, obj, registry=None):
-        registry = registry if registry is not None else self.outputs
+        registry = registry if registry is not None else self.endings
         if isinstance(obj, io.TextIOBase):
             try:
                 registry[obj.name] = obj
@@ -222,7 +233,7 @@ class LogAdapter:
             allow = False
 
         if allow:
-            endpoint = entry.origin.manager.outputs.get(route.endpoint, route.endpoint)
+            endpoint = entry.origin.manager.endings.get(route.endpoint, route.endpoint)
             text = self.render(entry)
             endpoint.write(text)
             endpoint.write("\n")
@@ -243,12 +254,23 @@ if __name__ == "__main__":
     import http
     import re
 
+    """
+    The main feature of these Loggers is that you can set them to format any
+    related data which you send them.
+
+    Unlike the standard logging module, ~They don't mind if that data is missing.
+    """
     with LogManager() as log_manager:
         logger = log_manager.get_logger("root")
         logger.frame += ["{status.name}"]
-        logger.log(logger.Level.INFO, "Hello, World!")
-        logger.log(logger.Level.INFO, "Situation report", status=http.HTTPStatus.OK)
+        logger.info("Hello, World!")
+        logger.info("Situation report", status=http.HTTPStatus.OK)
 
+    """
+    You can supply a customised LogAdapter to perform filtering or reformatting
+    on an endpoint-specific basis.
+
+    """
     class Alarmist(LogAdapter):
 
         patterns = [
@@ -275,14 +297,25 @@ if __name__ == "__main__":
                 for f, w in zip(entry.origin.frame, entry.tokens)
             )
 
-        
+
     with LogManager() as log_manager:
+
+        # Once you have configured a logger, you can clone it as the basis of another
         logger = log_manager.clone(log_manager.get_logger("root"), "main")
-        rv = log_manager.set_route(logger, logger.Level.DEBUG, Alarmist(), sys.stderr)
-        logger.log(logger.Level.INFO, "Hello, World!")
-        logger.log(logger.Level.WARNING, "Stay safe out there!")
-        logger.log(logger.Level.NOTE, "Whistle a happy tune!")
-        logger.log(
-            logger.Level.CRITICAL, "We've run out of disk space!",
+        log_manager.set_route(logger, logger.Level.INFO, Alarmist(), sys.stderr)
+
+        logger.info("Hello, World!")
+        logger.warning("Stay safe out there!")
+
+        """
+        By default, logging goes to sys.stderr.
+        You can log to a file by passing the necessary path.
+
+        """
+        log_manager.set_route(logger, logger.Level.DEBUG, LogAdapter(), pathlib.Path("logger.log"))
+        logger.debug("It doesn't hurt to check.")
+        logger.note("Whistle a happy tune!")
+        logger.critical(
+            "We've run out of disk space!",
             status=http.HTTPStatus.INSUFFICIENT_STORAGE
         )
