@@ -274,10 +274,10 @@ if __name__ == "__main__":
     class Alarmist(LogAdapter):
 
         patterns = [
-            (re.compile("NOTE"), (0, 255, 255)),
-            (re.compile("INFO"), (234, 255, 0)),
+            (re.compile("NOTE"), (234, 0, 255)),
+            (re.compile("INFO"), (0, 255, 255)),
+            (re.compile("ERROR"), (234, 255, 0)),
             (re.compile("WARNING"), (255, 106, 0)),
-            (re.compile("ERROR"), (234, 0, 255)),
             (re.compile("CRITICAL"), (255, 0, 106)),
         ]
 
@@ -313,6 +313,7 @@ if __name__ == "__main__":
 
         """
         log_manager.set_route(logger, logger.Level.DEBUG, LogAdapter(), pathlib.Path("logger.log"))
+        logger.error("I didn't mean that.")
         logger.debug("It doesn't hurt to check.")
         logger.note("Whistle a happy tune!")
         logger.critical(
