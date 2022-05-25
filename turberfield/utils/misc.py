@@ -17,13 +17,10 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
-from collections import namedtuple
 import configparser
-import itertools
 import json
 import logging
 import logging.handlers
-import os
 import pathlib
 
 import pkg_resources

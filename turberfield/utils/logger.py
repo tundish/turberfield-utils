@@ -144,7 +144,6 @@ import io
 import logging
 import pathlib
 import sys
-from weakref import WeakValueDictionary
 
 
 class Logger:
@@ -182,7 +181,7 @@ class Logger:
         metadata = dict(self.metadata, level=level, **kwargs)
         tokens = tuple(self.format(*args, **metadata))
         return self.Entry(self, level, tokens, metadata)
-        
+
     def log(self, level, *args, **kwargs):
         entry = self.entry(level, *args, **kwargs)
         try:
@@ -277,7 +276,7 @@ class LogManager:
     def get_logger(self, name, factory=Logger, frame=None, routing=None, registry=None, **kwargs):
         routing = routing or self.defaults
         registry = registry if registry is not None else self.loggers
-        
+
         if name in registry:
             return registry[name]
 
@@ -418,11 +417,6 @@ if __name__ == "__main__":
         logger.info("Hello, World!")
         logger.warning("Stay safe out there!")
 
-        """
-        By default, logging goes to sys.stderr.
-        You can log to a file by passing the necessary path.
-
-        """
         log_manager.set_route(logger, logger.Level.DEBUG, LogAdapter(), pathlib.Path("logger.log"))
         logger.error("I didn't mean that.")
         logger.debug("It doesn't hurt to check.")
