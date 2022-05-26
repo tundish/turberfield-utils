@@ -293,12 +293,12 @@ class LogManager:
         return logger
 
     def clone(self, logger, name, **kwargs):
-        routes = (
+        routes = [
             r for k, v in self.pairings
             for r in v
             if k.logger_name == logger.name
-        )
-        return self.get_logger("main", factory=type(logger), frame=logger.frame, routing=routes)
+        ]
+        return self.get_logger(name, factory=type(logger), frame=logger.frame, routing=routes)
 
     def set_route(self, logger, level, adapter, endpoint, replace=True, registry=None):
         registry = registry if registry is not None else self.routing

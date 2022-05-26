@@ -137,18 +137,39 @@ class LogStreamTests(unittest.TestCase):
 
 class CloneTests(unittest.TestCase):
 
+    def setUp(self):
+        self.manager = LogManager()
+
+    def tearDown(self):
+        self.manager.loggers.clear()
+        self.manager.routing.clear()
+        self.manager.endings.clear()
+
     def test_frame(self):
-        manager = LogManager()
-        a = manager.get_logger("a")
+        a = self.manager.get_logger("a")
         a.frame += ["extra"]
         self.assertIn("extra", a.frame)
 
-        b = manager.get_logger("a")
+        b = self.manager.get_logger("a")
         self.assertIs(a, b)
 
-        c = manager.clone(manager.get_logger("a"), "c")
+        c = self.manager.clone(self.manager.get_logger("a"), "c")
         self.assertIsNot(c, a)
         self.assertEqual(c.frame, a.frame)
+
+    def test_routes(self):
+        self.manager = LogManager()
+        n_routes = len(self.manager.routing)
+        a = self.manager.get_logger("a")
+        self.assertEqual(n_routes + 1, len(self.manager.routing))
+
+        b = self.manager.get_logger("a")
+        self.assertIs(a, b)
+        self.assertEqual(n_routes + 1, len(self.manager.routing))
+
+        c = self.manager.clone(self.manager.get_logger("a"), "c")
+        self.assertIsNot(c, a)
+        self.assertEqual(n_routes + 2, len(self.manager.routing))
 
 
 class LocationTests:
