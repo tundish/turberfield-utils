@@ -32,6 +32,30 @@ from turberfield.utils.logger import LogLocation
 from turberfield.utils.logger import LogManager
 
 
+class LoggerTests(unittest.TestCase):
+
+    def test_format_attribute_error(self):
+        manager = LogManager()
+        logger = manager.get_logger("test_attribute_error")
+        logger.frame += ["{id.hex}"]
+        self.assertTrue(list(logger.format("test message", id=uuid.uuid4())))
+        self.assertTrue(list(logger.format("test message", id="no_hex_attribute")))
+
+    def test_format_index_error(self):
+        manager = LogManager()
+        logger = manager.get_logger("test_index_error")
+        logger.frame += ["{data[1]}"]
+        self.assertTrue(list(logger.format("test message", data="0123")))
+        self.assertTrue(list(logger.format("test message", data="")))
+
+    def test_format_key_error(self):
+        manager = LogManager()
+        logger = manager.get_logger("test_key_error")
+        logger.frame += ["{obj[foo]}"]
+        self.assertTrue(list(logger.format("test message", obj={"foo": "bar"})))
+        self.assertTrue(list(logger.format("test message", obj={})))
+
+
 class EndpointRegistrationTests(unittest.TestCase):
 
     def setUp(self):
