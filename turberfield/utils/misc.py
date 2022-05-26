@@ -105,8 +105,7 @@ def log_setup(args, name="turberfield", loop=None):
     logging.getLogger("asyncio").setLevel(int(args.log_level))
 
     formatter = logging.Formatter(
-        "{asctime}|{levelname:>8}|{pid}|{name}| {message} |"
-        " {reference.path} | {reference.line} |",
+        "{asctime}|{levelname:>8}|{name}| {message}",
         style="{",
     )
     ch = logging.StreamHandler()

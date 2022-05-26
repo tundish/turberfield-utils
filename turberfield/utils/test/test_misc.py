@@ -43,6 +43,14 @@ class HelperTests(unittest.TestCase):
         self.assertEqual(["b", "a"], rv[str])
         self.assertEqual([0.8, 0.3], rv[float])
 
+    def test_log_setup(self):
+        args = argparse.Namespace(
+            log_level=logging.DEBUG,
+            log_path=None
+        )
+        log_name = log_setup(args)
+        log = logging.getLogger(log_name)
+        log.debug("Test message")
 
 class ConfigTests(unittest.TestCase):
 
