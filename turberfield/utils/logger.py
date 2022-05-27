@@ -174,7 +174,7 @@ class Logger:
         for field in self.frame:
             try:
                 yield field.format(*args, **kwargs)
-            except (AttributeError, IndexError, KeyError):
+            except Exception:
                 yield ""
 
     def entry(self, level, *args, **kwargs):

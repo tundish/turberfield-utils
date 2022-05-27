@@ -55,6 +55,12 @@ class LoggerTests(unittest.TestCase):
         self.assertTrue(list(logger.format("test message", obj={"foo": "bar"})))
         self.assertTrue(list(logger.format("test message", obj={})))
 
+    def test_format_type_error(self):
+        manager = LogManager()
+        logger = manager.get_logger("test_key_error")
+        logger.frame += ["{1[0]", "{obj[foo]}"]
+        self.assertTrue(list(logger.format("test message", None, obj=None)))
+
 
 class EndpointRegistrationTests(unittest.TestCase):
 
