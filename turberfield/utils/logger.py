@@ -163,6 +163,9 @@ class Logger:
             "{now}", "{level.name:>8}", "{logger.name}", " {0}"
         ]
 
+    def set_route(self, level, adapter, endpoint, replace=True, registry=None):
+        return self.manager.set_route(self, level, adapter, endpoint, replace, registry)
+
     @property
     def metadata(self):
         return {

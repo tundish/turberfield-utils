@@ -173,9 +173,16 @@ class CloneTests(unittest.TestCase):
         self.assertIs(a, b)
         self.assertEqual(n_routes + 1, len(self.manager.routing))
 
+        self.manager.set_route(b, Logger.Level.INFO, LogAdapter(), sys.stderr)
+        self.assertEqual(n_routes + 1, len(self.manager.routing))
+
         c = self.manager.clone(self.manager.get_logger("a"), "c")
         self.assertIsNot(c, a)
         self.assertEqual(n_routes + 2, len(self.manager.routing))
+
+        c.set_route(Logger.Level.INFO, LogAdapter(), sys.stderr)
+        self.assertEqual(n_routes + 2, len(self.manager.routing))
+
 
 
 class LocationTests:
