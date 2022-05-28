@@ -101,7 +101,7 @@ Once you have configured a logger, you can clone it as the basis of another.
 
     root_logger = log_manager.get_logger("root")
     logger = log_manager.clone(root_logger, "main")
-    log_manager.set_route(logger, logger.Level.INFO, Alarmist(), sys.stderr)
+    logger.set_route(logger.Level.INFO, Alarmist(), sys.stderr)
 
     logger.info("Hello, World!")
     logger.warning("Stay safe out there!")
@@ -114,7 +114,7 @@ You can log to a file by passing the necessary path.
 
 .. code-block:: python
 
-    log_manager.set_route(logger, logger.Level.DEBUG, LogAdapter(), pathlib.Path("logger.log"))
+    logger.set_route(logger.Level.DEBUG, LogAdapter(), pathlib.Path("logger.log"))
     logger.error("I didn't mean that.")
     logger.debug("It doesn't hurt to check.")
     logger.note("Whistle a happy tune!")
