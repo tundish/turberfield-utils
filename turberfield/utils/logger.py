@@ -100,7 +100,7 @@ Once you have configured a logger, you can clone it as the basis of another.
 .. code-block:: python
 
     root_logger = log_manager.get_logger("root")
-    logger = log_manager.clone(root_logger, "main")
+    logger = root_logger.clone("main")
     logger.set_route(logger.Level.INFO, Alarmist(), sys.stderr)
 
     logger.info("Hello, World!")
@@ -165,6 +165,9 @@ class Logger:
 
     def set_route(self, level, adapter, endpoint, replace=True, registry=None):
         return self.manager.set_route(self, level, adapter, endpoint, replace, registry)
+
+    def clone(self, name, **kwargs):
+        return self.manager.clone(self, name, **kwargs)
 
     @property
     def metadata(self):

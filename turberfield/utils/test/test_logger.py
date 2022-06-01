@@ -151,6 +151,15 @@ class CloneTests(unittest.TestCase):
         self.manager.routing.clear()
         self.manager.endings.clear()
 
+    def test_clone_from_log(self):
+        a = self.manager.get_logger("a")
+
+        b = a.manager.get_logger("a")
+        self.assertIs(a, b)
+
+        c = a.clone("c")
+        self.assertIsNot(c, a)
+
     def test_frame(self):
         a = self.manager.get_logger("a")
         a.frame += ["extra"]
